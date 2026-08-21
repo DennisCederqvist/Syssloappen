@@ -1,0 +1,6 @@
+@Syssloappen.Api_HostAddress = http://localhost:5047
+
+GET {{Syssloappen.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
