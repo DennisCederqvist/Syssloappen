@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.Auth;
@@ -11,7 +10,10 @@ namespace Syssloappen.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public sealed class AuthController(AppDbContext dbContext, UserManager<ApplicationUser> userManager)
+public sealed class AuthController(
+    AppDbContext dbContext,
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager)
     : ControllerBase
 {
     [AllowAnonymous]
@@ -61,6 +63,62 @@ public sealed class AuthController(AppDbContext dbContext, UserManager<Applicati
         return StatusCode(StatusCodes.Status201Created, response);
     }
 
+    [AllowAnonymous]
+    [HttpPost("login")]
+    [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
+    {
+        var email = request.Email.Trim();
+        var user = await userManager.FindByEmailAsync(email);
+
+        if (user is null)
+        {
+            return InvalidCredentials();
+        }
+
+        var signInResult = await signInManager.PasswordSignInAsync(
+            user,
+            request.Password,
+            isPersistent: false,
+            lockoutOnFailure: false);
+
+        if (!signInResult.Succeeded)
+        {
+            return InvalidCredentials();
+        }
+
+        var response = await BuildCurrentUserResponseAsync(user);
+        return Ok(new LoginResponse(response.UserId, response.Email, response.Role, response.HouseholdId));
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    [ProducesResponseType<CurrentUserResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<CurrentUserResponse>> Me()
+    {
+        var user = await userManager.GetUserAsync(User);
+
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        var response = await BuildCurrentUserResponseAsync(user);
+        return Ok(response);
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Logout()
+    {
+        await signInManager.SignOutAsync();
+        return NoContent();
+    }
+
     private static Dictionary<string, string[]> ToErrorDictionary(IdentityResult result) => result.Errors
         .GroupBy(error => error.Code)
         .ToDictionary(
@@ -72,4 +130,20 @@ public sealed class AuthController(AppDbContext dbContext, UserManager<Applicati
         {
             Status = StatusCodes.Status400BadRequest
         };
+
+    private async Task<CurrentUserResponse> BuildCurrentUserResponseAsync(ApplicationUser user)
+    {
+        var roles = await userManager.GetRolesAsync(user);
+        var role = roles.SingleOrDefault() ?? string.Empty;
+
+        return new CurrentUserResponse(user.Id, user.Email!, role, user.HouseholdId);
+    }
+
+    private UnauthorizedObjectResult InvalidCredentials() => Unauthorized(
+        new ProblemDetails
+        {
+            Title = "Invalid credentials",
+            Detail = "The email or password is incorrect.",
+            Status = StatusCodes.Status401Unauthorized
+        });
 }

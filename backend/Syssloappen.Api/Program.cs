@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
@@ -13,6 +14,21 @@ var connectionString = builder.Configuration.GetConnectionString("SyssloappenDat
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddIdentityCookies();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    // APIs should return HTTP status codes instead of redirecting to HTML login pages.
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    };
+
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
+    };
+});
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
         options.User.RequireUniqueEmail = true;
@@ -50,3 +66,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+// WebApplicationFactory uses this entry point to start the API during integration tests.
+public partial class Program;
