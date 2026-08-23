@@ -21,6 +21,13 @@ Följande är implementerat och mergat till `main`:
 
 Registrering loggar ännu inte in användaren automatiskt. Login och logout är nästa arbetsdel.
 
+Pågående arbete på `feature/adult-authentication`, ännu inte mergat till `main`:
+
+- `POST /api/auth/login` loggar in med ASP.NET Core Identity och en sessionscookie.
+- `GET /api/auth/me` kräver inloggning och hämtar användar-ID, roll och `HouseholdId` från den autentiserade användaren.
+- `POST /api/auth/logout` tar bort autentiseringscookien.
+- Ett integrationstestprojekt använder en tillfällig SQLite-databas och testar login, fel lösenord, logout och två separata Households.
+
 ## Teknik och versioner
 
 - Node.js `22.23.2`
@@ -112,17 +119,19 @@ Lokal testdata finns i `syssloappen_dev`:
 
 Testlösenordet är avsiktligt inte dokumenterat här.
 
-Det finns ännu inget automatiserat testprojekt. Tester för säkerhetskritisk Household-isolering bör läggas till när de första skyddade API-endpointsen byggs.
+På `feature/adult-authentication` finns integrationstester i `backend/Syssloappen.Api.Tests`.
+Tre tester verifierar login, fel lösenord, skyddat endpoint före och efter logout samt att två Adults i olika Households identifieras med rätt `HouseholdId`.
+Full Household-isolering för barn och sysslor ska testas när dessa skyddade endpoints byggs.
 
-## Nästa arbetsdel
+## Aktuell arbetsdel
 
-Nästa branch bör vara `feature/adult-authentication` och fokusera på US-002 och US-003:
+Branchen `feature/adult-authentication` fokuserar på US-002 och US-003:
 
-1. Implementera login med ASP.NET Core Identity och cookie.
-2. Lägg till ett skyddat endpoint, exempelvis `GET /api/auth/me`, som visar den autentiserade användarens ID, roll och HouseholdId.
-3. Implementera logout.
-4. Testa lyckad login, fel lösenord, skyddat endpoint före/efter login och logout.
-5. Kontrollera att backend hämtar HouseholdId från den autentiserade användaren, aldrig från klientens request.
+1. Login med ASP.NET Core Identity och cookie är implementerad.
+2. `GET /api/auth/me` visar den autentiserade användarens ID, roll och HouseholdId.
+3. Logout är implementerad.
+4. Automatiska integrationstester och ett manuellt cookie-test är godkända.
+5. Backend hämtar HouseholdId från den autentiserade användaren, aldrig från login-requesten.
 
 Implementera inte barn, sysslor eller Angular i samma branch.
 
