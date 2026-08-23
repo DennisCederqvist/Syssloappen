@@ -2,7 +2,7 @@
 
 ## 1. Projektöversikt
 
-Syssloappen är en familjeorienterad applikation där vuxna kan skapa och tilldela sysslor till barn, och där barn kan logga in på sina egna enheter för att se och markera sina sysslor som färdiga.
+Syssloappen är en familjeorienterad applikation där vuxna kan skapa och tilldela sysslor till barn, och där barn kan logga in på sina egna enheter för att se och rapportera sina sysslor som utförda.
 
 Varje familj ska fungera som en separat enhet, ett **Household**. Användare som tillhör ett Household får aldrig kunna läsa eller ändra information som tillhör ett annat Household.
 
@@ -305,7 +305,7 @@ så att jag vet vad jag ska göra.
 
 - [ ] Barnet måste vara inloggat.
 - [ ] Barnet ska endast se sysslor som är tilldelade det aktuella barnet.
-- [ ] Barnet ska kunna se om en syssla är klar eller inte.
+- [ ] Barnet ska kunna se om en syssla är tilldelad, väntar på godkännande, behöver göras om eller är godkänd.
 - [ ] Sysslor som tillhör syskon eller andra familjer får inte visas.
 
 ### Exempel
@@ -320,21 +320,24 @@ Mina sysslor
 
 ---
 
-## US-041 – Barn kan markera en syssla som klar
+## US-041 – Barn kan rapportera en syssla som utförd
 
 **Som barn**
-vill jag kunna markera en syssla som färdig
-så att mina föräldrar kan se att jag har gjort den.
+vill jag kunna rapportera en syssla som utförd
+så att en vuxen kan kontrollera och godkänna arbetet.
 
 ### Acceptance Criteria
 
 - [ ] Barnet måste vara inloggat.
-- [ ] Barnet får endast markera sina egna tilldelningar som färdiga.
-- [ ] Ett barn får inte markera ett syskons syssla som färdig.
-- [ ] En completion ska sparas i databasen.
+- [ ] Barnet får endast rapportera sina egna tilldelningar som utförda.
+- [ ] Ett barn får inte rapportera ett syskons syssla som utförd.
+- [ ] Tilldelningen ska få status `PendingApproval`.
+- [ ] Sysslan ska inte räknas som godkänd direkt.
+- [ ] En slutgiltig completion ska inte skapas innan en Adult har godkänt sysslan.
+- [ ] Inga eventuella poäng får delas ut innan en Adult har godkänt sysslan.
 - [ ] Systemet ska spara vilket barn som utförde sysslan.
 - [ ] Systemet ska spara vilken syssla som utfördes.
-- [ ] Systemet ska spara tidpunkten då sysslan markerades som klar.
+- [ ] Systemet ska spara tidpunkten då barnet rapporterade sysslan som utförd.
 
 ---
 
@@ -351,7 +354,8 @@ så att jag kan följa deras aktivitet.
 - [ ] Adults ska kunna se utförda sysslor inom sitt Household.
 - [ ] Det ska framgå vilket barn som gjorde sysslan.
 - [ ] Det ska framgå vilken syssla som utfördes.
-- [ ] Det ska framgå när den markerades som klar.
+- [ ] Det ska framgå när barnet rapporterade sysslan som utförd.
+- [ ] För godkända sysslor ska det framgå vem som godkände dem och när.
 - [ ] Information från andra Households får inte visas.
 
 ### Exempel
@@ -362,6 +366,38 @@ Senaste aktiviteter
 ✓ Anna – Mata katten – 07:42
 ✓ Erik – Töm diskmaskinen – 08:15
 ✓ Anna – Städa rummet – 10:32
+```
+
+---
+
+## US-051 – Vuxen godkänner eller nekar en utförd syssla
+
+**Som vuxen**
+vill jag kunna kontrollera en syssla som barnet har rapporterat som utförd
+så att endast korrekt utförda sysslor blir godkända.
+
+### Acceptance Criteria
+
+- [ ] Endast en Adult får godkänna eller neka en rapporterad syssla.
+- [ ] En Adult ska kunna se vilka sysslor inom sitt Household som väntar på godkännande.
+- [ ] Den vuxna, barnet och sysslan måste tillhöra samma Household.
+- [ ] En Adult får inte granska sysslor från ett annat Household.
+- [ ] Vid godkännande ska tilldelningens status ändras till `Approved`.
+- [ ] En completion ska skapas först när sysslan godkänns.
+- [ ] Systemet ska spara vilken Adult som godkände sysslan och när.
+- [ ] Eventuella poäng får delas ut först efter godkännande.
+- [ ] Vid nekande ska tilldelningens status ändras till `NeedsRedo`.
+- [ ] Barnet ska kunna se att sysslan behöver göras om.
+- [ ] Den vuxna ska valfritt kunna lämna en kommentar.
+
+### Statusflöde
+
+```text
+Assigned
+   ↓ barnet rapporterar utförd
+PendingApproval
+   ↓ Adult granskar
+Approved eller NeedsRedo
 ```
 
 ---
@@ -378,7 +414,8 @@ Senaste aktiviteter
 | Skapa barnkonto              | Ja              | Nej   |
 | Skapa syssla                 | Ja              | Nej   |
 | Tilldela syssla              | Ja              | Nej   |
-| Markera egen syssla klar     | Nej/ej relevant | Ja    |
+| Rapportera egen syssla utförd | Nej/ej relevant | Ja    |
+| Godkänna eller neka syssla   | Ja              | Nej   |
 | Se familjens completions     | Ja              | Nej   |
 | Bjuda in Adult               | Ja              | Nej   |
 | Administrera annat Household | Nej             | Nej   |
@@ -441,6 +478,11 @@ ChoreId
 ChildId
 AssignedByUserId
 AssignedAt
+Status
+SubmittedAt
+ReviewedByUserId
+ReviewedAt
+ReviewComment
 ```
 
 ## ChoreCompletion
@@ -450,7 +492,8 @@ Id
 HouseholdId
 AssignmentId
 ChildId
-CompletedAt
+ApprovedByUserId
+ApprovedAt
 ```
 
 ---
@@ -485,6 +528,12 @@ Backend verifierar:
 - att användaren har rätt att utföra operationen
 ```
 
+För godkännandeflödet gäller dessutom:
+
+- Ett Child får endast rapportera sina egna tilldelningar som utförda.
+- Endast en Adult i samma Household får godkänna eller neka arbetet.
+- En completion och eventuella poäng får skapas först efter godkännande.
+
 ---
 
 # 13. MVP
@@ -501,7 +550,8 @@ Första fungerande versionen ska vara liten.
 - [ ] Adult kan tilldela sysslor.
 - [ ] Child kan logga in.
 - [ ] Child kan se sina egna sysslor.
-- [ ] Child kan markera en syssla som klar.
+- [ ] Child kan rapportera en syssla som utförd.
+- [ ] Adult kan godkänna eller neka en rapporterad syssla.
 - [ ] Adult kan se utförda sysslor.
 - [ ] Household-isolering fungerar.
 - [ ] Authentication och authorization fungerar.
@@ -553,6 +603,8 @@ Varje söndag
 ## Poäng och belöningar
 
 Sysslor skulle kunna ge poäng.
+
+Poäng får tilldelas först när en Adult har godkänt den rapporterade sysslan.
 
 ```text
 Mata katten       +5
@@ -707,15 +759,17 @@ Föreslagen ordning:
    ↓
 9. Child: "Mina sysslor"
    ↓
-10. Markera Chore som klar
+10. Child: rapportera Chore som utförd
    ↓
-11. Adult: se completions
+11. Adult: godkänn eller neka rapporterad Chore
    ↓
-12. Lägg till ytterligare Adult
+12. Adult: se completions
    ↓
-13. UI-förbättringar
+13. Lägg till ytterligare Adult
    ↓
-14. PWA
+14. UI-förbättringar
+   ↓
+15. PWA
 ```
 
 ---
