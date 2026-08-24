@@ -15,6 +15,12 @@ Varje familj ska fungera som en separat enhet, ett **Household**. Användare som
 - **Authentication:** ASP.NET Core Authentication
 - **Framtida möjlighet:** Progressive Web App (PWA)
 
+### Statusmarkering
+
+- `[x]` betyder att kriteriet är implementerat, testat och mergat till `main`.
+- `[ ]` betyder att kriteriet inte är implementerat eller endast är delvis uppfyllt.
+- Breda kriterier lämnas okryssade tills hela formuleringen är uppfylld.
+
 ---
 
 # 2. Grundläggande begrepp
@@ -93,12 +99,12 @@ så att jag kan börja använda systemet.
 
 ### Acceptance Criteria
 
-- [ ] En vuxen ska kunna registrera ett konto.
-- [ ] Kontot ska kunna autentiseras på ett säkert sätt.
-- [ ] Lösenord får aldrig lagras i klartext.
-- [ ] En ny vuxen utan tidigare familjekoppling ska kunna skapa ett Household.
-- [ ] Den vuxna ska automatiskt kopplas till sitt nya Household.
-- [ ] Den vuxna ska få rollen `Adult`.
+- [x] En vuxen ska kunna registrera ett konto.
+- [x] Kontot ska kunna autentiseras på ett säkert sätt.
+- [x] Lösenord får aldrig lagras i klartext.
+- [x] En ny vuxen utan tidigare familjekoppling ska kunna skapa ett Household.
+- [x] Den vuxna ska automatiskt kopplas till sitt nya Household.
+- [x] Den vuxna ska få rollen `Adult`.
 
 ---
 
@@ -110,11 +116,11 @@ så att systemet kan identifiera mig och visa rätt information.
 
 ### Acceptance Criteria
 
-- [ ] En användare ska kunna logga in med sina inloggningsuppgifter.
-- [ ] Felaktiga inloggningsuppgifter ska inte ge åtkomst.
-- [ ] Backend ska kunna identifiera den autentiserade användaren.
-- [ ] Backend ska kunna identifiera användarens roll.
-- [ ] Backend ska kunna identifiera vilket Household användaren tillhör.
+- [x] En användare ska kunna logga in med sina inloggningsuppgifter.
+- [x] Felaktiga inloggningsuppgifter ska inte ge åtkomst.
+- [x] Backend ska kunna identifiera den autentiserade användaren.
+- [x] Backend ska kunna identifiera användarens roll.
+- [x] Backend ska kunna identifiera vilket Household användaren tillhör.
 
 ---
 
@@ -126,9 +132,9 @@ så att någon annan inte får tillgång till mitt konto.
 
 ### Acceptance Criteria
 
-- [ ] Det ska finnas en logout-funktion.
-- [ ] Efter logout ska skyddade delar av systemet inte längre vara tillgängliga.
-- [ ] Användaren ska behöva autentisera sig igen för att återfå åtkomst.
+- [x] Det ska finnas en logout-funktion.
+- [x] Efter logout ska skyddade delar av systemet inte längre vara tillgängliga.
+- [x] Användaren ska behöva autentisera sig igen för att återfå åtkomst.
 
 ---
 
@@ -142,10 +148,10 @@ så att mina familjemedlemmar och vår data hålls separerade från andra familj
 
 ### Acceptance Criteria
 
-- [ ] Ett Household ska ha ett unikt ID.
-- [ ] Personen som skapar Household ska bli medlem i det.
-- [ ] Skaparen ska ha rollen `Adult`.
-- [ ] Data från andra Households får inte vara tillgänglig.
+- [x] Ett Household ska ha ett unikt ID.
+- [x] Personen som skapar Household ska bli medlem i det.
+- [x] Skaparen ska ha rollen `Adult`.
+- [x] Data från andra Households får inte vara tillgänglig.
 
 ---
 
@@ -174,13 +180,13 @@ så att andra användare inte kan se eller ändra vår information.
 
 ### Acceptance Criteria
 
-- [ ] En Adult får endast se barn i sitt eget Household.
+- [x] En Adult får endast se barn i sitt eget Household.
 - [ ] En Adult får endast administrera barn i sitt eget Household.
 - [ ] En Adult får endast skapa sysslor för sitt eget Household.
 - [ ] En Adult får endast tilldela sysslor till barn i sitt eget Household.
 - [ ] Ett Child får endast se information som tillhör sitt eget Household.
-- [ ] Backend ska kontrollera Household-tillhörighet.
-- [ ] Manipulering av ID:n i API-anrop får inte ge åtkomst till ett annat Households data.
+- [x] Backend ska kontrollera Household-tillhörighet.
+- [x] Manipulering av ID:n i API-anrop får inte ge åtkomst till ett annat Households data.
 
 ---
 
@@ -194,11 +200,11 @@ så att jag kan tilldela sysslor till barnet.
 
 ### Acceptance Criteria
 
-- [ ] Endast en Adult får skapa ett barn.
-- [ ] Barnet ska automatiskt kopplas till den vuxnas Household.
-- [ ] Barnet ska ha ett eget unikt ID.
-- [ ] Barnet ska inte kunna kopplas till ett annat Household genom ett modifierat API-anrop.
-- [ ] Alla Adults i samma Household ska kunna se barnet.
+- [x] Endast en Adult får skapa ett barn.
+- [x] Barnet ska automatiskt kopplas till den vuxnas Household.
+- [x] Barnet ska ha ett eget unikt ID.
+- [x] Barnet ska inte kunna kopplas till ett annat Household genom ett modifierat API-anrop.
+- [x] Alla Adults i samma Household ska kunna se barnet.
 
 ---
 
@@ -243,13 +249,13 @@ så att jag exempelvis kan rätta ett felstavat namn.
 
 ### Acceptance Criteria
 
-- [ ] Endast en Adult får ändra ett barn.
-- [ ] En Adult får endast ändra barn i sitt eget Household.
-- [ ] Barnets namn ska kunna ändras.
-- [ ] Ett tomt eller ogiltigt namn ska inte kunna sparas.
-- [ ] Barnets `HouseholdId` får aldrig kunna ändras av klienten.
-- [ ] Manipulering av ett Child-ID får inte ge åtkomst till barn i ett annat Household.
-- [ ] Alla Adults i samma Household ska kunna se den uppdaterade informationen.
+- [x] Endast en Adult får ändra ett barn.
+- [x] En Adult får endast ändra barn i sitt eget Household.
+- [x] Barnets namn ska kunna ändras.
+- [x] Ett tomt eller ogiltigt namn ska inte kunna sparas.
+- [x] Barnets `HouseholdId` får aldrig kunna ändras av klienten.
+- [x] Manipulering av ett Child-ID får inte ge åtkomst till barn i ett annat Household.
+- [x] Alla Adults i samma Household ska kunna se den uppdaterade informationen.
 
 ---
 
@@ -324,7 +330,7 @@ så att jag vet vem som ska göra vad.
 
 ### Acceptance Criteria
 
-- [ ] Adults ska kunna se Householdets barn.
+- [x] Adults ska kunna se Householdets barn.
 - [ ] Adults ska kunna se vilka sysslor varje barn har.
 - [ ] Information från andra Households får inte visas.
 
@@ -581,10 +587,10 @@ Första fungerande versionen ska vara liten.
 
 ## Ska ingå
 
-- [ ] Adult kan skapa konto.
-- [ ] Adult kan skapa ett Household.
-- [ ] Adult kan skapa barn.
-- [ ] Adult kan ändra barn.
+- [x] Adult kan skapa konto.
+- [x] Adult kan skapa ett Household.
+- [x] Adult kan skapa barn.
+- [x] Adult kan ändra barn.
 - [ ] Adult kan avaktivera barn.
 - [ ] Adult kan skapa login åt barn.
 - [ ] Adult kan skapa sysslor.
@@ -595,7 +601,7 @@ Första fungerande versionen ska vara liten.
 - [ ] Adult kan godkänna eller neka en rapporterad syssla.
 - [ ] Adult kan se utförda sysslor.
 - [ ] Household-isolering fungerar.
-- [ ] Authentication och authorization fungerar.
+- [x] Authentication och authorization fungerar.
 
 ---
 

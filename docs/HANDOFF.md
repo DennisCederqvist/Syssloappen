@@ -64,6 +64,8 @@ Angular-projektet har ännu inte skapats. Frontendarbetet ska vänta tills den f
 - Household-isolering får aldrig bygga på ID:n som klienten själv väljer.
 - Ingen microservice-, CQRS- eller annan extra arkitektur ska introduceras utan konkret behov.
 - Arbeta i små feature-branches och merga endast gröna, testade delar till `main`.
+- Uppdatera checkboxarna i `REQUIREMENTS.md` efter varje färdig, testad och mergad story.
+- Markera endast helt uppfyllda kriterier med `[x]`; breda eller delvis uppfyllda kriterier ska förbli `[ ]`.
 
 Den centrala säkerhetskedjan är:
 
