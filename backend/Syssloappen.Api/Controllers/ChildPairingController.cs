@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -58,24 +56,12 @@ public sealed class ChildPairingController(
             return InvalidPairingCode();
         }
 
-        var sessionSecret = ChildDeviceSessionService.GenerateSecret();
-        var absoluteExpiresAt = now.Add(ChildDeviceSessionService.MaximumLifetime);
-        var session = new ChildDeviceSession
-        {
-            HouseholdId = pairingCode.HouseholdId,
-            ChildProfileId = child.Id,
-            UserId = childUser.Id,
-            SecretHash = ChildDeviceSessionService.HashSecret(sessionSecret),
-            CreatedAt = now,
-            LastSeenAt = now,
-            ExpiresAt = now.Add(ChildDeviceSessionService.RenewableLifetime),
-            AbsoluteExpiresAt = absoluteExpiresAt
-        };
+        var issuedSession = ChildDeviceSessionService.Create(child, childUser, now);
 
         try
         {
             pairingCode.UsedAt = now;
-            dbContext.ChildDeviceSessions.Add(session);
+            dbContext.ChildDeviceSessions.Add(issuedSession.Session);
             await dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
         }
@@ -85,23 +71,11 @@ public sealed class ChildPairingController(
             return InvalidPairingCode();
         }
 
-        var authenticationProperties = new AuthenticationProperties
-        {
-            IsPersistent = true,
-            AllowRefresh = true,
-            IssuedUtc = timeProvider.GetUtcNow(),
-            ExpiresUtc = new DateTimeOffset(session.ExpiresAt, TimeSpan.Zero)
-        };
-        var sessionClaims = new[]
-        {
-            new Claim(ChildDeviceSessionService.SessionIdClaim, session.Id.ToString()),
-            new Claim(ChildDeviceSessionService.SessionSecretClaim, sessionSecret)
-        };
-
-        await signInManager.SignInWithClaimsAsync(
+        await ChildDeviceSessionService.SignInAsync(
+            signInManager,
             childUser,
-            authenticationProperties,
-            sessionClaims);
+            issuedSession,
+            timeProvider);
 
         return Ok(new PairChildDeviceResponse(
             child.Id,

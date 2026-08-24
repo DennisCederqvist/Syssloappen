@@ -87,6 +87,24 @@ Beständiga Child-enhetssessioner är implementerade och testade:
 - Avaktivering av ett barn återkallar alla barnets befintliga sessioner i samma databasändring; dessutom nekar den löpande backendvalideringen alltid en inaktiv profil.
 - Alla Adult-endpoints kombinerar klientens Child-/sessions-ID med den autentiserade användarens `HouseholdId`, så manipulerade ID:n inte kan välja en annan familjs data.
 
+På feature-branchen `feature/us-021-child-fallback-login` är säker reservinloggning implementerad och testad men ännu inte committad eller mergad:
+
+- Varje nytt Household får en kryptografiskt slumpmässig, unik familjekod med tolv lättlästa tecken. Ett unikt databasindex skyddar även mot den osannolika händelsen att två genererade koder får samma SHA-256-hash.
+- `POST /api/auth/child/login` tar endast familjekod, barnvänligt användarnamn och lösenord. DTO:n innehåller inga råa Household-, Child-, konto- eller rollfält; oväntade sådana JSON-fält kan inte styra backendens val.
+- Backend hashar och normaliserar familjekoden, härleder Householdet från hashträffen och söker därefter det normaliserade, skiftlägesokänsliga barnanvändarnamnet endast inom detta Household.
+- Lösenordet verifieras av ASP.NET Core Identity. Backend kräver dessutom rollen `Child`, en aktiv `ChildProfile` och identiska konto-, profil- och Household-kopplingar.
+- Lyckad reservinloggning använder exakt samma gemensamma sessionsskapare som enhetskopplingen och får därför samma beständiga, maximalt tidsbegränsade och Adult-återkallningsbara `ChildDeviceSession`.
+- Fel familjekod, användarnamn eller lösenord ger samma neutrala HTTP 401-svar. Försöken begränsas till tio per minut och klientadress; ett barnkonto låses inte av någon som känner till dess publika namn.
+- Adult-login och befintlig enhetskoppling använder fortsatt sina tidigare endpoints och har särskilda regressionstester.
+
+Familjekoden administreras med den minsta säkra lösningen:
+
+- Klartextkoden returneras en gång när ett nytt Household registreras och en gång efter `POST /api/household/family-code/rotate`.
+- `GET /api/household/family-code` visar endast om koden är konfigurerad, en maskerad kod med sista fyra tecken och senaste rotationstid. Endast en autentiserad `Adult` i Householdet får läsa status eller rotera.
+- Databasen lagrar endast SHA-256-hash, sista fyra tecken och tidsstämpel, aldrig den fullständiga koden eller någon annan återanvändbar inloggningshemlighet.
+- Säkerhetskonsekvensen är att en glömd kod inte kan återställas. En Adult måste rotera den, vilket omedelbart gör den gamla koden ogiltig. Familjekoden är bara en Household-identifierare; barnets Identity-hashade lösenord krävs alltid också.
+- Befintliga Households får vid framtida migrering ett unikt hashat men avsiktligt oanvändbart värde. `FamilyCodeLastFour` lämnas tomt, reservlogin förblir avstängd och en Adult måste rotera en gång för att få en verklig kod. Detta undviker att lägga en klartexthemlighet i migrationen eller databasen.
+
 ## Teknik och versioner
 
 - Node.js `22.23.2`
@@ -149,6 +167,7 @@ Aktuella migrationer:
 - `AddChildAccounts` lägger till profilens konto-FK, Child-kontots synliga och normaliserade användarnamn samt unika index för profilkoppling, Household-användarnamn och Adult-e-post. Migrationen är genererad men ännu inte applicerad i `syssloappen_dev`.
 - `AddChildPairingCodes` skapar tabellen `ChildPairingCodes` med hash, Child-, Household- och Adult-koppling, skapad tid, utgångstid och användningstid. Migrationen är genererad men ännu inte applicerad i `syssloappen_dev`.
 - `AddChildDeviceSessions` skapar `ChildDeviceSessions` med Child-, konto- och Household-koppling, hashad sessionshemlighet, aktivitetstid, förnybar utgångstid, absolut maxgräns och återkallelsetid. Migrationen är genererad och granskad men inte applicerad i `syssloappen_dev`.
+- `AddHouseholdFamilyCodes` lägger till unik familjekodshash, sista fyra tecken och rotationstid på `Households`. Den säkra backfillen för befintliga rader och det unika indexet är genererade och granskade men migrationen är inte applicerad i `syssloappen_dev`.
 
 Vanliga kommandon från repots rot:
 
@@ -201,7 +220,11 @@ Alla 31 integrationstester är godkända i Release-konfiguration.
 
 Elva integrationstester för sessionsdelen verifierar beständig cookie och hashad hemlighet, förnybar och absolut maximal livslängd, båda typerna av utgång, Adult-listning och återkallelse, logout, avaktiverat barn, Adult-behörighet, Household-isolering, manipulerade Child-/sessions-ID:n samt atomisk kodinlösen och sessionsskapande. Alla 42 integrationstester är godkända i Release-konfiguration.
 
+Tolv integrationstester för reservinloggningen verifierar unik familjekod, hashad lagring, Household-härledning, skiftlägesokänsligt barnanvändarnamn, Identity-lösenord, neutrala felsvar, rate limiting, inaktiv profil, fel roll, brutna konto-/profil-/Household-kopplingar, Household-isolering, manipulerade ID-/rollfält, beständig och återkallningsbar session, Adult-behörighet, rotation samt regression för Adult-login och enhetskoppling. Alla 54 integrationstester är godkända i Release-konfiguration.
+
 Release-build och formatteringskontroll är godkända utan fel eller varningar. EF Core rapporterar inga väntande modelländringar utanför migrationen. Ett idempotent PostgreSQL-script från `AddChildPairingCodes` till `AddChildDeviceSessions` har genererats och granskats: det skapar endast den nya sessionstabellen, främmande nycklar, index och migrationshistorikraden i en transaktion. Scriptet har inte körts mot databasen.
+
+Ett idempotent PostgreSQL-script från `AddChildDeviceSessions` till `AddHouseholdFamilyCodes` har också genererats och granskats. Det lägger till de tre familjekodskolumnerna, backfyller befintliga Households utan klartexthemlighet, gör hashkolumnen obligatorisk, skapar det unika indexet och skriver migrationshistorikraden i en transaktion. Scriptet har inte körts mot databasen.
 
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
@@ -227,7 +250,7 @@ Adult-styrd, kortlivad enhetskoppling är färdig och testad:
 
 Den avgränsade US-021-delen med beständig Child-enhetssession, maximal livslängd, säker förnyelse, logout, Adult-återkallning och omedelbar backendkontroll av barnets aktiva status är färdig och testad.
 
-Omedelbart nästa avgränsade US-021-del är reservinloggning med familjekod, barnvänligt användarnamn och lösenord. QR, chores, poäng och approval-flöde ska fortfarande vänta.
+Den avgränsade US-021-delen med reservinloggning via familjekod, barnvänligt användarnamn och Identity-lösenord är färdig och testad på feature-branchen. Migrationen och PostgreSQL-SQL är genererade och granskade men inte applicerade. Ändringarna inväntar uttryckligt godkännande före commit, push eller merge. QR, chores, poäng och approval-flöde ska fortfarande vänta.
 
 ## Kända kvarvarande saker
 
