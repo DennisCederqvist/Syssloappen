@@ -222,6 +222,15 @@ så att barnet kan logga in på sin egen enhet.
 - [ ] Barnkontot ska få rollen `Child`.
 - [ ] Barnet ska kunna logga in med sina egna uppgifter.
 - [ ] En Adult får inte skapa login för ett barn i ett annat Household.
+- [ ] En Adult ska kunna välja ett barnvänligt användarnamn som är unikt inom det egna Householdet.
+- [ ] Jämförelse av barnets användarnamn ska vara skiftlägesokänslig, så att exempelvis `Markus` och `markus` räknas som samma namn inom ett Household.
+- [ ] Samma barnvänliga användarnamn ska kunna användas i olika Households utan globala namnvarianter som `markus17`.
+- [ ] Backend ska generera en unik familjekod som används tillsammans med barnets användarnamn och lösenord vid login.
+- [ ] Familjekoden ska identifiera Householdet men ska inte behandlas som en ersättning för barnets lösenord.
+- [ ] Backend ska härleda `HouseholdId` från familjekoden; klienten får inte skicka eller välja ett rått `HouseholdId` vid login.
+- [ ] Ett tekniskt Identity-användarnamn får skapas internt för global unikhet men ska inte behöva visas för barnet.
+- [ ] Felaktig familjekod, felaktigt användarnamn och felaktigt lösenord ska ge samma neutrala felmeddelande.
+- [ ] Upprepade misslyckade loginförsök ska begränsas eller leda till en tillfällig kontolåsning.
 
 ---
 
@@ -670,6 +679,20 @@ Angular-applikationen kan senare göras till en Progressive Web App.
 Målet är att barnet ska kunna installera appen på sin surfplatta och få en ikon ungefär som en vanlig app.
 
 PWA-arbetet bör göras **efter att webbversionens kärnfunktionalitet fungerar**.
+
+---
+
+## QR-baserad enhetskoppling för barn
+
+Som ett framtida alternativ till att skriva familjekod, användarnamn och lösenord ska en autentiserad Adult kunna koppla barnets enhet genom att visa en QR-kod.
+
+- QR-koden ska skapas för ett aktivt barn i den vuxnas eget Household.
+- QR-koden ska innehålla eller representera en slumpmässig, kortlivad engångstoken.
+- Token ska verifieras i backend, bara kunna användas en gång och upphöra att gälla efter en kort tid.
+- QR-koden ska inte innehålla barnets lösenord, ett rått `HouseholdId` eller någon permanent inloggningshemlighet.
+- Enhetskopplingen ska inte ge åtkomst till ett barn i ett annat Household eller till ett avaktiverat barn.
+- Den vanliga inloggningen ska finnas kvar som alternativ och återställningsväg.
+- QR-baserad enhetskoppling ska implementeras först efter att barnlogin och webbversionens kärnflöde fungerar säkert.
 
 ---
 
