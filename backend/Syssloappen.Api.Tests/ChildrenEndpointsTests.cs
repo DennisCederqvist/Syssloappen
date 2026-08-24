@@ -270,6 +270,87 @@ public sealed class ChildrenEndpointsTests : IDisposable
             visibleChild => Assert.Equal(new ChildResponse(child.Id, "Oförändrad"), visibleChild));
     }
 
+    [Fact]
+    public async Task Unauthenticated_user_cannot_deactivate_a_child()
+    {
+        using var client = CreateClient();
+
+        var response = await client.DeleteAsync("/api/children/1");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Child_role_cannot_deactivate_a_child()
+    {
+        using var adultClient = CreateClient();
+        using var childClient = CreateClient();
+        var registration = await RegisterAdult(
+            adultClient,
+            "Familjen Lind",
+            "adult.deactivate@example.test");
+        await Login(adultClient, "adult.deactivate@example.test");
+        var child = await CreateChild(adultClient, "Anna");
+        await CreateUser(registration.HouseholdId, "child.deactivate@example.test", RoleNames.Child);
+        await Login(childClient, "child.deactivate@example.test");
+
+        var response = await childClient.DeleteAsync($"/api/children/{child.Id}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+
+        var visibleChildren = await adultClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
+        Assert.Contains(new ChildResponse(child.Id, "Anna"), visibleChildren!);
+    }
+
+    [Fact]
+    public async Task Adult_can_deactivate_a_child_without_deleting_its_database_row()
+    {
+        using var client = CreateClient();
+        await RegisterAdult(client, "Familjen Moss", "adult.moss@example.test");
+        await Login(client, "adult.moss@example.test");
+        var child = await CreateChild(client, "Maja");
+
+        var response = await client.DeleteAsync($"/api/children/{child.Id}");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        var visibleChildren = await client.GetFromJsonAsync<List<ChildResponse>>("/api/children");
+        Assert.Empty(visibleChildren!);
+
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var storedChild = await dbContext.ChildProfiles
+            .AsNoTracking()
+            .SingleAsync(storedChild => storedChild.Id == child.Id);
+
+        Assert.False(storedChild.IsActive);
+    }
+
+    [Fact]
+    public async Task Adult_cannot_deactivate_a_child_in_another_household()
+    {
+        using var firstClient = CreateClient();
+        using var secondClient = CreateClient();
+        await RegisterAdult(firstClient, "Familjen Nord", "adult.nord@example.test");
+        await RegisterAdult(secondClient, "Familjen Ohlsson", "adult.ohlsson@example.test");
+        await Login(firstClient, "adult.nord@example.test");
+        await Login(secondClient, "adult.ohlsson@example.test");
+        var secondHouseholdChild = await CreateChild(secondClient, "Erik");
+
+        var response = await firstClient.DeleteAsync($"/api/children/{secondHouseholdChild.Id}");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var storedChild = await dbContext.ChildProfiles
+            .AsNoTracking()
+            .SingleAsync(child => child.Id == secondHouseholdChild.Id);
+
+        Assert.True(storedChild.IsActive);
+        var secondHouseholdChildren = await secondClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
+        Assert.Contains(secondHouseholdChild, secondHouseholdChildren!);
+    }
+
     public void Dispose()
     {
         factory.Dispose();

@@ -69,7 +69,8 @@ public sealed class ChildrenController(
         // Filtering in the database prevents children from other households from being loaded.
         var children = await dbContext.ChildProfiles
             .AsNoTracking()
-            .Where(child => child.HouseholdId == currentUser.HouseholdId)
+            .Where(child =>
+                child.HouseholdId == currentUser.HouseholdId && child.IsActive)
             .OrderBy(child => child.Name)
             .Select(child => new ChildResponse(child.Id, child.Name))
             .ToListAsync();
@@ -102,7 +103,9 @@ public sealed class ChildrenController(
 
         // Query by both IDs so a child from another household is never loaded for editing.
         var child = await dbContext.ChildProfiles.SingleOrDefaultAsync(
-            child => child.Id == id && child.HouseholdId == currentUser.HouseholdId);
+            child => child.Id == id
+                && child.HouseholdId == currentUser.HouseholdId
+                && child.IsActive);
 
         if (child is null)
         {
@@ -113,5 +116,38 @@ public sealed class ChildrenController(
         await dbContext.SaveChangesAsync();
 
         return Ok(new ChildResponse(child.Id, child.Name));
+    }
+
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Deactivate(int id)
+    {
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        // Combining Child ID and the authenticated user's HouseholdId in one query
+        // prevents a manipulated route ID from loading another household's child.
+        var child = await dbContext.ChildProfiles.SingleOrDefaultAsync(
+            child => child.Id == id
+                && child.HouseholdId == currentUser.HouseholdId
+                && child.IsActive);
+
+        if (child is null)
+        {
+            return NotFound();
+        }
+
+        // Keep the row so future assignments and completions can retain their history.
+        child.IsActive = false;
+        await dbContext.SaveChangesAsync();
+
+        return NoContent();
     }
 }

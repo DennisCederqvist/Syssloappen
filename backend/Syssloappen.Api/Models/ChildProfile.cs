@@ -9,4 +9,6 @@ public sealed class ChildProfile
     public Household Household { get; set; } = null!;
 
     public string Name { get; set; } = string.Empty;
+
+    public bool IsActive { get; set; } = true;
 }
