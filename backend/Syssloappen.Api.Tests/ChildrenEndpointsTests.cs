@@ -117,6 +117,159 @@ public sealed class ChildrenEndpointsTests : IDisposable
             child => Assert.Equal("Maja", child.Name));
     }
 
+    [Fact]
+    public async Task Unauthenticated_user_cannot_update_a_child()
+    {
+        using var client = CreateClient();
+
+        var response = await client.PutAsJsonAsync(
+            "/api/children/1",
+            new { Name = "Nytt namn" });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Child_role_cannot_update_a_child()
+    {
+        using var client = CreateClient();
+        var registration = await RegisterAdult(client, "Familjen Dahl", "adult.update@example.test");
+        await Login(client, "adult.update@example.test");
+        var child = await CreateChild(client, "Anna");
+        await CreateUser(registration.HouseholdId, "child.update@example.test", RoleNames.Child);
+        await Login(client, "child.update@example.test");
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/children/{child.Id}",
+            new { Name = "Nytt namn" });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Adult_can_update_a_child_and_another_adult_in_the_same_household_sees_it()
+    {
+        using var editorClient = CreateClient();
+        using var otherAdultClient = CreateClient();
+        var registration = await RegisterAdult(
+            editorClient,
+            "Familjen Ek",
+            "editor@example.test");
+        await CreateUser(registration.HouseholdId, "viewer@example.test", RoleNames.Adult);
+        await Login(editorClient, "editor@example.test");
+        await Login(otherAdultClient, "viewer@example.test");
+        var child = await CreateChild(editorClient, "Felstavat namn");
+
+        var updateResponse = await editorClient.PutAsJsonAsync(
+            $"/api/children/{child.Id}",
+            new { Name = "  Rätt namn  " });
+
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+        var updatedChild = await updateResponse.Content.ReadFromJsonAsync<ChildResponse>();
+        Assert.Equal(new ChildResponse(child.Id, "Rätt namn"), updatedChild);
+
+        var visibleChildren = await otherAdultClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
+        Assert.Collection(
+            visibleChildren!,
+            visibleChild => Assert.Equal(new ChildResponse(child.Id, "Rätt namn"), visibleChild));
+    }
+
+    [Fact]
+    public async Task Adult_cannot_update_a_child_in_another_household()
+    {
+        using var firstClient = CreateClient();
+        using var secondClient = CreateClient();
+        await RegisterAdult(firstClient, "Familjen Fors", "adult.fors@example.test");
+        await RegisterAdult(secondClient, "Familjen Gran", "adult.gran@example.test");
+        await Login(firstClient, "adult.fors@example.test");
+        await Login(secondClient, "adult.gran@example.test");
+        var secondHouseholdChild = await CreateChild(secondClient, "Oförändrad");
+
+        var updateResponse = await firstClient.PutAsJsonAsync(
+            $"/api/children/{secondHouseholdChild.Id}",
+            new { Name = "Otillåten ändring" });
+
+        Assert.Equal(HttpStatusCode.NotFound, updateResponse.StatusCode);
+
+        var secondHouseholdChildren = await secondClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
+        Assert.Collection(
+            secondHouseholdChildren!,
+            child => Assert.Equal(new ChildResponse(secondHouseholdChild.Id, "Oförändrad"), child));
+    }
+
+    [Fact]
+    public async Task Client_cannot_change_a_childs_household_when_updating()
+    {
+        using var firstClient = CreateClient();
+        using var secondClient = CreateClient();
+        var firstRegistration = await RegisterAdult(
+            firstClient,
+            "Familjen Holm",
+            "adult.holm@example.test");
+        var secondRegistration = await RegisterAdult(
+            secondClient,
+            "Familjen Isaksson",
+            "adult.isaksson@example.test");
+        await Login(firstClient, "adult.holm@example.test");
+        var child = await CreateChild(firstClient, "Före ändring");
+
+        var updateResponse = await firstClient.PutAsJsonAsync(
+            $"/api/children/{child.Id}",
+            new { Name = "Efter ändring", HouseholdId = secondRegistration.HouseholdId });
+
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var storedChild = await dbContext.ChildProfiles
+            .AsNoTracking()
+            .SingleAsync(storedChild => storedChild.Id == child.Id);
+
+        Assert.Equal("Efter ändring", storedChild.Name);
+        Assert.Equal(firstRegistration.HouseholdId, storedChild.HouseholdId);
+        Assert.NotEqual(secondRegistration.HouseholdId, storedChild.HouseholdId);
+    }
+
+    [Fact]
+    public async Task Empty_name_cannot_be_saved_when_updating_a_child()
+    {
+        using var client = CreateClient();
+        await RegisterAdult(client, "Familjen Jansson", "adult.jansson@example.test");
+        await Login(client, "adult.jansson@example.test");
+        var child = await CreateChild(client, "Oförändrad");
+
+        var updateResponse = await client.PutAsJsonAsync(
+            $"/api/children/{child.Id}",
+            new { Name = "   " });
+
+        Assert.Equal(HttpStatusCode.BadRequest, updateResponse.StatusCode);
+
+        var visibleChildren = await client.GetFromJsonAsync<List<ChildResponse>>("/api/children");
+        Assert.Collection(
+            visibleChildren!,
+            visibleChild => Assert.Equal(new ChildResponse(child.Id, "Oförändrad"), visibleChild));
+    }
+
+    [Fact]
+    public async Task Too_long_name_cannot_be_saved_when_updating_a_child()
+    {
+        using var client = CreateClient();
+        await RegisterAdult(client, "Familjen Karlsson", "adult.karlsson@example.test");
+        await Login(client, "adult.karlsson@example.test");
+        var child = await CreateChild(client, "Oförändrad");
+
+        var updateResponse = await client.PutAsJsonAsync(
+            $"/api/children/{child.Id}",
+            new { Name = new string('a', 101) });
+
+        Assert.Equal(HttpStatusCode.BadRequest, updateResponse.StatusCode);
+
+        var visibleChildren = await client.GetFromJsonAsync<List<ChildResponse>>("/api/children");
+        Assert.Collection(
+            visibleChildren!,
+            visibleChild => Assert.Equal(new ChildResponse(child.Id, "Oförändrad"), visibleChild));
+    }
+
     public void Dispose()
     {
         factory.Dispose();
@@ -146,6 +299,16 @@ public sealed class ChildrenEndpointsTests : IDisposable
 
         var roleResult = await userManager.AddToRoleAsync(user, role);
         Assert.True(roleResult.Succeeded, string.Join(", ", roleResult.Errors.Select(error => error.Description)));
+    }
+
+    private static async Task<ChildResponse> CreateChild(HttpClient client, string name)
+    {
+        var response = await client.PostAsJsonAsync(
+            "/api/children",
+            new { Name = name });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<ChildResponse>())!;
     }
 
     private static async Task<RegisterAdultResponse> RegisterAdult(

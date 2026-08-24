@@ -76,4 +76,42 @@ public sealed class ChildrenController(
 
         return Ok(children);
     }
+
+    [HttpPut("{id:int}")]
+    [ProducesResponseType<ChildResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ChildResponse>> Update(int id, UpdateChildRequest request)
+    {
+        var name = request.Name.Trim();
+
+        if (name.Length == 0)
+        {
+            ModelState.AddModelError(nameof(request.Name), "A child name is required.");
+            return ValidationProblem(ModelState);
+        }
+
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        // Query by both IDs so a child from another household is never loaded for editing.
+        var child = await dbContext.ChildProfiles.SingleOrDefaultAsync(
+            child => child.Id == id && child.HouseholdId == currentUser.HouseholdId);
+
+        if (child is null)
+        {
+            return NotFound();
+        }
+
+        child.Name = name;
+        await dbContext.SaveChangesAsync();
+
+        return Ok(new ChildResponse(child.Id, child.Name));
+    }
 }
