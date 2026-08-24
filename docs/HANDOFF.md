@@ -105,7 +105,7 @@ Familjekoden administreras med den minsta säkra lösningen:
 - Säkerhetskonsekvensen är att en glömd kod inte kan återställas. En Adult måste rotera den, vilket omedelbart gör den gamla koden ogiltig. Familjekoden är bara en Household-identifierare; barnets Identity-hashade lösenord krävs alltid också.
 - Befintliga Households får vid framtida migrering ett unikt hashat men avsiktligt oanvändbart värde. `FamilyCodeLastFour` lämnas tomt, reservlogin förblir avstängd och en Adult måste rotera en gång för att få en verklig kod. Detta undviker att lägga en klartexthemlighet i migrationen eller databasen.
 
-US-030 är implementerad och testad på feature-branchen `feature/us-030-create-chore` men ännu inte committad eller mergad:
+US-030 är implementerad, committad och testad:
 
 - `POST /api/chores` låter endast en autentiserad Adult skapa en syssla med titel och valfri beskrivning.
 - Backend hämtar alltid `HouseholdId` och skapande konto från den autentiserade användaren. Oväntade `HouseholdId`, `CreatedByUserId` eller tidsfält i JSON kan inte styra de lagrade värdena.
@@ -265,7 +265,7 @@ Den avgränsade US-021-delen med beständig Child-enhetssession, maximal livslä
 
 Den avgränsade US-021-delen med reservinloggning via familjekod, barnvänligt användarnamn och Identity-lösenord är färdig, testad och mergad. Alla tillhörande migrationer är applicerade och de centrala flödena är smoke-testade mot PostgreSQL.
 
-US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad på feature-branchen. `AddChores` är genererad och granskad men inte applicerad. Efter granskning, commit och merge är nästa avgränsade arbetsdel US-031, där en Adult ska kunna tilldela en syssla till ett aktivt barn i samma Household. QR, poäng och approval-flöde ska fortfarande vänta.
+US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad. `AddChores` är genererad och granskad men inte applicerad. Nästa avgränsade arbetsdel är US-031, där en Adult ska kunna tilldela en syssla till ett aktivt barn i samma Household. QR, poäng och approval-flöde ska fortfarande vänta.
 
 ## Kända kvarvarande saker
 
@@ -274,4 +274,4 @@ US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad på
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
 - PostgreSQL-smoke-körningarna skapade isolerade test-Households i `syssloappen_dev`; den sista helt godkända körningen skapade Household `17` och ChildProfile `10`. Testlösenorden genererades endast i minnet och är inte dokumenterade.
-- Household-isolering är testad för barn-endpoints. Den måste fortfarande implementeras och testas separat för framtida sysslor och tilldelningar.
+- Household-isolering är testad för barn- och sysslo-endpoints. Den måste fortfarande implementeras och testas separat för framtida tilldelningar.
