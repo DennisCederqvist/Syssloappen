@@ -50,7 +50,7 @@ US-024 är implementerad, verifierad och mergad till `main`:
 - Integrationstester verifierar rollbehörighet, soft delete, aktiv filtrering, Household-isolering och skydd mot manipulerade Child-ID:n.
 - Kriterier som kräver framtida chores eller ett kopplat barnkonto är fortsatt okryssade och ska implementeras med respektive senare story.
 
-Första delen av US-021 är implementerad och testad på `feature/us-021-create-child-account`, men ännu inte mergad till `main`:
+Första delen av US-021 är implementerad och testad:
 
 - Produktbeslutet är att alla nya barn alltid ska få ett konto direkt. Adult ska inte först skapa en fristående profil och därefter göra ett separat konto-anrop.
 - `POST /api/children` tar barnets namn, ett barnvänligt användarnamn och lösenord och skapar `ChildProfile`, Identity-konto, profilkoppling och rollen `Child` i samma databastransaktion.
@@ -176,7 +176,7 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-Första delen av US-021 är färdig och testad på feature-branchen:
+Första delen av US-021 är färdig och testad:
 
 1. Adult skapar barnprofil och Child-konto tillsammans med `POST /api/children`.
 2. Profil, konto, Household och Child-roll kopplas atomärt.
