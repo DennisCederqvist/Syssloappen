@@ -87,7 +87,7 @@ Beständiga Child-enhetssessioner är implementerade och testade:
 - Avaktivering av ett barn återkallar alla barnets befintliga sessioner i samma databasändring; dessutom nekar den löpande backendvalideringen alltid en inaktiv profil.
 - Alla Adult-endpoints kombinerar klientens Child-/sessions-ID med den autentiserade användarens `HouseholdId`, så manipulerade ID:n inte kan välja en annan familjs data.
 
-På feature-branchen `feature/us-021-child-fallback-login` är säker reservinloggning implementerad och testad men ännu inte committad eller mergad:
+Säker reservinloggning är implementerad, testad och mergad till `main`:
 
 - Varje nytt Household får en kryptografiskt slumpmässig, unik familjekod med tolv lättlästa tecken. Ett unikt databasindex skyddar även mot den osannolika händelsen att två genererade koder får samma SHA-256-hash.
 - `POST /api/auth/child/login` tar endast familjekod, barnvänligt användarnamn och lösenord. DTO:n innehåller inga råa Household-, Child-, konto- eller rollfält; oväntade sådana JSON-fält kan inte styra backendens val.
@@ -164,10 +164,10 @@ Aktuella migrationer:
 - `AddIdentity` skapade Identity-tabellerna och kopplingen från `AspNetUsers.HouseholdId` till `Households.Id`.
 - `AddChildProfiles` skapar tabellen `ChildProfiles` och dess koppling till `Households`.
 - `AddChildProfileSoftDelete` lägger till `ChildProfiles.IsActive` med standardvärdet `true`.
-- `AddChildAccounts` lägger till profilens konto-FK, Child-kontots synliga och normaliserade användarnamn samt unika index för profilkoppling, Household-användarnamn och Adult-e-post. Migrationen är genererad men ännu inte applicerad i `syssloappen_dev`.
-- `AddChildPairingCodes` skapar tabellen `ChildPairingCodes` med hash, Child-, Household- och Adult-koppling, skapad tid, utgångstid och användningstid. Migrationen är genererad men ännu inte applicerad i `syssloappen_dev`.
-- `AddChildDeviceSessions` skapar `ChildDeviceSessions` med Child-, konto- och Household-koppling, hashad sessionshemlighet, aktivitetstid, förnybar utgångstid, absolut maxgräns och återkallelsetid. Migrationen är genererad och granskad men inte applicerad i `syssloappen_dev`.
-- `AddHouseholdFamilyCodes` lägger till unik familjekodshash, sista fyra tecken och rotationstid på `Households`. Den säkra backfillen för befintliga rader och det unika indexet är genererade och granskade men migrationen är inte applicerad i `syssloappen_dev`.
+- `AddChildAccounts` lägger till profilens konto-FK, Child-kontots synliga och normaliserade användarnamn samt unika index för profilkoppling, Household-användarnamn och Adult-e-post. Migrationen är applicerad i `syssloappen_dev`.
+- `AddChildPairingCodes` skapar tabellen `ChildPairingCodes` med hash, Child-, Household- och Adult-koppling, skapad tid, utgångstid och användningstid. Migrationen är applicerad i `syssloappen_dev`.
+- `AddChildDeviceSessions` skapar `ChildDeviceSessions` med Child-, konto- och Household-koppling, hashad sessionshemlighet, aktivitetstid, förnybar utgångstid, absolut maxgräns och återkallelsetid. Migrationen är applicerad i `syssloappen_dev`.
+- `AddHouseholdFamilyCodes` lägger till unik familjekodshash, sista fyra tecken och rotationstid på `Households`. Den säkra backfillen och det unika indexet är applicerade i `syssloappen_dev`.
 
 Vanliga kommandon från repots rot:
 
@@ -222,9 +222,11 @@ Elva integrationstester för sessionsdelen verifierar beständig cookie och hash
 
 Tolv integrationstester för reservinloggningen verifierar unik familjekod, hashad lagring, Household-härledning, skiftlägesokänsligt barnanvändarnamn, Identity-lösenord, neutrala felsvar, rate limiting, inaktiv profil, fel roll, brutna konto-/profil-/Household-kopplingar, Household-isolering, manipulerade ID-/rollfält, beständig och återkallningsbar session, Adult-behörighet, rotation samt regression för Adult-login och enhetskoppling. Alla 54 integrationstester är godkända i Release-konfiguration.
 
-Release-build och formatteringskontroll är godkända utan fel eller varningar. EF Core rapporterar inga väntande modelländringar utanför migrationen. Ett idempotent PostgreSQL-script från `AddChildPairingCodes` till `AddChildDeviceSessions` har genererats och granskats: det skapar endast den nya sessionstabellen, främmande nycklar, index och migrationshistorikraden i en transaktion. Scriptet har inte körts mot databasen.
+Alla åtta migrationer till och med `AddHouseholdFamilyCodes` är applicerade i `syssloappen_dev`. Ett manuellt end-to-end-smoke-test mot PostgreSQL verifierade Adult-registrering och login, barnskapande, maskerad familjekodsstatus, rotation och omedelbar ogiltigförklaring av den gamla koden, enhetskoppling, beständig HttpOnly-cookie, Child-logout, skiftlägesokänslig reservlogin, skydd mot manipulerade ID-/rollfält, Adult-listning och återkallelse av session samt omedelbar nekning efter avaktivering. Den glidande förnyelsealgoritmen är verifierad av integrationstesterna; smoke-testet verifierade löpande sessionvalidering mot PostgreSQL utan att manipulera tidsstämplar manuellt.
 
-Ett idempotent PostgreSQL-script från `AddChildDeviceSessions` till `AddHouseholdFamilyCodes` har också genererats och granskats. Det lägger till de tre familjekodskolumnerna, backfyller befintliga Households utan klartexthemlighet, gör hashkolumnen obligatorisk, skapar det unika indexet och skriver migrationshistorikraden i en transaktion. Scriptet har inte körts mot databasen.
+Release-build och formatteringskontroll är godkända utan fel eller varningar. EF Core rapporterar inga väntande modelländringar utanför migrationen. Ett idempotent PostgreSQL-script från `AddChildPairingCodes` till `AddChildDeviceSessions` har genererats och granskats: det skapar endast den nya sessionstabellen, främmande nycklar, index och migrationshistorikraden i en transaktion. Migrationen har applicerats via EF Core; det separat genererade scriptet kördes inte.
+
+Ett idempotent PostgreSQL-script från `AddChildDeviceSessions` till `AddHouseholdFamilyCodes` har också genererats och granskats. Det lägger till de tre familjekodskolumnerna, backfyller befintliga Households utan klartexthemlighet, gör hashkolumnen obligatorisk, skapar det unika indexet och skriver migrationshistorikraden i en transaktion. Migrationen har applicerats via EF Core; det separat genererade scriptet kördes inte.
 
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
@@ -250,12 +252,13 @@ Adult-styrd, kortlivad enhetskoppling är färdig och testad:
 
 Den avgränsade US-021-delen med beständig Child-enhetssession, maximal livslängd, säker förnyelse, logout, Adult-återkallning och omedelbar backendkontroll av barnets aktiva status är färdig och testad.
 
-Den avgränsade US-021-delen med reservinloggning via familjekod, barnvänligt användarnamn och Identity-lösenord är färdig och testad på feature-branchen. Migrationen och PostgreSQL-SQL är genererade och granskade men inte applicerade. Ändringarna inväntar uttryckligt godkännande före commit, push eller merge. QR, chores, poäng och approval-flöde ska fortfarande vänta.
+Den avgränsade US-021-delen med reservinloggning via familjekod, barnvänligt användarnamn och Identity-lösenord är färdig, testad och mergad. Alla tillhörande migrationer är applicerade och de centrala flödena är smoke-testade mot PostgreSQL. Nästa avgränsade arbetsdel är US-030, där en Adult ska kunna skapa en Household-isolerad syssla. QR, poäng och approval-flöde ska fortfarande vänta.
 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
 - Ingen frontend finns ännu.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
-- ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet får inte automatiskt användarnamn och lösenord; de behöver hanteras eller återskapas när migrationen tas i bruk.
+- ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
+- PostgreSQL-smoke-körningarna skapade isolerade test-Households i `syssloappen_dev`; den sista helt godkända körningen skapade Household `17` och ChildProfile `10`. Testlösenorden genererades endast i minnet och är inte dokumenterade.
 - Household-isolering är testad för barn-endpoints. Den måste fortfarande implementeras och testas separat för framtida sysslor och tilldelningar.
