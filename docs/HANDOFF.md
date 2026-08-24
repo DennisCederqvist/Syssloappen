@@ -68,10 +68,24 @@ Adult-styrd enhetskoppling är implementerad och testad:
 - Endast kodens SHA-256-hash lagras i databasen; klartexten returneras en gång till den vuxna.
 - `POST /api/auth/child/pair` tar endast koden. Barnets enhet skickar varken `ChildId` eller `HouseholdId`.
 - Backend härleder exakt Child, Identity-konto och Household från den hashade koden och verifierar aktiv status samt rollen `Child`.
-- Lyckad inlösen markerar koden använd och autentiserar barnet med en vanlig, icke-beständig sessionscookie. Samma kod kan inte användas igen.
+- På mergad `main` markerar lyckad inlösen koden använd och autentiserar barnet med en vanlig, icke-beständig sessionscookie. Samma kod kan inte användas igen.
 - Felaktig, utgången eller redan använd kod ger samma neutrala HTTP 401-svar.
 - Inlösen begränsas till tio försök per minut och klientadress; ytterligare försök ger HTTP 429.
-- Beständig, förnybar och Adult-återkallningsbar Child-session ingår uttryckligen inte i denna del.
+- Beständiga Child-enhetssessioner ingår i den färdiga sessionsdelen enligt avsnittet nedan.
+
+Beständiga Child-enhetssessioner är implementerade och testade:
+
+- Kodinlösen och skapande av `ChildDeviceSession` sker atomärt i samma databastransaktion.
+- Sessionen binder ett sessions-ID och en hashad, kryptografiskt slumpmässig hemlighet till exakt `ChildProfile`, Identity-konto och `Household`.
+- Klartexthemligheten finns endast i ASP.NET Core Identitys krypterade och signerade HttpOnly-cookie; databasen lagrar endast SHA-256-hashen.
+- Cookien är beständig, `Secure`, `SameSite=Lax` och har en förnybar livslängd på sju dagar.
+- Aktiv användning nära utgångstiden förnyar session och cookie, men aldrig förbi den absoluta maxlivslängden på trettio dagar.
+- Cookievalideringen slår upp sessionen vid varje Child-anrop och kontrollerar hash, utgångstid, återkallelse, Child-roll, aktiv profil samt identiska konto-, Child- och Household-kopplingar.
+- `GET /api/children/{childId}/device-sessions` låter en Adult se barnets kopplade sessioner i eget Household.
+- `DELETE /api/children/{childId}/device-sessions/{sessionId}` låter en Adult återkalla en session i eget Household.
+- Child-logout återkallar den aktuella databassessionen innan cookien tas bort.
+- Avaktivering av ett barn återkallar alla barnets befintliga sessioner i samma databasändring; dessutom nekar den löpande backendvalideringen alltid en inaktiv profil.
+- Alla Adult-endpoints kombinerar klientens Child-/sessions-ID med den autentiserade användarens `HouseholdId`, så manipulerade ID:n inte kan välja en annan familjs data.
 
 ## Teknik och versioner
 
@@ -134,6 +148,7 @@ Aktuella migrationer:
 - `AddChildProfileSoftDelete` lägger till `ChildProfiles.IsActive` med standardvärdet `true`.
 - `AddChildAccounts` lägger till profilens konto-FK, Child-kontots synliga och normaliserade användarnamn samt unika index för profilkoppling, Household-användarnamn och Adult-e-post. Migrationen är genererad men ännu inte applicerad i `syssloappen_dev`.
 - `AddChildPairingCodes` skapar tabellen `ChildPairingCodes` med hash, Child-, Household- och Adult-koppling, skapad tid, utgångstid och användningstid. Migrationen är genererad men ännu inte applicerad i `syssloappen_dev`.
+- `AddChildDeviceSessions` skapar `ChildDeviceSessions` med Child-, konto- och Household-koppling, hashad sessionshemlighet, aktivitetstid, förnybar utgångstid, absolut maxgräns och återkallelsetid. Migrationen är genererad och granskad men inte applicerad i `syssloappen_dev`.
 
 Vanliga kommandon från repots rot:
 
@@ -184,6 +199,10 @@ Sju US-023-tester verifierar behörighet, lyckad namnändring, validering, House
 Fyra US-024-tester verifierar behörighet, soft delete, aktiv filtrering, Household-isolering och skydd mot manipulerade Child-ID:n.
 Alla 31 integrationstester är godkända i Release-konfiguration.
 
+Elva integrationstester för sessionsdelen verifierar beständig cookie och hashad hemlighet, förnybar och absolut maximal livslängd, båda typerna av utgång, Adult-listning och återkallelse, logout, avaktiverat barn, Adult-behörighet, Household-isolering, manipulerade Child-/sessions-ID:n samt atomisk kodinlösen och sessionsskapande. Alla 42 integrationstester är godkända i Release-konfiguration.
+
+Release-build och formatteringskontroll är godkända utan fel eller varningar. EF Core rapporterar inga väntande modelländringar utanför migrationen. Ett idempotent PostgreSQL-script från `AddChildPairingCodes` till `AddChildDeviceSessions` har genererats och granskats: det skapar endast den nya sessionstabellen, främmande nycklar, index och migrationshistorikraden i en transaktion. Scriptet har inte körts mot databasen.
+
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
 Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; PostgreSQL lade till den obligatoriska `IsActive`-kolumnen med standardvärdet `true` utan fel.
@@ -206,7 +225,9 @@ Adult-styrd, kortlivad enhetskoppling är färdig och testad:
 4. Lyckad inlösen autentiserar rätt Child och felaktiga försök begränsas.
 5. Automatiska integrationstester, Release-build, formatteringskontroll, EF-modellkontroll och genererad PostgreSQL-migrations-SQL är godkända.
 
-Nästa avgränsade US-021-del är en beständig Child-enhetssession med maximal livslängd, säker förnyelse, logout, Adult-återkallning och omedelbar backendkontroll av barnets aktiva status. Reservinloggning och QR ska fortfarande vänta till efter sessionsdelen.
+Den avgränsade US-021-delen med beständig Child-enhetssession, maximal livslängd, säker förnyelse, logout, Adult-återkallning och omedelbar backendkontroll av barnets aktiva status är färdig och testad.
+
+Omedelbart nästa avgränsade US-021-del är reservinloggning med familjekod, barnvänligt användarnamn och lösenord. QR, chores, poäng och approval-flöde ska fortfarande vänta.
 
 ## Kända kvarvarande saker
 

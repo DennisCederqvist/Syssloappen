@@ -234,11 +234,11 @@ så att barnet kan logga in på sin egen enhet.
 - [x] Kopplingskoden ska vara slumpmässigt genererad, kortlivad och endast kunna användas en gång.
 - [x] Backend ska binda kopplingskoden till exakt Child och Household; barnets enhet får inte välja ett rått `ChildId` eller `HouseholdId`.
 - [x] Upprepade felaktiga försök att använda kopplingskoder ska begränsas.
-- [ ] En lyckad koppling ska skapa en beständig Child-session på enheten så att barnet normalt inte behöver logga in igen varje gång appen öppnas.
-- [ ] Sessionen ska ha en maximal livslängd och kunna förnyas säkert medan enheten används.
-- [ ] En Adult ska kunna återkalla barnets kopplade enheter, exempelvis om en enhet tappas bort.
-- [ ] Logout, återkallad enhetskoppling eller avaktivering av barnet ska göra den berörda sessionen ogiltig i backend.
-- [ ] Backend ska fortsätta verifiera att barnet och dess Household är aktiva även när en beständig session används.
+- [x] En lyckad koppling ska skapa en beständig Child-session på enheten så att barnet normalt inte behöver logga in igen varje gång appen öppnas.
+- [x] Sessionen ska ha en maximal livslängd och kunna förnyas säkert medan enheten används.
+- [x] En Adult ska kunna återkalla barnets kopplade enheter, exempelvis om en enhet tappas bort.
+- [x] Logout, återkallad enhetskoppling eller avaktivering av barnet ska göra den berörda sessionen ogiltig i backend.
+- [x] Backend ska fortsätta verifiera att barnet och dess Household är aktiva även när en beständig session används.
 - [ ] Backend ska generera en unik familjekod som används tillsammans med barnets användarnamn och lösenord vid reservinloggning.
 - [ ] Familjekoden ska identifiera Householdet men ska inte behandlas som en ersättning för barnets lösenord.
 - [ ] Backend ska härleda `HouseholdId` från familjekoden; klienten får inte skicka eller välja ett rått `HouseholdId` vid reservinloggning.
@@ -295,7 +295,7 @@ så att barn som inte längre ska använda appen inte visas eller får nya syssl
 - [x] Manipulering av ett Child-ID får inte påverka barn i ett annat Household.
 - [x] Ett avaktiverat barn ska inte visas bland Householdets aktiva barn.
 - [ ] Ett avaktiverat barn ska inte kunna få nya sysslor.
-- [ ] Ett eventuellt kopplat barnkonto ska inte längre kunna logga in.
+- [x] Ett eventuellt kopplat barnkonto ska inte längre kunna logga in.
 - [ ] Historiska tilldelningar, godkännanden och completions ska bevaras.
 - [x] Borttagning ska därför normalt implementeras som avaktivering, inte fysisk radering av databasposten.
 

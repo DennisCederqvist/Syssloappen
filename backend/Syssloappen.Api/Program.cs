@@ -18,19 +18,15 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddIdentityCookies();
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    // APIs should return HTTP status codes instead of redirecting to HTML login pages.
-    options.Events.OnRedirectToLogin = context =>
-    {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        return Task.CompletedTask;
-    };
-
-    options.Events.OnRedirectToAccessDenied = context =>
-    {
-        context.Response.StatusCode = StatusCodes.Status403Forbidden;
-        return Task.CompletedTask;
-    };
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.SlidingExpiration = false;
+    // Custom events validate Child sessions and return API status codes instead of redirects.
+    options.EventsType = typeof(ChildSessionCookieEvents);
 });
+builder.Services.AddScoped<ChildSessionCookieEvents>();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
         // Child accounts have no email. Adult email uniqueness is instead enforced by
