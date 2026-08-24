@@ -1,5 +1,9 @@
 using System.Security.Cryptography;
+using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using Syssloappen.Api.Models;
 
 namespace Syssloappen.Api.Authentication;
 
@@ -25,4 +29,52 @@ public static class ChildDeviceSessionService
         var bytes = Encoding.UTF8.GetBytes(secret);
         return Convert.ToHexString(SHA256.HashData(bytes));
     }
+
+    public static IssuedChildDeviceSession Create(
+        ChildProfile child,
+        ApplicationUser childUser,
+        DateTime now)
+    {
+        var secret = GenerateSecret();
+        var session = new ChildDeviceSession
+        {
+            HouseholdId = child.HouseholdId,
+            ChildProfileId = child.Id,
+            UserId = childUser.Id,
+            SecretHash = HashSecret(secret),
+            CreatedAt = now,
+            LastSeenAt = now,
+            ExpiresAt = now.Add(RenewableLifetime),
+            AbsoluteExpiresAt = now.Add(MaximumLifetime)
+        };
+
+        return new IssuedChildDeviceSession(session, secret);
+    }
+
+    public static Task SignInAsync(
+        SignInManager<ApplicationUser> signInManager,
+        ApplicationUser childUser,
+        IssuedChildDeviceSession issuedSession,
+        TimeProvider timeProvider)
+    {
+        var authenticationProperties = new AuthenticationProperties
+        {
+            IsPersistent = true,
+            AllowRefresh = true,
+            IssuedUtc = timeProvider.GetUtcNow(),
+            ExpiresUtc = new DateTimeOffset(issuedSession.Session.ExpiresAt, TimeSpan.Zero)
+        };
+        var sessionClaims = new[]
+        {
+            new Claim(SessionIdClaim, issuedSession.Session.Id.ToString()),
+            new Claim(SessionSecretClaim, issuedSession.Secret)
+        };
+
+        return signInManager.SignInWithClaimsAsync(
+            childUser,
+            authenticationProperties,
+            sessionClaims);
+    }
 }
+
+public sealed record IssuedChildDeviceSession(ChildDeviceSession Session, string Secret);

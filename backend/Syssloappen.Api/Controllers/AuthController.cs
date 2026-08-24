@@ -28,9 +28,16 @@ public sealed class AuthController(
         // A registration must never leave an account without the household it belongs to.
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
+        var familyCode = await FamilyCodeService.GenerateUniqueAsync(dbContext);
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+
         var household = new Household
         {
-            Name = request.HouseholdName.Trim()
+            Name = request.HouseholdName.Trim(),
+            FamilyCodeHash = familyCode.Hash,
+            FamilyCodeLastFour = familyCode.LastFour,
+            FamilyCodeUpdatedAt = now,
+            CreatedAt = now
         };
 
         dbContext.Households.Add(household);
@@ -62,7 +69,12 @@ public sealed class AuthController(
 
         await transaction.CommitAsync();
 
-        var response = new RegisterAdultResponse(household.Id, user.Email!, RoleNames.Adult);
+        // The clear family code is returned once. Only its hash remains in the database.
+        var response = new RegisterAdultResponse(
+            household.Id,
+            user.Email!,
+            RoleNames.Adult,
+            familyCode.Code);
         return StatusCode(StatusCodes.Status201Created, response);
     }
 

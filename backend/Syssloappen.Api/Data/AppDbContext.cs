@@ -26,6 +26,16 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(household => household.Name)
                 .HasMaxLength(100)
                 .IsRequired();
+
+            entity.Property(household => household.FamilyCodeHash)
+                .HasMaxLength(64)
+                .IsRequired();
+
+            entity.Property(household => household.FamilyCodeLastFour)
+                .HasMaxLength(4);
+
+            entity.HasIndex(household => household.FamilyCodeHash)
+                .IsUnique();
         });
 
         modelBuilder.Entity<ApplicationUser>(entity =>

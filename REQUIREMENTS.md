@@ -239,12 +239,12 @@ så att barnet kan logga in på sin egen enhet.
 - [x] En Adult ska kunna återkalla barnets kopplade enheter, exempelvis om en enhet tappas bort.
 - [x] Logout, återkallad enhetskoppling eller avaktivering av barnet ska göra den berörda sessionen ogiltig i backend.
 - [x] Backend ska fortsätta verifiera att barnet och dess Household är aktiva även när en beständig session används.
-- [ ] Backend ska generera en unik familjekod som används tillsammans med barnets användarnamn och lösenord vid reservinloggning.
-- [ ] Familjekoden ska identifiera Householdet men ska inte behandlas som en ersättning för barnets lösenord.
-- [ ] Backend ska härleda `HouseholdId` från familjekoden; klienten får inte skicka eller välja ett rått `HouseholdId` vid reservinloggning.
+- [x] Backend ska generera en unik familjekod som används tillsammans med barnets användarnamn och lösenord vid reservinloggning.
+- [x] Familjekoden ska identifiera Householdet men ska inte behandlas som en ersättning för barnets lösenord.
+- [x] Backend ska härleda `HouseholdId` från familjekoden; klienten får inte skicka eller välja ett rått `HouseholdId` vid reservinloggning.
 - [x] Ett tekniskt Identity-användarnamn får skapas internt för global unikhet men ska inte behöva visas för barnet.
-- [ ] Felaktig familjekod, felaktigt användarnamn och felaktigt lösenord ska ge samma neutrala felmeddelande.
-- [ ] Upprepade misslyckade reservinloggningar ska begränsas eller leda till en tillfällig kontolåsning.
+- [x] Felaktig familjekod, felaktigt användarnamn och felaktigt lösenord ska ge samma neutrala felmeddelande.
+- [x] Upprepade misslyckade reservinloggningar ska begränsas eller leda till en tillfällig kontolåsning.
 
 ---
 
