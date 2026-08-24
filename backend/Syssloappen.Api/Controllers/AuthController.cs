@@ -89,7 +89,7 @@ public sealed class AuthController(
         }
 
         var response = await BuildCurrentUserResponseAsync(user);
-        return Ok(new LoginResponse(response.UserId, response.Email, response.Role, response.HouseholdId));
+        return Ok(new LoginResponse(response.UserId, response.Email!, response.Role, response.HouseholdId));
     }
 
     [Authorize]
@@ -136,7 +136,7 @@ public sealed class AuthController(
         var roles = await userManager.GetRolesAsync(user);
         var role = roles.SingleOrDefault() ?? string.Empty;
 
-        return new CurrentUserResponse(user.Id, user.Email!, role, user.HouseholdId);
+        return new CurrentUserResponse(user.Id, user.Email, role, user.HouseholdId);
     }
 
     private UnauthorizedObjectResult InvalidCredentials() => Unauthorized(
