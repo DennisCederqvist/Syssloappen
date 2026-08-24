@@ -311,11 +311,11 @@ så att den senare kan tilldelas ett barn.
 
 ### Acceptance Criteria
 
-- [ ] Endast en Adult får skapa sysslor.
-- [ ] Sysslan ska ha ett namn.
-- [ ] Sysslan ska kopplas till den vuxnas Household.
-- [ ] En syssla från ett Household får inte vara synlig i ett annat Household.
-- [ ] Systemet ska spara vem som skapade sysslan.
+- [x] Endast en Adult får skapa sysslor.
+- [x] Sysslan ska ha ett namn.
+- [x] Sysslan ska kopplas till den vuxnas Household.
+- [x] En syssla från ett Household får inte vara synlig i ett annat Household.
+- [x] Systemet ska spara vem som skapade sysslan.
 
 ### Exempel
 
@@ -616,7 +616,7 @@ Första fungerande versionen ska vara liten.
 - [x] Adult kan ändra barn.
 - [x] Adult kan avaktivera barn.
 - [x] Adult kan skapa login åt barn.
-- [ ] Adult kan skapa sysslor.
+- [x] Adult kan skapa sysslor.
 - [ ] Adult kan tilldela sysslor.
 - [x] Child kan logga in genom Adult-styrd enhetskoppling.
 - [ ] Child kan se sina egna sysslor.

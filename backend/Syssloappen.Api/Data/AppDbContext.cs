@@ -17,6 +17,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<ChildDeviceSession> ChildDeviceSessions => Set<ChildDeviceSession>();
 
+    public DbSet<Chore> Chores => Set<Chore>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -138,6 +140,31 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasOne(session => session.User)
                 .WithMany()
                 .HasForeignKey(session => session.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Chore>(entity =>
+        {
+            entity.Property(chore => chore.Title)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(chore => chore.Description)
+                .HasMaxLength(500);
+
+            entity.Property(chore => chore.CreatedByUserId)
+                .IsRequired();
+
+            entity.HasIndex(chore => chore.HouseholdId);
+
+            entity.HasOne(chore => chore.Household)
+                .WithMany()
+                .HasForeignKey(chore => chore.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(chore => chore.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(chore => chore.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }
