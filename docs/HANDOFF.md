@@ -1,6 +1,6 @@
 # Syssloappen - Project Handoff
 
-Senast uppdaterad: 2026-08-23
+Senast uppdaterad: 2026-08-24
 
 Läs alltid `REQUIREMENTS.md` först. Den här filen kompletterar kraven med projektets aktuella tekniska status och fattade beslut.
 
@@ -18,15 +18,20 @@ Följande är implementerat och mergat till `main`:
 - `POST /api/auth/register` skapar ett Household och ett Adult-konto i samma databastransaktion.
 - Klienten kan inte välja `HouseholdId` eller roll vid registrering; backend sätter båda.
 - Lösenord hanteras och hashas av ASP.NET Core Identity.
-
-Registrering loggar ännu inte in användaren automatiskt. Login och logout är nästa arbetsdel.
-
-Pågående arbete på `feature/adult-authentication`, ännu inte mergat till `main`:
-
 - `POST /api/auth/login` loggar in med ASP.NET Core Identity och en sessionscookie.
 - `GET /api/auth/me` kräver inloggning och hämtar användar-ID, roll och `HouseholdId` från den autentiserade användaren.
 - `POST /api/auth/logout` tar bort autentiseringscookien.
 - Ett integrationstestprojekt använder en tillfällig SQLite-databas och testar login, fel lösenord, logout och två separata Households.
+
+Adult authentication för US-002 och US-003 är mergad och pushad till `main`.
+
+US-020 är implementerad och verifierad:
+
+- `ChildProfile` har ett unikt ID, namn och obligatoriskt `HouseholdId`.
+- `POST /api/children` låter endast en autentiserad Adult skapa barn.
+- Requesten innehåller endast barnets namn. Backend hämtar alltid `HouseholdId` från den autentiserade användaren.
+- `GET /api/children` visar endast barn i den autentiserade användarens Household.
+- Integrationstester verifierar rollbehörighet, manipulerat `HouseholdId`, Household-isolering och att Adults i samma Household ser samma barn.
 
 ## Teknik och versioner
 
@@ -78,6 +83,7 @@ Aktuella migrationer:
 
 - `InitialCreate` skapade tabellen `Households`.
 - `AddIdentity` skapade Identity-tabellerna och kopplingen från `AspNetUsers.HouseholdId` till `Households.Id`.
+- `AddChildProfiles` skapar tabellen `ChildProfiles` och dess koppling till `Households`.
 
 Vanliga kommandon från repots rot:
 
@@ -119,25 +125,28 @@ Lokal testdata finns i `syssloappen_dev`:
 
 Testlösenordet är avsiktligt inte dokumenterat här.
 
-På `feature/adult-authentication` finns integrationstester i `backend/Syssloappen.Api.Tests`.
-Tre tester verifierar login, fel lösenord, skyddat endpoint före och efter logout samt att två Adults i olika Households identifieras med rätt `HouseholdId`.
-Full Household-isolering för barn och sysslor ska testas när dessa skyddade endpoints byggs.
+Integrationstesterna finns i `backend/Syssloappen.Api.Tests`.
+Tre auth-tester verifierar login, fel lösenord, skyddat endpoint före och efter logout samt att två Adults i olika Households identifieras med rätt `HouseholdId`.
+Fyra US-020-tester verifierar att en oinloggad användare och Child-rollen inte kan skapa barn, att klienten inte kan välja Household, att barn isoleras mellan Households och att Adults i samma Household kan se barnet.
+Alla sju integrationstester är godkända.
+
+Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 
 ## Aktuell arbetsdel
 
-Branchen `feature/adult-authentication` fokuserar på US-002 och US-003:
+US-020 omfattar följande färdiga delar:
 
-1. Login med ASP.NET Core Identity och cookie är implementerad.
-2. `GET /api/auth/me` visar den autentiserade användarens ID, roll och HouseholdId.
-3. Logout är implementerad.
-4. Automatiska integrationstester och ett manuellt cookie-test är godkända.
-5. Backend hämtar HouseholdId från den autentiserade användaren, aldrig från login-requesten.
+1. Adult kan skapa ett barn med `POST /api/children`.
+2. Barnet kopplas automatiskt till den autentiserade användarens Household.
+3. Adult kan läsa barnen i sitt eget Household med `GET /api/children`.
+4. Automatiska integrationstester och ett manuellt PostgreSQL-test är godkända.
+5. Household-isoleringen är granskad och verifierad före merge.
 
-Implementera inte barn, sysslor eller Angular i samma branch.
+Nästa avgränsade arbetsdel efter US-020 är US-023, där en Adult ska kunna ändra ett barns namn inom sitt eget Household. US-024, avaktivering av barn med bevarad historik, ska därefter implementeras separat. Barnets login, sysslor, poäng och godkännandeflödet ingår inte i US-020.
 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
 - Ingen frontend finns ännu.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
-- Household-isolering är modellerad men kan först testas fullt ut när skyddade data-endpoints finns.
+- Household-isolering är testad för barn-endpoints. Den måste fortfarande implementeras och testas separat för framtida sysslor och tilldelningar.
