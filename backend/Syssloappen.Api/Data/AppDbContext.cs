@@ -13,6 +13,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<ChildProfile> ChildProfiles => Set<ChildProfile>();
 
+    public DbSet<ChildPairingCode> ChildPairingCodes => Set<ChildPairingCode>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -66,6 +68,34 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasOne(child => child.User)
                 .WithOne()
                 .HasForeignKey<ChildProfile>(child => child.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ChildPairingCode>(entity =>
+        {
+            entity.Property(pairingCode => pairingCode.CodeHash)
+                .HasMaxLength(64)
+                .IsRequired();
+
+            entity.Property(pairingCode => pairingCode.UsedAt)
+                .IsConcurrencyToken();
+
+            entity.HasIndex(pairingCode => pairingCode.CodeHash)
+                .IsUnique();
+
+            entity.HasOne(pairingCode => pairingCode.Household)
+                .WithMany()
+                .HasForeignKey(pairingCode => pairingCode.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(pairingCode => pairingCode.ChildProfile)
+                .WithMany()
+                .HasForeignKey(pairingCode => pairingCode.ChildProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(pairingCode => pairingCode.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(pairingCode => pairingCode.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }
