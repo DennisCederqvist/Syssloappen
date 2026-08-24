@@ -220,17 +220,26 @@ så att barnet kan logga in på sin egen enhet.
 - [ ] Barnkontot ska kopplas till rätt Child.
 - [ ] Barnkontot ska tillhöra samma Household som barnet.
 - [ ] Barnkontot ska få rollen `Child`.
-- [ ] Barnet ska kunna logga in med sina egna uppgifter.
+- [ ] Barnets ordinarie enhet ska i första hand autentiseras genom en Adult-styrd engångskoppling.
 - [ ] En Adult får inte skapa login för ett barn i ett annat Household.
 - [ ] En Adult ska kunna välja ett barnvänligt användarnamn som är unikt inom det egna Householdet.
 - [ ] Jämförelse av barnets användarnamn ska vara skiftlägesokänslig, så att exempelvis `Markus` och `markus` räknas som samma namn inom ett Household.
 - [ ] Samma barnvänliga användarnamn ska kunna användas i olika Households utan globala namnvarianter som `markus17`.
-- [ ] Backend ska generera en unik familjekod som används tillsammans med barnets användarnamn och lösenord vid login.
+- [ ] Endast en autentiserad Adult ska kunna skapa en kopplingskod för ett aktivt barn i sitt eget Household.
+- [ ] Kopplingskoden ska vara slumpmässigt genererad, kortlivad och endast kunna användas en gång.
+- [ ] Backend ska binda kopplingskoden till exakt Child och Household; barnets enhet får inte välja ett rått `ChildId` eller `HouseholdId`.
+- [ ] Upprepade felaktiga försök att använda kopplingskoder ska begränsas.
+- [ ] En lyckad koppling ska skapa en beständig Child-session på enheten så att barnet normalt inte behöver logga in igen varje gång appen öppnas.
+- [ ] Sessionen ska ha en maximal livslängd och kunna förnyas säkert medan enheten används.
+- [ ] En Adult ska kunna återkalla barnets kopplade enheter, exempelvis om en enhet tappas bort.
+- [ ] Logout, återkallad enhetskoppling eller avaktivering av barnet ska göra den berörda sessionen ogiltig i backend.
+- [ ] Backend ska fortsätta verifiera att barnet och dess Household är aktiva även när en beständig session används.
+- [ ] Backend ska generera en unik familjekod som används tillsammans med barnets användarnamn och lösenord vid reservinloggning.
 - [ ] Familjekoden ska identifiera Householdet men ska inte behandlas som en ersättning för barnets lösenord.
-- [ ] Backend ska härleda `HouseholdId` från familjekoden; klienten får inte skicka eller välja ett rått `HouseholdId` vid login.
+- [ ] Backend ska härleda `HouseholdId` från familjekoden; klienten får inte skicka eller välja ett rått `HouseholdId` vid reservinloggning.
 - [ ] Ett tekniskt Identity-användarnamn får skapas internt för global unikhet men ska inte behöva visas för barnet.
 - [ ] Felaktig familjekod, felaktigt användarnamn och felaktigt lösenord ska ge samma neutrala felmeddelande.
-- [ ] Upprepade misslyckade loginförsök ska begränsas eller leda till en tillfällig kontolåsning.
+- [ ] Upprepade misslyckade reservinloggningar ska begränsas eller leda till en tillfällig kontolåsning.
 
 ---
 
@@ -682,17 +691,16 @@ PWA-arbetet bör göras **efter att webbversionens kärnfunktionalitet fungerar*
 
 ---
 
-## QR-baserad enhetskoppling för barn
+## QR-kod för barnets enhetskoppling
 
-Som ett framtida alternativ till att skriva familjekod, användarnamn och lösenord ska en autentiserad Adult kunna koppla barnets enhet genom att visa en QR-kod.
+Den Adult-styrda enhetskopplingen med engångskod ingår i barnloginens kärnflöde. Som en framtida användarvänlig förbättring ska samma kopplingsflöde även kunna startas genom att barnets enhet skannar en QR-kod i stället för att den vuxna skriver in engångskoden manuellt.
 
-- QR-koden ska skapas för ett aktivt barn i den vuxnas eget Household.
-- QR-koden ska innehålla eller representera en slumpmässig, kortlivad engångstoken.
-- Token ska verifieras i backend, bara kunna användas en gång och upphöra att gälla efter en kort tid.
+- QR-koden ska representera samma slumpmässiga, kortlivade engångstoken som den manuella kopplingskoden.
+- Token ska fortfarande verifieras i backend, bara kunna användas en gång och vara bunden till rätt Child och Household.
 - QR-koden ska inte innehålla barnets lösenord, ett rått `HouseholdId` eller någon permanent inloggningshemlighet.
 - Enhetskopplingen ska inte ge åtkomst till ett barn i ett annat Household eller till ett avaktiverat barn.
-- Den vanliga inloggningen ska finnas kvar som alternativ och återställningsväg.
-- QR-baserad enhetskoppling ska implementeras först efter att barnlogin och webbversionens kärnflöde fungerar säkert.
+- Manuell kopplingskod och reservinloggning ska finnas kvar när enheten saknar kamera eller QR-skanning inte fungerar.
+- QR-skanning ska implementeras först efter att den manuella enhetskopplingen och webbversionens kärnflöde fungerar säkert.
 
 ---
 
