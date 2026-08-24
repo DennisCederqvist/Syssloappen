@@ -33,6 +33,14 @@ US-020 är implementerad och verifierad:
 - `GET /api/children` visar endast barn i den autentiserade användarens Household.
 - Integrationstester verifierar rollbehörighet, manipulerat `HouseholdId`, Household-isolering och att Adults i samma Household ser samma barn.
 
+US-023 är implementerad och verifierad på `feature/us-023-edit-child`:
+
+- `PUT /api/children/{id}` låter en autentiserad Adult ändra ett barns namn.
+- Barnet hämtas med både Child-ID och den autentiserade användarens `HouseholdId` i samma databasfråga.
+- Requesten innehåller endast namnet och kan inte ändra barnets Household.
+- Tomma namn och namn över 100 tecken nekas utan att den befintliga informationen ändras.
+- Integrationstester verifierar rollbehörighet, Household-isolering, manipulerade ID:n och att Adults i samma Household ser det nya namnet.
+
 ## Teknik och versioner
 
 - Node.js `22.23.2`
@@ -128,21 +136,23 @@ Testlösenordet är avsiktligt inte dokumenterat här.
 Integrationstesterna finns i `backend/Syssloappen.Api.Tests`.
 Tre auth-tester verifierar login, fel lösenord, skyddat endpoint före och efter logout samt att två Adults i olika Households identifieras med rätt `HouseholdId`.
 Fyra US-020-tester verifierar att en oinloggad användare och Child-rollen inte kan skapa barn, att klienten inte kan välja Household, att barn isoleras mellan Households och att Adults i samma Household kan se barnet.
-Alla sju integrationstester är godkända.
+Sju US-023-tester verifierar behörighet, lyckad namnändring, validering, Household-isolering och skydd mot manipulerade Child- och Household-ID:n.
+Alla fjorton integrationstester är godkända.
 
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
+Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
 
 ## Aktuell arbetsdel
 
-US-020 omfattar följande färdiga delar:
+Branchen `feature/us-023-edit-child` fokuserar på US-023:
 
-1. Adult kan skapa ett barn med `POST /api/children`.
-2. Barnet kopplas automatiskt till den autentiserade användarens Household.
-3. Adult kan läsa barnen i sitt eget Household med `GET /api/children`.
+1. Adult kan ändra ett barns namn med `PUT /api/children/{id}`.
+2. Endast barn i den autentiserade användarens Household kan hämtas för ändring.
+3. Klienten kan inte ändra barnets `HouseholdId`.
 4. Automatiska integrationstester och ett manuellt PostgreSQL-test är godkända.
-5. Household-isoleringen är granskad och verifierad före merge.
+5. Ändringarna ska granskas innan commit, push och merge.
 
-Nästa avgränsade arbetsdel efter US-020 är US-023, där en Adult ska kunna ändra ett barns namn inom sitt eget Household. US-024, avaktivering av barn med bevarad historik, ska därefter implementeras separat. Barnets login, sysslor, poäng och godkännandeflödet ingår inte i US-020.
+US-024, avaktivering av barn med bevarad historik, ska implementeras separat efter att US-023 är färdig. Barnets login, sysslor, poäng och godkännandeflödet ingår inte i US-023.
 
 ## Kända kvarvarande saker
 
