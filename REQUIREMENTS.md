@@ -225,15 +225,15 @@ så att barnet kan logga in på sin egen enhet.
 - [x] Barnprofil och barnkonto ska skapas tillsammans; en Adult ska inte behöva skapa profilen först och kontot i ett separat steg.
 - [x] Lösenordet ska hanteras av ASP.NET Core Identity och får aldrig lagras i klartext.
 - [x] Child-konton ska inte behöva en egen e-postadress, medan Adult-konton fortsatt ska kräva unik e-post.
-- [ ] Barnets ordinarie enhet ska i första hand autentiseras genom en Adult-styrd engångskoppling.
+- [x] Barnets ordinarie enhet ska i första hand autentiseras genom en Adult-styrd engångskoppling.
 - [x] En Adult får inte skapa login för ett barn i ett annat Household.
 - [x] En Adult ska kunna välja ett barnvänligt användarnamn som är unikt inom det egna Householdet.
 - [x] Jämförelse av barnets användarnamn ska vara skiftlägesokänslig, så att exempelvis `Markus` och `markus` räknas som samma namn inom ett Household.
 - [x] Samma barnvänliga användarnamn ska kunna användas i olika Households utan globala namnvarianter som `markus17`.
-- [ ] Endast en autentiserad Adult ska kunna skapa en kopplingskod för ett aktivt barn i sitt eget Household.
-- [ ] Kopplingskoden ska vara slumpmässigt genererad, kortlivad och endast kunna användas en gång.
-- [ ] Backend ska binda kopplingskoden till exakt Child och Household; barnets enhet får inte välja ett rått `ChildId` eller `HouseholdId`.
-- [ ] Upprepade felaktiga försök att använda kopplingskoder ska begränsas.
+- [x] Endast en autentiserad Adult ska kunna skapa en kopplingskod för ett aktivt barn i sitt eget Household.
+- [x] Kopplingskoden ska vara slumpmässigt genererad, kortlivad och endast kunna användas en gång.
+- [x] Backend ska binda kopplingskoden till exakt Child och Household; barnets enhet får inte välja ett rått `ChildId` eller `HouseholdId`.
+- [x] Upprepade felaktiga försök att använda kopplingskoder ska begränsas.
 - [ ] En lyckad koppling ska skapa en beständig Child-session på enheten så att barnet normalt inte behöver logga in igen varje gång appen öppnas.
 - [ ] Sessionen ska ha en maximal livslängd och kunna förnyas säkert medan enheten används.
 - [ ] En Adult ska kunna återkalla barnets kopplade enheter, exempelvis om en enhet tappas bort.
@@ -618,7 +618,7 @@ Första fungerande versionen ska vara liten.
 - [x] Adult kan skapa login åt barn.
 - [ ] Adult kan skapa sysslor.
 - [ ] Adult kan tilldela sysslor.
-- [ ] Child kan logga in.
+- [x] Child kan logga in genom Adult-styrd enhetskoppling.
 - [ ] Child kan se sina egna sysslor.
 - [ ] Child kan rapportera en syssla som utförd.
 - [ ] Adult kan godkänna eller neka en rapporterad syssla.

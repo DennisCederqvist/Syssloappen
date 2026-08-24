@@ -61,6 +61,18 @@ Första delen av US-021 är implementerad och testad:
 - Om kontoskapande, rolltilldelning eller profilkoppling misslyckas rullas hela transaktionen tillbaka.
 - Det tidigare planerade separata konto-endpointet ingår inte längre i flödet.
 
+Adult-styrd enhetskoppling är implementerad och testad:
+
+- `POST /api/children/{childId}/pairing-codes` låter endast en autentiserad Adult skapa en kod för ett aktivt barn med kopplat konto i sitt eget Household.
+- Backend genererar en kryptografiskt slumpmässig kod med åtta lättlästa tecken och tio minuters livslängd.
+- Endast kodens SHA-256-hash lagras i databasen; klartexten returneras en gång till den vuxna.
+- `POST /api/auth/child/pair` tar endast koden. Barnets enhet skickar varken `ChildId` eller `HouseholdId`.
+- Backend härleder exakt Child, Identity-konto och Household från den hashade koden och verifierar aktiv status samt rollen `Child`.
+- Lyckad inlösen markerar koden använd och autentiserar barnet med en vanlig, icke-beständig sessionscookie. Samma kod kan inte användas igen.
+- Felaktig, utgången eller redan använd kod ger samma neutrala HTTP 401-svar.
+- Inlösen begränsas till tio försök per minut och klientadress; ytterligare försök ger HTTP 429.
+- Beständig, förnybar och Adult-återkallningsbar Child-session ingår uttryckligen inte i denna del.
+
 ## Teknik och versioner
 
 - Node.js `22.23.2`
@@ -121,6 +133,7 @@ Aktuella migrationer:
 - `AddChildProfiles` skapar tabellen `ChildProfiles` och dess koppling till `Households`.
 - `AddChildProfileSoftDelete` lägger till `ChildProfiles.IsActive` med standardvärdet `true`.
 - `AddChildAccounts` lägger till profilens konto-FK, Child-kontots synliga och normaliserade användarnamn samt unika index för profilkoppling, Household-användarnamn och Adult-e-post. Migrationen är genererad men ännu inte applicerad i `syssloappen_dev`.
+- `AddChildPairingCodes` skapar tabellen `ChildPairingCodes` med hash, Child-, Household- och Adult-koppling, skapad tid, utgångstid och användningstid. Migrationen är genererad men ännu inte applicerad i `syssloappen_dev`.
 
 Vanliga kommandon från repots rot:
 
@@ -166,9 +179,10 @@ Integrationstesterna finns i `backend/Syssloappen.Api.Tests`.
 Fyra auth-tester verifierar login, fel lösenord, skyddat endpoint före och efter logout, två separata Households samt att Adult-e-post fortsatt är skiftlägesokänsligt unik.
 Fyra barn-endpointtester verifierar att en oinloggad användare och Child-rollen inte kan skapa barn, att klienten inte kan välja Household, att barn isoleras mellan Households och att Adults i samma Household kan se barnet.
 Fem tester för US-021:s första del verifierar atomiskt profil- och kontoskapande, aktiv status, säker Identity-hash, Child-roll, backendstyrt Household, ignorerade manipulerade fält, användarnamnsunikhet inom Household, återanvändning mellan Households och rollback vid fel.
+Sju enhetskopplingstester verifierar Adult- och Child-behörighet, aktiv status, Household-isolering, manipulerade Child-ID:n, hashad och kortlivad kod, exakt Child-autentisering, engångsanvändning, utgångstid och rate limiting.
 Sju US-023-tester verifierar behörighet, lyckad namnändring, validering, Household-isolering och skydd mot manipulerade Child- och Household-ID:n.
 Fyra US-024-tester verifierar behörighet, soft delete, aktiv filtrering, Household-isolering och skydd mot manipulerade Child-ID:n.
-Alla 24 integrationstester är godkända i Release-konfiguration.
+Alla 31 integrationstester är godkända i Release-konfiguration.
 
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
@@ -184,7 +198,15 @@ Första delen av US-021 är färdig och testad:
 4. Child-konton saknar e-post och Adult-e-post förblir unik.
 5. Automatiska integrationstester, Release-build, formatteringskontroll, EF-modellkontroll och genererad PostgreSQL-migrations-SQL är godkända.
 
-Nästa avgränsade US-021-del är Adult-styrd, kortlivad enhetskoppling. Beständiga Child-sessioner, reservinloggning och QR ska fortfarande delas upp i efterföljande små arbetsdelar.
+Adult-styrd, kortlivad enhetskoppling är färdig och testad:
+
+1. Endast Adult kan skapa kod för ett aktivt barn i eget Household.
+2. Koden är kryptografiskt slumpmässig, kortlivad, hashad i databasen och kan bara användas en gång.
+3. Barnets enhet löser in endast koden; backend bestämmer Child, konto och Household.
+4. Lyckad inlösen autentiserar rätt Child och felaktiga försök begränsas.
+5. Automatiska integrationstester, Release-build, formatteringskontroll, EF-modellkontroll och genererad PostgreSQL-migrations-SQL är godkända.
+
+Nästa avgränsade US-021-del är en beständig Child-enhetssession med maximal livslängd, säker förnyelse, logout, Adult-återkallning och omedelbar backendkontroll av barnets aktiva status. Reservinloggning och QR ska fortfarande vänta till efter sessionsdelen.
 
 ## Kända kvarvarande saker
 
