@@ -1,3 +1,5 @@
+using Syssloappen.Api.Authentication;
+
 namespace Syssloappen.Api.Models;
 
 public sealed class ChildProfile
@@ -11,4 +13,8 @@ public sealed class ChildProfile
     public string Name { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;
+
+    public string? UserId { get; set; }
+
+    public ApplicationUser? User { get; set; }
 }

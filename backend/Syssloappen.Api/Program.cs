@@ -31,7 +31,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
-        options.User.RequireUniqueEmail = true;
+        // Child accounts have no email. Adult email uniqueness is instead enforced by
+        // the database's unique NormalizedEmail index, which permits multiple nulls.
+        options.User.RequireUniqueEmail = false;
         options.Password.RequiredLength = 8;
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;

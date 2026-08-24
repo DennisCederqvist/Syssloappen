@@ -68,6 +68,25 @@ public sealed class AuthEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Adult_email_remains_case_insensitively_unique()
+    {
+        using var firstClient = CreateClient();
+        using var secondClient = CreateClient();
+        await RegisterAdult(firstClient, "Familjen Email", "unique@example.test");
+
+        var duplicateResponse = await secondClient.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegisterAdultRequest
+            {
+                HouseholdName = "Ska rullas tillbaka",
+                Email = "UNIQUE@EXAMPLE.TEST",
+                Password = Password
+            });
+
+        Assert.Equal(HttpStatusCode.BadRequest, duplicateResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task Logout_removes_access_to_protected_endpoints()
     {
         using var client = CreateClient();

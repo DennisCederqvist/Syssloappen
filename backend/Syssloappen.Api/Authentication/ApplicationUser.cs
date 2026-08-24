@@ -8,4 +8,8 @@ public sealed class ApplicationUser : IdentityUser
     public int HouseholdId { get; set; }
 
     public Household Household { get; set; } = null!;
+
+    public string? ChildUserName { get; set; }
+
+    public string? NormalizedChildUserName { get; set; }
 }

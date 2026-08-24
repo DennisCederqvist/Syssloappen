@@ -50,6 +50,17 @@ US-024 är implementerad, verifierad och mergad till `main`:
 - Integrationstester verifierar rollbehörighet, soft delete, aktiv filtrering, Household-isolering och skydd mot manipulerade Child-ID:n.
 - Kriterier som kräver framtida chores eller ett kopplat barnkonto är fortsatt okryssade och ska implementeras med respektive senare story.
 
+Första delen av US-021 är implementerad och testad:
+
+- Produktbeslutet är att alla nya barn alltid ska få ett konto direkt. Adult ska inte först skapa en fristående profil och därefter göra ett separat konto-anrop.
+- `POST /api/children` tar barnets namn, ett barnvänligt användarnamn och lösenord och skapar `ChildProfile`, Identity-konto, profilkoppling och rollen `Child` i samma databastransaktion.
+- Backend hämtar alltid `HouseholdId` från den autentiserade Adult-användaren. Klienten kan inte välja Household, roll, tekniskt Identity-användarnamn eller Child-ID.
+- Barnets synliga användarnamn är skiftlägesokänsligt unikt inom Householdet men kan återanvändas i andra Households.
+- Child-konton saknar e-post. Adult-kontons normaliserade e-post är fortsatt unik genom ett unikt databasindex.
+- ASP.NET Core Identity hashar lösenordet. Ett internt, globalt unikt Identity-användarnamn genereras av backend och visas inte för barnet.
+- Om kontoskapande, rolltilldelning eller profilkoppling misslyckas rullas hela transaktionen tillbaka.
+- Det tidigare planerade separata konto-endpointet ingår inte längre i flödet.
+
 ## Teknik och versioner
 
 - Node.js `22.23.2`
@@ -74,6 +85,7 @@ Angular-projektet har ännu inte skapats. Frontendarbetet ska vänta tills den f
 - Barnets ordinarie enhet ska i första hand autentiseras genom en Adult-styrd, kortlivad engångskod som backend binder till exakt Child och Household.
 - En lyckad enhetskoppling ska ge barnet en beständig men tidsbegränsad och återkallningsbar session, så att barnet normalt inte behöver logga in varje gång appen öppnas.
 - Familjekod, barnvänligt användarnamn och lösenord ska finnas som reservinloggning. Barnets synliga användarnamn behöver bara vara unikt inom Householdet; ett separat tekniskt Identity-användarnamn kan säkerställa global unikhet internt.
+- Alla nya barn ska skapas tillsammans med sitt Child-konto i ett enda Adult-initierat och atomärt backend-anrop.
 - QR-skanning är en framtida användarvänlig presentation av samma engångskod och ska inte vara en separat autentiseringsmodell.
 - Ingen microservice-, CQRS- eller annan extra arkitektur ska introduceras utan konkret behov.
 - Arbeta i små feature-branches och merga endast gröna, testade delar till `main`.
@@ -108,6 +120,7 @@ Aktuella migrationer:
 - `AddIdentity` skapade Identity-tabellerna och kopplingen från `AspNetUsers.HouseholdId` till `Households.Id`.
 - `AddChildProfiles` skapar tabellen `ChildProfiles` och dess koppling till `Households`.
 - `AddChildProfileSoftDelete` lägger till `ChildProfiles.IsActive` med standardvärdet `true`.
+- `AddChildAccounts` lägger till profilens konto-FK, Child-kontots synliga och normaliserade användarnamn samt unika index för profilkoppling, Household-användarnamn och Adult-e-post. Migrationen är genererad men ännu inte applicerad i `syssloappen_dev`.
 
 Vanliga kommandon från repots rot:
 
@@ -150,11 +163,12 @@ Lokal testdata finns i `syssloappen_dev`:
 Testlösenordet är avsiktligt inte dokumenterat här.
 
 Integrationstesterna finns i `backend/Syssloappen.Api.Tests`.
-Tre auth-tester verifierar login, fel lösenord, skyddat endpoint före och efter logout samt att två Adults i olika Households identifieras med rätt `HouseholdId`.
-Fyra US-020-tester verifierar att en oinloggad användare och Child-rollen inte kan skapa barn, att klienten inte kan välja Household, att barn isoleras mellan Households och att Adults i samma Household kan se barnet.
+Fyra auth-tester verifierar login, fel lösenord, skyddat endpoint före och efter logout, två separata Households samt att Adult-e-post fortsatt är skiftlägesokänsligt unik.
+Fyra barn-endpointtester verifierar att en oinloggad användare och Child-rollen inte kan skapa barn, att klienten inte kan välja Household, att barn isoleras mellan Households och att Adults i samma Household kan se barnet.
+Fem tester för US-021:s första del verifierar atomiskt profil- och kontoskapande, aktiv status, säker Identity-hash, Child-roll, backendstyrt Household, ignorerade manipulerade fält, användarnamnsunikhet inom Household, återanvändning mellan Households och rollback vid fel.
 Sju US-023-tester verifierar behörighet, lyckad namnändring, validering, Household-isolering och skydd mot manipulerade Child- och Household-ID:n.
 Fyra US-024-tester verifierar behörighet, soft delete, aktiv filtrering, Household-isolering och skydd mot manipulerade Child-ID:n.
-Alla arton integrationstester är godkända.
+Alla 24 integrationstester är godkända i Release-konfiguration.
 
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
@@ -162,33 +176,20 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-US-024 omfattar följande färdiga delar:
+Första delen av US-021 är färdig och testad:
 
-1. Adult kan avaktivera ett barn med `DELETE /api/children/{id}`.
-2. Endast aktiva barn i den autentiserade användarens Household kan hämtas för avaktivering.
-3. Avaktivering är en soft delete som behåller `ChildProfiles`-raden.
-4. Avaktiverade barn visas inte längre av `GET /api/children` och kan inte ändras via `PUT /api/children/{id}`.
-5. Automatiska integrationstester, Release-build och genererad PostgreSQL-migrations-SQL är godkända.
+1. Adult skapar barnprofil och Child-konto tillsammans med `POST /api/children`.
+2. Profil, konto, Household och Child-roll kopplas atomärt.
+3. Barnvänligt användarnamn är skiftlägesokänsligt unikt inom Householdet men kan återanvändas i andra Households.
+4. Child-konton saknar e-post och Adult-e-post förblir unik.
+5. Automatiska integrationstester, Release-build, formatteringskontroll, EF-modellkontroll och genererad PostgreSQL-migrations-SQL är godkända.
 
-US-024:s avgränsade backend-del är färdig. Förbud mot nya tilldelningar ska byggas och testas när chores och assignments implementeras. Poäng och godkännandeflödet ingår inte i US-024.
-
-Nästa avgränsade arbetsdel är första delen av US-021: en Adult ska kunna skapa ett Child-konto och koppla det atomärt till ett aktivt `ChildProfile` i sitt eget Household.
-
-Den första US-021-delen ska omfatta:
-
-1. Adult-behörighet, aktiv status och Household-isolering.
-2. En entydig koppling där ett `ChildProfile` högst kan ha ett användarkonto.
-3. Rollen `Child` och säker lösenordshantering genom ASP.NET Core Identity.
-4. Ett barnvänligt, skiftlägesokänsligt användarnamn som är unikt inom Householdet men får återanvändas i andra Households.
-5. Separat hantering av Adult-kontons unika e-post och Child-konton som inte ska behöva e-post.
-6. Databastransaktion eller motsvarande atomisk hantering så att inget halvt konto lämnas kvar vid fel.
-7. Automatiserade tester för behörighet, aktiv status, Household-isolering, manipulerade ID:n, användarnamnsunikhet och rollback.
-
-Enhetskoppling, beständiga Child-sessioner, reservinloggning och QR ska implementeras i efterföljande avgränsade delar av US-021 efter att kontokopplingen är säker och testad.
+Nästa avgränsade US-021-del är Adult-styrd, kortlivad enhetskoppling. Beständiga Child-sessioner, reservinloggning och QR ska fortfarande delas upp i efterföljande små arbetsdelar.
 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
 - Ingen frontend finns ännu.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
+- ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet får inte automatiskt användarnamn och lösenord; de behöver hanteras eller återskapas när migrationen tas i bruk.
 - Household-isolering är testad för barn-endpoints. Den måste fortfarande implementeras och testas separat för framtida sysslor och tilldelningar.

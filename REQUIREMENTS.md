@@ -196,7 +196,7 @@ så att andra användare inte kan se eller ändra vår information.
 
 **Som vuxen**
 vill jag kunna lägga till ett barn i min familj
-så att jag kan tilldela sysslor till barnet.
+så att barnet får ett konto och kan använda appen.
 
 ### Acceptance Criteria
 
@@ -205,6 +205,8 @@ så att jag kan tilldela sysslor till barnet.
 - [x] Barnet ska ha ett eget unikt ID.
 - [x] Barnet ska inte kunna kopplas till ett annat Household genom ett modifierat API-anrop.
 - [x] Alla Adults i samma Household ska kunna se barnet.
+- [x] Barnprofilen och barnkontot ska skapas tillsammans i samma Adult-initierade flöde.
+- [x] Skapandet ska vara atomärt så att varken en profil utan konto eller ett konto utan profil lämnas kvar vid fel.
 
 ---
 
@@ -216,15 +218,18 @@ så att barnet kan logga in på sin egen enhet.
 
 ### Acceptance Criteria
 
-- [ ] En Adult ska kunna skapa ett användarkonto åt ett barn.
-- [ ] Barnkontot ska kopplas till rätt Child.
-- [ ] Barnkontot ska tillhöra samma Household som barnet.
-- [ ] Barnkontot ska få rollen `Child`.
+- [x] En Adult ska kunna skapa ett användarkonto åt ett barn.
+- [x] Barnkontot ska kopplas till rätt Child.
+- [x] Barnkontot ska tillhöra samma Household som barnet.
+- [x] Barnkontot ska få rollen `Child`.
+- [x] Barnprofil och barnkonto ska skapas tillsammans; en Adult ska inte behöva skapa profilen först och kontot i ett separat steg.
+- [x] Lösenordet ska hanteras av ASP.NET Core Identity och får aldrig lagras i klartext.
+- [x] Child-konton ska inte behöva en egen e-postadress, medan Adult-konton fortsatt ska kräva unik e-post.
 - [ ] Barnets ordinarie enhet ska i första hand autentiseras genom en Adult-styrd engångskoppling.
-- [ ] En Adult får inte skapa login för ett barn i ett annat Household.
-- [ ] En Adult ska kunna välja ett barnvänligt användarnamn som är unikt inom det egna Householdet.
-- [ ] Jämförelse av barnets användarnamn ska vara skiftlägesokänslig, så att exempelvis `Markus` och `markus` räknas som samma namn inom ett Household.
-- [ ] Samma barnvänliga användarnamn ska kunna användas i olika Households utan globala namnvarianter som `markus17`.
+- [x] En Adult får inte skapa login för ett barn i ett annat Household.
+- [x] En Adult ska kunna välja ett barnvänligt användarnamn som är unikt inom det egna Householdet.
+- [x] Jämförelse av barnets användarnamn ska vara skiftlägesokänslig, så att exempelvis `Markus` och `markus` räknas som samma namn inom ett Household.
+- [x] Samma barnvänliga användarnamn ska kunna användas i olika Households utan globala namnvarianter som `markus17`.
 - [ ] Endast en autentiserad Adult ska kunna skapa en kopplingskod för ett aktivt barn i sitt eget Household.
 - [ ] Kopplingskoden ska vara slumpmässigt genererad, kortlivad och endast kunna användas en gång.
 - [ ] Backend ska binda kopplingskoden till exakt Child och Household; barnets enhet får inte välja ett rått `ChildId` eller `HouseholdId`.
@@ -237,7 +242,7 @@ så att barnet kan logga in på sin egen enhet.
 - [ ] Backend ska generera en unik familjekod som används tillsammans med barnets användarnamn och lösenord vid reservinloggning.
 - [ ] Familjekoden ska identifiera Householdet men ska inte behandlas som en ersättning för barnets lösenord.
 - [ ] Backend ska härleda `HouseholdId` från familjekoden; klienten får inte skicka eller välja ett rått `HouseholdId` vid reservinloggning.
-- [ ] Ett tekniskt Identity-användarnamn får skapas internt för global unikhet men ska inte behöva visas för barnet.
+- [x] Ett tekniskt Identity-användarnamn får skapas internt för global unikhet men ska inte behöva visas för barnet.
 - [ ] Felaktig familjekod, felaktigt användarnamn och felaktigt lösenord ska ge samma neutrala felmeddelande.
 - [ ] Upprepade misslyckade reservinloggningar ska begränsas eller leda till en tillfällig kontolåsning.
 
@@ -610,7 +615,7 @@ Första fungerande versionen ska vara liten.
 - [x] Adult kan skapa barn.
 - [x] Adult kan ändra barn.
 - [x] Adult kan avaktivera barn.
-- [ ] Adult kan skapa login åt barn.
+- [x] Adult kan skapa login åt barn.
 - [ ] Adult kan skapa sysslor.
 - [ ] Adult kan tilldela sysslor.
 - [ ] Child kan logga in.

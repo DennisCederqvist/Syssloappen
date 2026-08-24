@@ -18,17 +18,26 @@ public sealed class ChildrenController(
     : ControllerBase
 {
     [HttpPost]
-    [ProducesResponseType<ChildResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<CreateChildResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ChildResponse>> Create(CreateChildRequest request)
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<CreateChildResponse>> Create(CreateChildRequest request)
     {
         var name = request.Name.Trim();
+        var childUserName = request.UserName.Trim();
 
         if (name.Length == 0)
         {
             ModelState.AddModelError(nameof(request.Name), "A child name is required.");
+            return ValidationProblem(ModelState);
+        }
+
+        if (childUserName.Length == 0)
+        {
+            ModelState.AddModelError(nameof(request.UserName), "A child username is required.");
             return ValidationProblem(ModelState);
         }
 
@@ -39,17 +48,75 @@ public sealed class ChildrenController(
             return Unauthorized();
         }
 
+        var normalizedChildUserName = userManager.NormalizeName(childUserName);
+        var userNameExists = await dbContext.Users.AnyAsync(user =>
+            user.HouseholdId == currentUser.HouseholdId
+            && user.NormalizedChildUserName == normalizedChildUserName);
+
+        if (userNameExists)
+        {
+            return ConflictProblem("The child username is already used in this household.");
+        }
+
+        // Profile, Identity user and Child role are one operation. If any step fails,
+        // the transaction removes every earlier database write.
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        var childUser = new ApplicationUser
+        {
+            // This globally unique Identity name is internal. The child only sees the
+            // separate household-scoped child-friendly username.
+            UserName = $"child-{Guid.NewGuid():N}",
+            Email = null,
+            HouseholdId = currentUser.HouseholdId,
+            ChildUserName = childUserName,
+            NormalizedChildUserName = normalizedChildUserName
+        };
+
         var child = new ChildProfile
         {
             Name = name,
             // HouseholdId comes only from the authenticated user, never from the request.
-            HouseholdId = currentUser.HouseholdId
+            HouseholdId = currentUser.HouseholdId,
+            UserId = childUser.Id
         };
 
-        dbContext.ChildProfiles.Add(child);
-        await dbContext.SaveChangesAsync();
+        try
+        {
+            var createUserResult = await userManager.CreateAsync(childUser, request.Password);
 
-        var response = new ChildResponse(child.Id, child.Name);
+            if (!createUserResult.Succeeded)
+            {
+                await transaction.RollbackAsync();
+                return ValidationProblem(ToValidationProblem(createUserResult));
+            }
+
+            var addRoleResult = await userManager.AddToRoleAsync(childUser, RoleNames.Child);
+
+            if (!addRoleResult.Succeeded)
+            {
+                await transaction.RollbackAsync();
+                return ValidationProblem(ToValidationProblem(addRoleResult));
+            }
+
+            dbContext.ChildProfiles.Add(child);
+            await dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch (DbUpdateException)
+        {
+            await transaction.RollbackAsync();
+            return ConflictProblem("The child could not be created because its data changed.");
+        }
+        catch (InvalidOperationException)
+        {
+            await transaction.RollbackAsync();
+            return Problem(
+                title: "Child could not be created",
+                detail: "The required Child role is unavailable.",
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
+
+        var response = new CreateChildResponse(child.Id, child.Name, childUserName, RoleNames.Child);
         return CreatedAtAction(nameof(GetAll), response);
     }
 
@@ -150,4 +217,24 @@ public sealed class ChildrenController(
 
         return NoContent();
     }
+
+    private ConflictObjectResult ConflictProblem(string detail) => Conflict(
+        new ProblemDetails
+        {
+            Title = "Child creation conflict",
+            Detail = detail,
+            Status = StatusCodes.Status409Conflict
+        });
+
+    private static Dictionary<string, string[]> ToErrorDictionary(IdentityResult result) => result.Errors
+        .GroupBy(error => error.Code)
+        .ToDictionary(
+            errors => errors.Key,
+            errors => errors.Select(error => error.Description).ToArray());
+
+    private static ValidationProblemDetails ToValidationProblem(IdentityResult result) =>
+        new(ToErrorDictionary(result))
+        {
+            Status = StatusCodes.Status400BadRequest
+        };
 }

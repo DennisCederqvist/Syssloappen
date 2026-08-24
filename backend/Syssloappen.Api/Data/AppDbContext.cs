@@ -26,6 +26,23 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
         modelBuilder.Entity<ApplicationUser>(entity =>
         {
+            entity.Property(user => user.ChildUserName)
+                .HasMaxLength(50);
+
+            entity.Property(user => user.NormalizedChildUserName)
+                .HasMaxLength(50);
+
+            // PostgreSQL and SQLite allow several null values in a unique index, so
+            // Adult users can omit these child-only fields.
+            entity.HasIndex(user => new { user.HouseholdId, user.NormalizedChildUserName })
+                .IsUnique();
+
+            // Adults still require globally unique, non-null email addresses while
+            // child accounts can all store null here.
+            entity.HasIndex(user => user.NormalizedEmail)
+                .IsUnique()
+                .HasDatabaseName("EmailIndex");
+
             entity.HasOne(user => user.Household)
                 .WithMany()
                 .HasForeignKey(user => user.HouseholdId)
@@ -45,6 +62,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(child => child.HouseholdId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(child => child.User)
+                .WithOne()
+                .HasForeignKey<ChildProfile>(child => child.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
