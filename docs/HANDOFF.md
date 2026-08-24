@@ -71,6 +71,10 @@ Angular-projektet har ännu inte skapats. Frontendarbetet ska vänta tills den f
 - Cookie-baserad autentisering är vald för webbappen.
 - Backend är auktoritativ för identitet, roll och Household-tillhörighet.
 - Household-isolering får aldrig bygga på ID:n som klienten själv väljer.
+- Barnets ordinarie enhet ska i första hand autentiseras genom en Adult-styrd, kortlivad engångskod som backend binder till exakt Child och Household.
+- En lyckad enhetskoppling ska ge barnet en beständig men tidsbegränsad och återkallningsbar session, så att barnet normalt inte behöver logga in varje gång appen öppnas.
+- Familjekod, barnvänligt användarnamn och lösenord ska finnas som reservinloggning. Barnets synliga användarnamn behöver bara vara unikt inom Householdet; ett separat tekniskt Identity-användarnamn kan säkerställa global unikhet internt.
+- QR-skanning är en framtida användarvänlig presentation av samma engångskod och ska inte vara en separat autentiseringsmodell.
 - Ingen microservice-, CQRS- eller annan extra arkitektur ska introduceras utan konkret behov.
 - Arbeta i små feature-branches och merga endast gröna, testade delar till `main`.
 - Uppdatera checkboxarna i `REQUIREMENTS.md` efter varje färdig, testad och mergad story.
@@ -166,7 +170,21 @@ US-024 omfattar följande färdiga delar:
 4. Avaktiverade barn visas inte längre av `GET /api/children` och kan inte ändras via `PUT /api/children/{id}`.
 5. Automatiska integrationstester, Release-build och genererad PostgreSQL-migrations-SQL är godkända.
 
-US-024:s avgränsade backend-del är färdig. Nästa arbetsdel ska bekräftas innan en ny feature-branch skapas. Barnets login och blockering av ett framtida kopplat konto hör till US-021. Förbud mot nya tilldelningar ska byggas och testas när chores och assignments implementeras. Poäng och godkännandeflödet ingår inte i US-024.
+US-024:s avgränsade backend-del är färdig. Förbud mot nya tilldelningar ska byggas och testas när chores och assignments implementeras. Poäng och godkännandeflödet ingår inte i US-024.
+
+Nästa avgränsade arbetsdel är första delen av US-021: en Adult ska kunna skapa ett Child-konto och koppla det atomärt till ett aktivt `ChildProfile` i sitt eget Household.
+
+Den första US-021-delen ska omfatta:
+
+1. Adult-behörighet, aktiv status och Household-isolering.
+2. En entydig koppling där ett `ChildProfile` högst kan ha ett användarkonto.
+3. Rollen `Child` och säker lösenordshantering genom ASP.NET Core Identity.
+4. Ett barnvänligt, skiftlägesokänsligt användarnamn som är unikt inom Householdet men får återanvändas i andra Households.
+5. Separat hantering av Adult-kontons unika e-post och Child-konton som inte ska behöva e-post.
+6. Databastransaktion eller motsvarande atomisk hantering så att inget halvt konto lämnas kvar vid fel.
+7. Automatiserade tester för behörighet, aktiv status, Household-isolering, manipulerade ID:n, användarnamnsunikhet och rollback.
+
+Enhetskoppling, beständiga Child-sessioner, reservinloggning och QR ska implementeras i efterföljande avgränsade delar av US-021 efter att kontokopplingen är säker och testad.
 
 ## Kända kvarvarande saker
 
