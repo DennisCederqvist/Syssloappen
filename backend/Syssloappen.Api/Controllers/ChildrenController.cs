@@ -14,7 +14,8 @@ namespace Syssloappen.Api.Controllers;
 [Authorize(Roles = RoleNames.Adult)]
 public sealed class ChildrenController(
     AppDbContext dbContext,
-    UserManager<ApplicationUser> userManager)
+    UserManager<ApplicationUser> userManager,
+    TimeProvider timeProvider)
     : ControllerBase
 {
     [HttpPost]
@@ -213,6 +214,19 @@ public sealed class ChildrenController(
 
         // Keep the row so future assignments and completions can retain their history.
         child.IsActive = false;
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var activeSessions = await dbContext.ChildDeviceSessions
+            .Where(session =>
+                session.ChildProfileId == child.Id
+                && session.HouseholdId == currentUser.HouseholdId
+                && session.RevokedAt == null)
+            .ToListAsync();
+
+        foreach (var session in activeSessions)
+        {
+            session.RevokedAt = now;
+        }
+
         await dbContext.SaveChangesAsync();
 
         return NoContent();

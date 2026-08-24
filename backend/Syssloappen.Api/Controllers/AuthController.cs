@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.Auth;
@@ -13,7 +15,8 @@ namespace Syssloappen.Api.Controllers;
 public sealed class AuthController(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager)
+    SignInManager<ApplicationUser> signInManager,
+    TimeProvider timeProvider)
     : ControllerBase
 {
     [AllowAnonymous]
@@ -115,6 +118,23 @@ public sealed class AuthController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Logout()
     {
+        var currentUser = await userManager.GetUserAsync(User);
+        var sessionIdValue = User.FindFirstValue(ChildDeviceSessionService.SessionIdClaim);
+
+        if (currentUser is not null && Guid.TryParse(sessionIdValue, out var sessionId))
+        {
+            var session = await dbContext.ChildDeviceSessions.SingleOrDefaultAsync(deviceSession =>
+                deviceSession.Id == sessionId
+                && deviceSession.UserId == currentUser.Id
+                && deviceSession.HouseholdId == currentUser.HouseholdId);
+
+            if (session is not null)
+            {
+                session.RevokedAt ??= timeProvider.GetUtcNow().UtcDateTime;
+                await dbContext.SaveChangesAsync();
+            }
+        }
+
         await signInManager.SignOutAsync();
         return NoContent();
     }

@@ -32,12 +32,14 @@ public sealed class ChildrenEndpointsTests : IDisposable
     [Fact]
     public async Task Child_role_cannot_create_a_child()
     {
-        using var client = CreateClient();
-        var registration = await RegisterAdult(client, "Familjen Andersson", "adult@example.test");
-        await CreateUser(registration.HouseholdId, "child@example.test", RoleNames.Child);
-        await Login(client, "child@example.test");
+        using var adultClient = CreateClient();
+        using var childClient = CreateClient();
+        await RegisterAdult(adultClient, "Familjen Andersson", "adult@example.test");
+        await Login(adultClient, "adult@example.test");
+        var child = await CreateChild(adultClient, "Maja");
+        await PairChild(adultClient, childClient, child.Id);
 
-        var response = await client.PostAsJsonAsync(
+        var response = await childClient.PostAsJsonAsync(
             "/api/children",
             new { Name = "Anna" });
 
@@ -139,14 +141,14 @@ public sealed class ChildrenEndpointsTests : IDisposable
     [Fact]
     public async Task Child_role_cannot_update_a_child()
     {
-        using var client = CreateClient();
-        var registration = await RegisterAdult(client, "Familjen Dahl", "adult.update@example.test");
-        await Login(client, "adult.update@example.test");
-        var child = await CreateChild(client, "Anna");
-        await CreateUser(registration.HouseholdId, "child.update@example.test", RoleNames.Child);
-        await Login(client, "child.update@example.test");
+        using var adultClient = CreateClient();
+        using var childClient = CreateClient();
+        await RegisterAdult(adultClient, "Familjen Dahl", "adult.update@example.test");
+        await Login(adultClient, "adult.update@example.test");
+        var child = await CreateChild(adultClient, "Anna");
+        await PairChild(adultClient, childClient, child.Id);
 
-        var response = await client.PutAsJsonAsync(
+        var response = await childClient.PutAsJsonAsync(
             $"/api/children/{child.Id}",
             new { Name = "Nytt namn" });
 
@@ -292,14 +294,13 @@ public sealed class ChildrenEndpointsTests : IDisposable
     {
         using var adultClient = CreateClient();
         using var childClient = CreateClient();
-        var registration = await RegisterAdult(
+        await RegisterAdult(
             adultClient,
             "Familjen Lind",
             "adult.deactivate@example.test");
         await Login(adultClient, "adult.deactivate@example.test");
         var child = await CreateChild(adultClient, "Anna");
-        await CreateUser(registration.HouseholdId, "child.deactivate@example.test", RoleNames.Child);
-        await Login(childClient, "child.deactivate@example.test");
+        await PairChild(adultClient, childClient, child.Id);
 
         var response = await childClient.DeleteAsync($"/api/children/{child.Id}");
 
@@ -403,6 +404,20 @@ public sealed class ChildrenEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var created = (await response.Content.ReadFromJsonAsync<CreateChildResponse>())!;
         return new ChildResponse(created.Id, created.Name);
+    }
+
+    private static async Task PairChild(HttpClient adultClient, HttpClient childClient, int childId)
+    {
+        var codeResponse = await adultClient.PostAsync(
+            $"/api/children/{childId}/pairing-codes",
+            content: null);
+        Assert.Equal(HttpStatusCode.Created, codeResponse.StatusCode);
+        var pairingCode = (await codeResponse.Content.ReadFromJsonAsync<ChildPairingCodeResponse>())!;
+
+        var pairResponse = await childClient.PostAsJsonAsync(
+            "/api/auth/child/pair",
+            new PairChildDeviceRequest { Code = pairingCode.Code });
+        Assert.Equal(HttpStatusCode.OK, pairResponse.StatusCode);
     }
 
     private static async Task<RegisterAdultResponse> RegisterAdult(

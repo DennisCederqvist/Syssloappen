@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -6,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.Auth;
+using Syssloappen.Api.Models;
 
 namespace Syssloappen.Api.Controllers;
 
@@ -13,7 +16,8 @@ namespace Syssloappen.Api.Controllers;
 [Route("api/auth/child")]
 public sealed class ChildPairingController(
     AppDbContext dbContext,
-    SignInManager<ApplicationUser> signInManager)
+    SignInManager<ApplicationUser> signInManager,
+    TimeProvider timeProvider)
     : ControllerBase
 {
     [AllowAnonymous]
@@ -25,7 +29,7 @@ public sealed class ChildPairingController(
     public async Task<ActionResult<PairChildDeviceResponse>> Pair(PairChildDeviceRequest request)
     {
         var codeHash = ChildPairingCodeService.Hash(request.Code);
-        var now = DateTime.UtcNow;
+        var now = timeProvider.GetUtcNow().UtcDateTime;
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
         var pairingCode = await dbContext.ChildPairingCodes
@@ -54,21 +58,50 @@ public sealed class ChildPairingController(
             return InvalidPairingCode();
         }
 
+        var sessionSecret = ChildDeviceSessionService.GenerateSecret();
+        var absoluteExpiresAt = now.Add(ChildDeviceSessionService.MaximumLifetime);
+        var session = new ChildDeviceSession
+        {
+            HouseholdId = pairingCode.HouseholdId,
+            ChildProfileId = child.Id,
+            UserId = childUser.Id,
+            SecretHash = ChildDeviceSessionService.HashSecret(sessionSecret),
+            CreatedAt = now,
+            LastSeenAt = now,
+            ExpiresAt = now.Add(ChildDeviceSessionService.RenewableLifetime),
+            AbsoluteExpiresAt = absoluteExpiresAt
+        };
+
         try
         {
             pairingCode.UsedAt = now;
+            dbContext.ChildDeviceSessions.Add(session);
             await dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateException)
         {
             await transaction.RollbackAsync();
             return InvalidPairingCode();
         }
 
-        // This first pairing slice creates a browser-session cookie. A later slice
-        // will replace it with a persistent, renewable and Adult-revocable device session.
-        await signInManager.SignInAsync(childUser, isPersistent: false);
+        var authenticationProperties = new AuthenticationProperties
+        {
+            IsPersistent = true,
+            AllowRefresh = true,
+            IssuedUtc = timeProvider.GetUtcNow(),
+            ExpiresUtc = new DateTimeOffset(session.ExpiresAt, TimeSpan.Zero)
+        };
+        var sessionClaims = new[]
+        {
+            new Claim(ChildDeviceSessionService.SessionIdClaim, session.Id.ToString()),
+            new Claim(ChildDeviceSessionService.SessionSecretClaim, sessionSecret)
+        };
+
+        await signInManager.SignInWithClaimsAsync(
+            childUser,
+            authenticationProperties,
+            sessionClaims);
 
         return Ok(new PairChildDeviceResponse(
             child.Id,
