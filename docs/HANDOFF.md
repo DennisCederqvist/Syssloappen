@@ -33,7 +33,7 @@ US-020 är implementerad och verifierad:
 - `GET /api/children` visar endast barn i den autentiserade användarens Household.
 - Integrationstester verifierar rollbehörighet, manipulerat `HouseholdId`, Household-isolering och att Adults i samma Household ser samma barn.
 
-US-023 är implementerad och verifierad på `feature/us-023-edit-child`:
+US-023 är implementerad, verifierad och mergad till `main`:
 
 - `PUT /api/children/{id}` låter en autentiserad Adult ändra ett barns namn.
 - Barnet hämtas med både Child-ID och den autentiserade användarens `HouseholdId` i samma databasfråga.
@@ -144,15 +144,15 @@ Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt 
 
 ## Aktuell arbetsdel
 
-Branchen `feature/us-023-edit-child` fokuserar på US-023:
+US-023 omfattar följande färdiga delar:
 
 1. Adult kan ändra ett barns namn med `PUT /api/children/{id}`.
 2. Endast barn i den autentiserade användarens Household kan hämtas för ändring.
 3. Klienten kan inte ändra barnets `HouseholdId`.
 4. Automatiska integrationstester och ett manuellt PostgreSQL-test är godkända.
-5. Ändringarna ska granskas innan commit, push och merge.
+5. Household-isoleringen är granskad och verifierad före merge.
 
-US-024, avaktivering av barn med bevarad historik, ska implementeras separat efter att US-023 är färdig. Barnets login, sysslor, poäng och godkännandeflödet ingår inte i US-023.
+US-023 är färdig. Nästa arbetsdel ska bekräftas innan en ny feature-branch skapas. Enligt den prioriterade ordningen är nästa planerade story US-024, avaktivering av barn med bevarad historik. Barnets login, sysslor, poäng och godkännandeflödet ingår inte i US-023.
 
 ## Kända kvarvarande saker
 
