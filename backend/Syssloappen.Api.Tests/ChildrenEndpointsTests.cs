@@ -63,15 +63,22 @@ public sealed class ChildrenEndpointsTests : IDisposable
         // Even if a caller adds an unexpected HouseholdId property, the request DTO ignores it.
         var createFirstResponse = await firstClient.PostAsJsonAsync(
             "/api/children",
-            new { Name = "Anna", HouseholdId = secondRegistration.HouseholdId });
+            new
+            {
+                Name = "Anna",
+                UserName = "Anna",
+                Password,
+                HouseholdId = secondRegistration.HouseholdId
+            });
         var createSecondResponse = await secondClient.PostAsJsonAsync(
             "/api/children",
-            new { Name = "Erik" });
+            new CreateChildRequest { Name = "Erik", UserName = "Erik", Password = Password });
 
         Assert.Equal(HttpStatusCode.Created, createFirstResponse.StatusCode);
         Assert.Equal(HttpStatusCode.Created, createSecondResponse.StatusCode);
 
-        var firstChild = (await createFirstResponse.Content.ReadFromJsonAsync<ChildResponse>())!;
+        var createdFirstChild = (await createFirstResponse.Content.ReadFromJsonAsync<CreateChildResponse>())!;
+        var firstChild = new ChildResponse(createdFirstChild.Id, createdFirstChild.Name);
         var firstHouseholdChildren = await firstClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
         var secondHouseholdChildren = await secondClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
 
@@ -107,7 +114,7 @@ public sealed class ChildrenEndpointsTests : IDisposable
 
         var createResponse = await creatorClient.PostAsJsonAsync(
             "/api/children",
-            new { Name = "Maja" });
+            new CreateChildRequest { Name = "Maja", UserName = "Maja", Password = Password });
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
 
         var visibleChildren = await otherAdultClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
@@ -386,10 +393,16 @@ public sealed class ChildrenEndpointsTests : IDisposable
     {
         var response = await client.PostAsJsonAsync(
             "/api/children",
-            new { Name = name });
+            new CreateChildRequest
+            {
+                Name = name,
+                UserName = $"child-{Guid.NewGuid():N}",
+                Password = Password
+            });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        return (await response.Content.ReadFromJsonAsync<ChildResponse>())!;
+        var created = (await response.Content.ReadFromJsonAsync<CreateChildResponse>())!;
+        return new ChildResponse(created.Id, created.Name);
     }
 
     private static async Task<RegisterAdultResponse> RegisterAdult(
