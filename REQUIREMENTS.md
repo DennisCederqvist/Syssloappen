@@ -235,6 +235,43 @@ så att appen blir enkel och privat.
 
 ---
 
+## US-023 – Vuxen kan ändra ett barn
+
+**Som vuxen**
+vill jag kunna ändra ett barns uppgifter
+så att jag exempelvis kan rätta ett felstavat namn.
+
+### Acceptance Criteria
+
+- [ ] Endast en Adult får ändra ett barn.
+- [ ] En Adult får endast ändra barn i sitt eget Household.
+- [ ] Barnets namn ska kunna ändras.
+- [ ] Ett tomt eller ogiltigt namn ska inte kunna sparas.
+- [ ] Barnets `HouseholdId` får aldrig kunna ändras av klienten.
+- [ ] Manipulering av ett Child-ID får inte ge åtkomst till barn i ett annat Household.
+- [ ] Alla Adults i samma Household ska kunna se den uppdaterade informationen.
+
+---
+
+## US-024 – Vuxen kan ta bort ett barn från aktiv användning
+
+**Som vuxen**
+vill jag kunna ta bort ett barn från familjens aktiva vy
+så att barn som inte längre ska använda appen inte visas eller får nya sysslor.
+
+### Acceptance Criteria
+
+- [ ] Endast en Adult får ta bort eller avaktivera ett barn.
+- [ ] En Adult får endast ta bort eller avaktivera barn i sitt eget Household.
+- [ ] Manipulering av ett Child-ID får inte påverka barn i ett annat Household.
+- [ ] Ett avaktiverat barn ska inte visas bland Householdets aktiva barn.
+- [ ] Ett avaktiverat barn ska inte kunna få nya sysslor.
+- [ ] Ett eventuellt kopplat barnkonto ska inte längre kunna logga in.
+- [ ] Historiska tilldelningar, godkännanden och completions ska bevaras.
+- [ ] Borttagning ska därför normalt implementeras som avaktivering, inte fysisk radering av databasposten.
+
+---
+
 # 7. User Stories – Sysslor
 
 ## US-030 – Vuxen kan skapa en syssla
@@ -411,6 +448,8 @@ Approved eller NeedsRedo
 | Se egna sysslor              | Ja\*            | Ja    |
 | Se familjens barn            | Ja              | Nej   |
 | Skapa barn                   | Ja              | Nej   |
+| Ändra barn                   | Ja              | Nej   |
+| Avaktivera barn              | Ja              | Nej   |
 | Skapa barnkonto              | Ja              | Nej   |
 | Skapa syssla                 | Ja              | Nej   |
 | Tilldela syssla              | Ja              | Nej   |
@@ -545,6 +584,8 @@ Första fungerande versionen ska vara liten.
 - [ ] Adult kan skapa konto.
 - [ ] Adult kan skapa ett Household.
 - [ ] Adult kan skapa barn.
+- [ ] Adult kan ändra barn.
+- [ ] Adult kan avaktivera barn.
 - [ ] Adult kan skapa login åt barn.
 - [ ] Adult kan skapa sysslor.
 - [ ] Adult kan tilldela sysslor.
@@ -751,25 +792,27 @@ Föreslagen ordning:
    ↓
 5. Skapa Child
    ↓
-6. Child authentication
+6. Ändra och avaktivera Child
    ↓
-7. Skapa Chore
+7. Child authentication
    ↓
-8. Tilldela Chore
+8. Skapa Chore
    ↓
-9. Child: "Mina sysslor"
+9. Tilldela Chore
    ↓
-10. Child: rapportera Chore som utförd
+10. Child: "Mina sysslor"
    ↓
-11. Adult: godkänn eller neka rapporterad Chore
+11. Child: rapportera Chore som utförd
    ↓
-12. Adult: se completions
+12. Adult: godkänn eller neka rapporterad Chore
    ↓
-13. Lägg till ytterligare Adult
+13. Adult: se completions
    ↓
-14. UI-förbättringar
+14. Lägg till ytterligare Adult
    ↓
-15. PWA
+15. UI-förbättringar
+   ↓
+16. PWA
 ```
 
 ---

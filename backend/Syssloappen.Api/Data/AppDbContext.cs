@@ -11,6 +11,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<Household> Households => Set<Household>();
 
+    public DbSet<ChildProfile> ChildProfiles => Set<ChildProfile>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -28,6 +30,18 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(user => user.HouseholdId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ChildProfile>(entity =>
+        {
+            entity.Property(child => child.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.HasOne(child => child.Household)
+                .WithMany()
+                .HasForeignKey(child => child.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
