@@ -38,6 +38,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasMaxLength(100)
                 .IsRequired();
 
+            entity.Property(child => child.IsActive)
+                .HasDefaultValue(true);
+
             entity.HasOne(child => child.Household)
                 .WithMany()
                 .HasForeignKey(child => child.HouseholdId)

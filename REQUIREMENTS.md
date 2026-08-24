@@ -181,7 +181,7 @@ så att andra användare inte kan se eller ändra vår information.
 ### Acceptance Criteria
 
 - [x] En Adult får endast se barn i sitt eget Household.
-- [ ] En Adult får endast administrera barn i sitt eget Household.
+- [x] En Adult får endast administrera barn i sitt eget Household.
 - [ ] En Adult får endast skapa sysslor för sitt eget Household.
 - [ ] En Adult får endast tilldela sysslor till barn i sitt eget Household.
 - [ ] Ett Child får endast se information som tillhör sitt eget Household.
@@ -267,14 +267,14 @@ så att barn som inte längre ska använda appen inte visas eller får nya syssl
 
 ### Acceptance Criteria
 
-- [ ] Endast en Adult får ta bort eller avaktivera ett barn.
-- [ ] En Adult får endast ta bort eller avaktivera barn i sitt eget Household.
-- [ ] Manipulering av ett Child-ID får inte påverka barn i ett annat Household.
-- [ ] Ett avaktiverat barn ska inte visas bland Householdets aktiva barn.
+- [x] Endast en Adult får ta bort eller avaktivera ett barn.
+- [x] En Adult får endast ta bort eller avaktivera barn i sitt eget Household.
+- [x] Manipulering av ett Child-ID får inte påverka barn i ett annat Household.
+- [x] Ett avaktiverat barn ska inte visas bland Householdets aktiva barn.
 - [ ] Ett avaktiverat barn ska inte kunna få nya sysslor.
 - [ ] Ett eventuellt kopplat barnkonto ska inte längre kunna logga in.
 - [ ] Historiska tilldelningar, godkännanden och completions ska bevaras.
-- [ ] Borttagning ska därför normalt implementeras som avaktivering, inte fysisk radering av databasposten.
+- [x] Borttagning ska därför normalt implementeras som avaktivering, inte fysisk radering av databasposten.
 
 ---
 
@@ -591,7 +591,7 @@ Första fungerande versionen ska vara liten.
 - [x] Adult kan skapa ett Household.
 - [x] Adult kan skapa barn.
 - [x] Adult kan ändra barn.
-- [ ] Adult kan avaktivera barn.
+- [x] Adult kan avaktivera barn.
 - [ ] Adult kan skapa login åt barn.
 - [ ] Adult kan skapa sysslor.
 - [ ] Adult kan tilldela sysslor.

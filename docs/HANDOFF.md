@@ -41,6 +41,15 @@ US-023 är implementerad, verifierad och mergad till `main`:
 - Tomma namn och namn över 100 tecken nekas utan att den befintliga informationen ändras.
 - Integrationstester verifierar rollbehörighet, Household-isolering, manipulerade ID:n och att Adults i samma Household ser det nya namnet.
 
+US-024 är implementerad, verifierad och mergad till `main`:
+
+- `DELETE /api/children/{id}` låter endast en autentiserad Adult avaktivera ett barn.
+- Barnet hämtas med Child-ID, den autentiserade användarens `HouseholdId` och aktiv status i samma databasfråga.
+- Avaktivering sätter `IsActive` till `false`; databasraden raderas inte och kan därför behålla framtida historikrelationer.
+- `GET /api/children` visar endast aktiva barn, och avaktiverade barn kan inte ändras via den aktiva barn-endpointen.
+- Integrationstester verifierar rollbehörighet, soft delete, aktiv filtrering, Household-isolering och skydd mot manipulerade Child-ID:n.
+- Kriterier som kräver framtida chores eller ett kopplat barnkonto är fortsatt okryssade och ska implementeras med respektive senare story.
+
 ## Teknik och versioner
 
 - Node.js `22.23.2`
@@ -94,6 +103,7 @@ Aktuella migrationer:
 - `InitialCreate` skapade tabellen `Households`.
 - `AddIdentity` skapade Identity-tabellerna och kopplingen från `AspNetUsers.HouseholdId` till `Households.Id`.
 - `AddChildProfiles` skapar tabellen `ChildProfiles` och dess koppling till `Households`.
+- `AddChildProfileSoftDelete` lägger till `ChildProfiles.IsActive` med standardvärdet `true`.
 
 Vanliga kommandon från repots rot:
 
@@ -139,22 +149,24 @@ Integrationstesterna finns i `backend/Syssloappen.Api.Tests`.
 Tre auth-tester verifierar login, fel lösenord, skyddat endpoint före och efter logout samt att två Adults i olika Households identifieras med rätt `HouseholdId`.
 Fyra US-020-tester verifierar att en oinloggad användare och Child-rollen inte kan skapa barn, att klienten inte kan välja Household, att barn isoleras mellan Households och att Adults i samma Household kan se barnet.
 Sju US-023-tester verifierar behörighet, lyckad namnändring, validering, Household-isolering och skydd mot manipulerade Child- och Household-ID:n.
-Alla fjorton integrationstester är godkända.
+Fyra US-024-tester verifierar behörighet, soft delete, aktiv filtrering, Household-isolering och skydd mot manipulerade Child-ID:n.
+Alla arton integrationstester är godkända.
 
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
+Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; PostgreSQL lade till den obligatoriska `IsActive`-kolumnen med standardvärdet `true` utan fel.
 
 ## Aktuell arbetsdel
 
-US-023 omfattar följande färdiga delar:
+US-024 omfattar följande färdiga delar:
 
-1. Adult kan ändra ett barns namn med `PUT /api/children/{id}`.
-2. Endast barn i den autentiserade användarens Household kan hämtas för ändring.
-3. Klienten kan inte ändra barnets `HouseholdId`.
-4. Automatiska integrationstester och ett manuellt PostgreSQL-test är godkända.
-5. Household-isoleringen är granskad och verifierad före merge.
+1. Adult kan avaktivera ett barn med `DELETE /api/children/{id}`.
+2. Endast aktiva barn i den autentiserade användarens Household kan hämtas för avaktivering.
+3. Avaktivering är en soft delete som behåller `ChildProfiles`-raden.
+4. Avaktiverade barn visas inte längre av `GET /api/children` och kan inte ändras via `PUT /api/children/{id}`.
+5. Automatiska integrationstester, Release-build och genererad PostgreSQL-migrations-SQL är godkända.
 
-US-023 är färdig. Nästa arbetsdel ska bekräftas innan en ny feature-branch skapas. Enligt den prioriterade ordningen är nästa planerade story US-024, avaktivering av barn med bevarad historik. Barnets login, sysslor, poäng och godkännandeflödet ingår inte i US-023.
+US-024:s avgränsade backend-del är färdig. Nästa arbetsdel ska bekräftas innan en ny feature-branch skapas. Barnets login och blockering av ett framtida kopplat konto hör till US-021. Förbud mot nya tilldelningar ska byggas och testas när chores och assignments implementeras. Poäng och godkännandeflödet ingår inte i US-024.
 
 ## Kända kvarvarande saker
 
