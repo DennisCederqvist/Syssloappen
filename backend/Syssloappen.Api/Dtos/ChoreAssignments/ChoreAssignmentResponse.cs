@@ -1,0 +1,7 @@
+namespace Syssloappen.Api.Dtos.ChoreAssignments;
+
+public sealed record ChoreAssignmentResponse(
+    int Id,
+    int ChoreId,
+    int ChildId,
+    DateTime AssignedAt);

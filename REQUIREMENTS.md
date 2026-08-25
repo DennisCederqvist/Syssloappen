@@ -182,8 +182,8 @@ så att andra användare inte kan se eller ändra vår information.
 
 - [x] En Adult får endast se barn i sitt eget Household.
 - [x] En Adult får endast administrera barn i sitt eget Household.
-- [ ] En Adult får endast skapa sysslor för sitt eget Household.
-- [ ] En Adult får endast tilldela sysslor till barn i sitt eget Household.
+- [x] En Adult får endast skapa sysslor för sitt eget Household.
+- [x] En Adult får endast tilldela sysslor till barn i sitt eget Household.
 - [ ] Ett Child får endast se information som tillhör sitt eget Household.
 - [x] Backend ska kontrollera Household-tillhörighet.
 - [x] Manipulering av ID:n i API-anrop får inte ge åtkomst till ett annat Households data.
@@ -294,7 +294,7 @@ så att barn som inte längre ska använda appen inte visas eller får nya syssl
 - [x] En Adult får endast ta bort eller avaktivera barn i sitt eget Household.
 - [x] Manipulering av ett Child-ID får inte påverka barn i ett annat Household.
 - [x] Ett avaktiverat barn ska inte visas bland Householdets aktiva barn.
-- [ ] Ett avaktiverat barn ska inte kunna få nya sysslor.
+- [x] Ett avaktiverat barn ska inte kunna få nya sysslor.
 - [x] Ett eventuellt kopplat barnkonto ska inte längre kunna logga in.
 - [ ] Historiska tilldelningar, godkännanden och completions ska bevaras.
 - [x] Borttagning ska därför normalt implementeras som avaktivering, inte fysisk radering av databasposten.
@@ -336,12 +336,12 @@ så att barnet ser vad det ska göra.
 
 ### Acceptance Criteria
 
-- [ ] Endast en Adult får tilldela sysslor.
-- [ ] Sysslan och barnet måste tillhöra samma Household.
-- [ ] Den vuxna måste tillhöra samma Household som barnet.
-- [ ] Tilldelningen ska sparas i databasen.
+- [x] Endast en Adult får tilldela sysslor.
+- [x] Sysslan och barnet måste tillhöra samma Household.
+- [x] Den vuxna måste tillhöra samma Household som barnet.
+- [x] Tilldelningen ska sparas i databasen.
 - [ ] Barnet ska kunna se tilldelningen efter inloggning.
-- [ ] Det ska inte gå att tilldela en syssla till ett barn från ett annat Household.
+- [x] Det ska inte gå att tilldela en syssla till ett barn från ett annat Household.
 
 ---
 
@@ -617,7 +617,7 @@ Första fungerande versionen ska vara liten.
 - [x] Adult kan avaktivera barn.
 - [x] Adult kan skapa login åt barn.
 - [x] Adult kan skapa sysslor.
-- [ ] Adult kan tilldela sysslor.
+- [x] Adult kan tilldela sysslor.
 - [x] Child kan logga in genom Adult-styrd enhetskoppling.
 - [ ] Child kan se sina egna sysslor.
 - [ ] Child kan rapportera en syssla som utförd.
