@@ -14,6 +14,17 @@ export interface AdultLoginRequest {
   email: string;
   password: string;
 }
+export interface RegisterAdultRequest {
+  householdName: string;
+  email: string;
+  password: string;
+}
+export interface RegisterAdultResponse {
+  householdId: number;
+  email: string;
+  role: 'Adult';
+  familyCode: string;
+}
 export interface ChildLoginRequest {
   familyCode: string;
   userName: string;

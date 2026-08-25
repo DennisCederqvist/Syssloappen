@@ -30,6 +30,24 @@ describe('AuthService', () => {
     expect(auth.isAuthenticated()).toBe(true);
   });
 
+  it('registers an adult and returns the one-time family code', () => {
+    auth
+      .registerAdult({
+        householdName: 'Familjen Test',
+        email: 'alex@example.se',
+        password: 'Secret12',
+      })
+      .subscribe((result) => expect(result.familyCode).toBe('FAMILY123456'));
+    const request = http.expectOne('/api/auth/register');
+    expect(request.request.method).toBe('POST');
+    request.flush({
+      householdId: 12,
+      email: 'alex@example.se',
+      role: 'Adult',
+      familyCode: 'FAMILY123456',
+    });
+  });
+
   it('treats a rejected session as signed out', () => {
     auth.restoreSession().subscribe((user) => expect(user).toBeNull());
     http.expectOne('/api/auth/me').flush({}, { status: 401, statusText: 'Unauthorized' });

@@ -6,6 +6,8 @@ import {
   ChildLoginRequest,
   ChildPairingRequest,
   CurrentUser,
+  RegisterAdultRequest,
+  RegisterAdultResponse,
   UserRole,
 } from './auth.models';
 
@@ -42,6 +44,10 @@ export class AuthService {
     return this.http
       .post<CurrentUser>('/api/auth/login', request)
       .pipe(tap((user) => this.rememberUser(user)));
+  }
+
+  registerAdult(request: RegisterAdultRequest): Observable<RegisterAdultResponse> {
+    return this.http.post<RegisterAdultResponse>('/api/auth/register', request);
   }
 
   loginChild(request: ChildLoginRequest): Observable<CurrentUser> {
