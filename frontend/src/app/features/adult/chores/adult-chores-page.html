@@ -1,0 +1,284 @@
+<div class="page-enter min-h-dvh bg-canvas pb-24 md:flex md:pb-0">
+  <app-bottom-nav [items]="navItems" />
+  <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+    <app-user-header eyebrow="Familjens plan" title="Sysslor och tilldelning" variant="adult" />
+
+    <section
+      class="mt-7 rounded-[1.75rem] bg-brand-600 p-5 text-white shadow-xl sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7"
+    >
+      <div>
+        <p class="text-sm font-extrabold text-brand-100">Små steg, tydliga mål</p>
+        <h2 class="mt-1 text-2xl font-black">Skapa en syssla och välj vem som gör den</h2>
+        <p class="mt-2 max-w-2xl leading-7 text-brand-100">
+          Poängen sparas när uppgiften tilldelas och delas ut först efter godkännande.
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="openChoreForm()"
+        class="mt-5 min-h-14 w-full shrink-0 rounded-2xl bg-white px-5 font-extrabold text-brand-600 shadow-lg sm:mt-0 sm:w-auto"
+      >
+        + Ny syssla
+      </button>
+    </section>
+
+    @if (successMessage()) {
+      <div
+        class="mt-5 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 font-bold text-green-900"
+        role="status"
+      >
+        ✓ {{ successMessage() }}
+      </div>
+    }
+
+    @if (showChoreForm()) {
+      <section
+        class="mt-5 rounded-[1.75rem] bg-white p-5 shadow-lg ring-1 ring-line sm:p-7"
+        aria-labelledby="new-chore-title"
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-extrabold text-brand-600">Ny uppgift</p>
+            <h2 id="new-chore-title" class="mt-1 text-2xl font-black">Skapa syssla</h2>
+          </div>
+          <button
+            type="button"
+            (click)="closeChoreForm()"
+            class="grid size-11 place-items-center rounded-xl border border-line text-xl text-muted"
+            aria-label="Stäng formuläret"
+          >
+            ×
+          </button>
+        </div>
+        @if (choreError()) {
+          <div
+            class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+            role="alert"
+          >
+            {{ choreError() }}
+          </div>
+        }
+        <form
+          [formGroup]="choreForm"
+          (ngSubmit)="createChore()"
+          class="mt-5 grid gap-5 sm:grid-cols-2"
+          novalidate
+        >
+          <label class="block font-bold"
+            >Titel<input
+              formControlName="title"
+              type="text"
+              placeholder="Till exempel Mata katten"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line px-4"
+            />
+            @if (choreForm.controls.title.touched && choreForm.controls.title.invalid) {
+              <span class="mt-2 block text-sm text-red-700"
+                >Skriv en titel med högst 100 tecken.</span
+              >
+            }
+          </label>
+          <label class="block font-bold"
+            >Poäng<select
+              formControlName="points"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4"
+            >
+              <option [ngValue]="5">5 poäng</option>
+              <option [ngValue]="10">10 poäng</option>
+              <option [ngValue]="15">15 poäng</option>
+              <option [ngValue]="20">20 poäng</option>
+            </select></label
+          >
+          <label class="block font-bold sm:col-span-2"
+            >Beskrivning <span class="font-normal text-muted">(valfri)</span
+            ><textarea
+              formControlName="description"
+              rows="3"
+              placeholder="En kort och tydlig instruktion"
+              class="mt-2 w-full rounded-2xl border border-line p-4"
+            ></textarea>
+          </label>
+          <div class="flex flex-col-reverse gap-3 sm:col-span-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              (click)="closeChoreForm()"
+              class="min-h-13 rounded-2xl border border-line px-5 font-bold text-muted"
+            >
+              Avbryt</button
+            ><button
+              type="submit"
+              [disabled]="isCreatingChore()"
+              class="min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white disabled:opacity-60"
+            >
+              {{ isCreatingChore() ? 'Skapar…' : 'Skapa syssla' }}
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+
+    @if (showAssignmentForm()) {
+      <section
+        class="mt-5 rounded-[1.75rem] bg-white p-5 shadow-lg ring-1 ring-brand-500/25 sm:p-7"
+        aria-labelledby="assign-title"
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-extrabold text-brand-600">Nästa steg</p>
+            <h2 id="assign-title" class="mt-1 text-2xl font-black">Tilldela syssla</h2>
+          </div>
+          <button
+            type="button"
+            (click)="closeAssignmentForm()"
+            class="grid size-11 place-items-center rounded-xl border border-line text-xl text-muted"
+            aria-label="Stäng tilldelningen"
+          >
+            ×
+          </button>
+        </div>
+        @if (assignmentError()) {
+          <div
+            class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+            role="alert"
+          >
+            {{ assignmentError() }}
+          </div>
+        }
+        <form
+          [formGroup]="assignmentForm"
+          (ngSubmit)="createAssignment()"
+          class="mt-5 grid gap-5 sm:grid-cols-2"
+          novalidate
+        >
+          <label class="block font-bold"
+            >Syssla<select
+              formControlName="choreId"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4"
+            >
+              <option [ngValue]="0">Välj syssla</option>
+              @for (chore of chores(); track chore.id) {
+                <option [ngValue]="chore.id">{{ chore.title }} · {{ chore.points }} p</option>
+              }
+            </select></label
+          >
+          <label class="block font-bold"
+            >Barn<select
+              formControlName="childId"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4"
+            >
+              <option [ngValue]="0">Välj barn</option>
+              @for (child of children(); track child.id) {
+                <option [ngValue]="child.id">{{ child.name }}</option>
+              }
+            </select></label
+          >
+          @if (children().length === 0) {
+            <p class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 sm:col-span-2">
+              Lägg till ett aktivt barn innan du tilldelar en syssla.
+            </p>
+          }
+          <button
+            type="submit"
+            [disabled]="isAssigning() || children().length === 0"
+            class="min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white disabled:opacity-60 sm:col-span-2 sm:justify-self-end"
+          >
+            {{ isAssigning() ? 'Tilldelar…' : 'Tilldela sysslan' }}
+          </button>
+        </form>
+      </section>
+    }
+
+    <section class="mt-7" aria-labelledby="chores-title">
+      <div class="mb-4 flex items-end justify-between gap-3">
+        <div>
+          <p class="text-sm font-bold text-brand-600">Uppgiftsbank</p>
+          <h2 id="chores-title" class="text-xl font-black">Familjens sysslor</h2>
+        </div>
+        @if (!isLoading()) {
+          <button
+            type="button"
+            (click)="openAssignmentForm()"
+            [disabled]="chores().length === 0"
+            class="min-h-11 rounded-xl bg-white px-4 text-sm font-extrabold text-brand-600 ring-1 ring-line disabled:opacity-50"
+          >
+            Tilldela
+          </button>
+        }
+      </div>
+      @if (isLoading()) {
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="h-32 animate-pulse rounded-3xl bg-white"></div>
+          <div class="h-32 animate-pulse rounded-3xl bg-white"></div>
+        </div>
+      } @else if (loadError()) {
+        <div class="rounded-3xl bg-red-50 p-5">
+          <p class="font-bold text-red-800">{{ loadError() }}</p>
+          <button
+            type="button"
+            (click)="loadPage()"
+            class="mt-3 min-h-11 rounded-xl bg-white px-4 font-bold text-red-800"
+          >
+            Försök igen
+          </button>
+        </div>
+      } @else if (chores().length === 0) {
+        <div
+          class="rounded-3xl border-2 border-dashed border-brand-500/30 bg-white p-8 text-center"
+        >
+          <div class="text-5xl">🧺</div>
+          <h3 class="mt-4 text-xl font-black">Inga sysslor ännu</h3>
+          <p class="mt-2 text-muted">Skapa en tydlig första uppgift för familjen.</p>
+        </div>
+      } @else {
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          @for (chore of chores(); track chore.id) {
+            <article class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-line">
+              <div class="flex items-start justify-between gap-3">
+                <div class="grid size-12 place-items-center rounded-2xl bg-amber-50 text-2xl">
+                  🧹
+                </div>
+                <span class="rounded-full bg-amber-100 px-3 py-1 text-sm font-black text-amber-900"
+                  >★ {{ chore.points }}</span
+                >
+              </div>
+              <h3 class="mt-4 text-lg font-black">{{ chore.title }}</h3>
+              <p class="mt-1 min-h-10 text-sm leading-5 text-muted">
+                {{ chore.description || 'Ingen extra beskrivning.' }}
+              </p>
+              <button
+                type="button"
+                (click)="openAssignmentForm(chore.id)"
+                class="mt-4 min-h-11 w-full rounded-xl bg-brand-50 px-4 text-sm font-extrabold text-brand-600"
+              >
+                Tilldela sysslan
+              </button>
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+    @if (!isLoading() && assignments().length > 0) {
+      <section class="mt-8" aria-labelledby="assigned-title">
+        <p class="text-sm font-bold text-brand-600">Aktuellt</p>
+        <h2 id="assigned-title" class="text-xl font-black">Senaste tilldelningar</h2>
+        <div class="mt-4 grid gap-3">
+          @for (assignment of assignments(); track assignment.assignmentId) {
+            <article class="flex items-center gap-4 rounded-2xl bg-white p-4 ring-1 ring-line">
+              <div class="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-50">✓</div>
+              <div class="min-w-0 flex-1">
+                <h3 class="truncate font-black">{{ assignment.choreTitle }}</h3>
+                <p class="text-sm text-muted">
+                  {{ assignment.childName }} · {{ assignment.points }} poäng ·
+                  {{ assignment.assignedAt | date: 'd MMM HH:mm' }}
+                </p>
+              </div>
+              <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">{{
+                assignment.status
+              }}</span>
+            </article>
+          }
+        </div>
+      </section>
+    }
+  </main>
+</div>

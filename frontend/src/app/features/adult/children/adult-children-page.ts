@@ -63,7 +63,7 @@ export class AdultChildrenPage implements OnInit {
 
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: '⌂', route: '/vuxen' },
-    { label: 'Sysslor', icon: '☷' },
+    { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
     { label: 'Barn', icon: '♧', active: true, route: '/vuxen/barn' },
     { label: 'Granska', icon: '✓' },
   ];
