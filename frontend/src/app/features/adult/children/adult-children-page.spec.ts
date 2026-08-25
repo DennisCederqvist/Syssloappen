@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { AdultChildrenPage } from './adult-children-page';
-import { CreateChildRequest } from './children.models';
+import { CreateChildRequest, UpdateChildRequest } from './children.models';
 import { ChildrenService } from './children.service';
 
 class FakeChildrenService {
@@ -9,6 +9,8 @@ class FakeChildrenService {
   pairingCalls: number[] = [];
   deviceSessionCalls: number[] = [];
   revokeCalls: { childId: number; sessionId: string }[] = [];
+  updateCalls: { childId: number; request: UpdateChildRequest }[] = [];
+  deactivateCalls: number[] = [];
 
   getActiveChildren() {
     return of([{ id: 1, name: 'Leo' }]);
@@ -40,6 +42,16 @@ class FakeChildrenService {
 
   revokeDeviceSession(childId: number, sessionId: string) {
     this.revokeCalls.push({ childId, sessionId });
+    return of(void 0);
+  }
+
+  updateChild(childId: number, request: UpdateChildRequest) {
+    this.updateCalls.push({ childId, request });
+    return of({ id: childId, name: request.name });
+  }
+
+  deactivateChild(childId: number) {
+    this.deactivateCalls.push(childId);
     return of(void 0);
   }
 }
@@ -126,5 +138,31 @@ describe('AdultChildrenPage', () => {
     ]);
     expect(component.deviceSessions()[0].revokedAt).not.toBeNull();
     expect(component.confirmingRevocation()).toBeNull();
+  });
+
+  it('updates the selected child name in the visible list', () => {
+    component.openEditChild({ id: 1, name: 'Leo' });
+    component.editChildForm.setValue({ name: 'Leon' });
+
+    component.updateChild();
+
+    expect(service.updateCalls).toEqual([{ childId: 1, request: { name: 'Leon' } }]);
+    expect(component.children()).toContainEqual({ id: 1, name: 'Leon' });
+    expect(component.editingChild()).toEqual({ id: 1, name: 'Leon' });
+  });
+
+  it('requires confirmation before deactivating and removes the child after success', () => {
+    component.openEditChild({ id: 1, name: 'Leo' });
+
+    component.deactivateChild();
+    expect(service.deactivateCalls).toEqual([]);
+
+    component.requestDeactivation();
+    component.deactivateChild();
+
+    expect(service.deactivateCalls).toEqual([1]);
+    expect(component.children()).toEqual([]);
+    expect(component.editingChild()).toBeNull();
+    expect(component.deactivationSuccess()).toContain('Leo');
   });
 });

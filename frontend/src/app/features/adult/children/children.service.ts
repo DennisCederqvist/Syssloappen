@@ -7,6 +7,7 @@ import {
   ChildSummary,
   CreateChildRequest,
   CreatedChild,
+  UpdateChildRequest,
 } from './children.models';
 
 @Injectable({ providedIn: 'root' })
@@ -31,5 +32,13 @@ export class ChildrenService {
 
   revokeDeviceSession(childId: number, sessionId: string): Observable<void> {
     return this.http.delete<void>(`/api/children/${childId}/device-sessions/${sessionId}`);
+  }
+
+  updateChild(childId: number, request: UpdateChildRequest): Observable<ChildSummary> {
+    return this.http.put<ChildSummary>(`/api/children/${childId}`, request);
+  }
+
+  deactivateChild(childId: number): Observable<void> {
+    return this.http.delete<void>(`/api/children/${childId}`);
   }
 }

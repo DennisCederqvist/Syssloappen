@@ -70,4 +70,20 @@ describe('ChildrenService', () => {
     expect(request.request.method).toBe('DELETE');
     request.flush(null);
   });
+
+  it('updates only the selected child display name', () => {
+    service.updateChild(42, { name: 'Leon' }).subscribe((child) => expect(child.name).toBe('Leon'));
+    const request = http.expectOne('/api/children/42');
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({ name: 'Leon' });
+    request.flush({ id: 42, name: 'Leon' });
+  });
+
+  it('deactivates only the selected child', () => {
+    service.deactivateChild(42).subscribe();
+    const request = http.expectOne('/api/children/42');
+    expect(request.request.method).toBe('DELETE');
+    expect(request.request.body).toBeNull();
+    request.flush(null);
+  });
 });
