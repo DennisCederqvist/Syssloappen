@@ -175,6 +175,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(assignment => assignment.AssignedByUserId)
                 .IsRequired();
 
+            entity.Property(assignment => assignment.Status)
+                .HasConversion<string>()
+                .HasMaxLength(30)
+                .HasDefaultValue(ChoreAssignmentStatus.Assigned)
+                .IsConcurrencyToken();
+
             entity.HasIndex(assignment => new
             {
                 assignment.HouseholdId,

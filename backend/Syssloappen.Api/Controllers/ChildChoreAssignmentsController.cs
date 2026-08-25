@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.ChoreAssignments;
+using Syssloappen.Api.Models;
 
 namespace Syssloappen.Api.Controllers;
 
@@ -13,7 +14,8 @@ namespace Syssloappen.Api.Controllers;
 [Authorize(Roles = RoleNames.Child)]
 public sealed class ChildChoreAssignmentsController(
     AppDbContext dbContext,
-    UserManager<ApplicationUser> userManager) : ControllerBase
+    UserManager<ApplicationUser> userManager,
+    TimeProvider timeProvider) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<ChildChoreAssignmentResponse>>(StatusCodes.Status200OK)]
@@ -60,9 +62,97 @@ public sealed class ChildChoreAssignmentsController(
                 assignment.ChoreId,
                 assignment.Chore.Title,
                 assignment.Chore.Description,
-                assignment.AssignedAt))
+                assignment.AssignedAt,
+                assignment.Status.ToString(),
+                assignment.SubmittedAt))
             .ToListAsync();
 
         return Ok(assignments);
+    }
+
+    [HttpPost("{assignmentId:int}/submit")]
+    [ProducesResponseType<SubmitChoreAssignmentResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<SubmitChoreAssignmentResponse>> Submit(int assignmentId)
+    {
+        if (assignmentId <= 0)
+        {
+            ModelState.AddModelError(nameof(assignmentId), "Assignment ID must be positive.");
+            return ValidationProblem(ModelState);
+        }
+
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        // Account and household select the active ChildProfile. The request cannot
+        // choose a ChildId, HouseholdId, owner, status or timestamp.
+        var child = await dbContext.ChildProfiles
+            .AsNoTracking()
+            .SingleOrDefaultAsync(childProfile =>
+                childProfile.UserId == currentUser.Id
+                && childProfile.HouseholdId == currentUser.HouseholdId
+                && childProfile.IsActive);
+
+        if (child is null)
+        {
+            return Unauthorized();
+        }
+
+        // All ownership links are repeated in the update lookup. A sibling's,
+        // another household's or an inconsistent assignment looks like not found.
+        var assignment = await dbContext.ChoreAssignments
+            .SingleOrDefaultAsync(item =>
+                item.Id == assignmentId
+                && item.ChildId == child.Id
+                && item.HouseholdId == currentUser.HouseholdId
+                && item.Child.HouseholdId == currentUser.HouseholdId
+                && item.Child.UserId == currentUser.Id
+                && item.Child.IsActive
+                && item.Chore.HouseholdId == currentUser.HouseholdId);
+
+        if (assignment is null)
+        {
+            return NotFound();
+        }
+
+        if (assignment.Status != ChoreAssignmentStatus.Assigned)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Assignment cannot be submitted",
+                Detail = "The assignment has already been submitted or reviewed."
+            });
+        }
+
+        assignment.Status = ChoreAssignmentStatus.PendingApproval;
+        assignment.SubmittedAt = timeProvider.GetUtcNow().UtcDateTime;
+
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Assignment cannot be submitted",
+                Detail = "The assignment was already changed by another request."
+            });
+        }
+
+        return Ok(new SubmitChoreAssignmentResponse(
+            assignment.Id,
+            assignment.Status.ToString(),
+            assignment.SubmittedAt.Value));
     }
 }

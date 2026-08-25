@@ -128,7 +128,18 @@ Den avgränsade Child-vyn är implementerad, committad och testad:
 - SQL-frågan kräver samma autentiserade konto, ChildProfile och Household på tilldelningen samt samma Household på sysslan. Syskons, andra familjers och inkonsekventa tilldelningsrader returneras inte.
 - Svaret innehåller endast tilldelnings-ID, sysslo-ID, titel, valfri beskrivning och tilldelningstid. Nyaste tilldelningar visas först.
 - Både Adult-styrd enhetskoppling och reservinloggning ger åtkomst till samma privata vy. Avaktivering gör sessionen ogiltig medan den historiska tilldelningsraden bevaras.
-- Ingen datamodell ändrades och ingen migration behövs. Status-, rapporterings-, completion-, approval- och frontendflöden väntar fortfarande.
+- Själva US-040-delen ändrade ingen datamodell. Status och rapportering läggs till i den efterföljande US-041-delen nedan; completion, approval och frontend väntar fortfarande.
+
+US-041:s avgränsade rapporteringsdel är implementerad, testad och mergad till `main`:
+
+- `POST /api/child/chore-assignments/{assignmentId}/submit` kräver en autentiserad användare med rollen `Child`; anonyma användare får HTTP 401 och Adults HTTP 403.
+- Endpointen har ingen request-DTO. Klienten väljer därför inte Child, Household, ägare, status eller tid. Backend härleder konto och Household från den validerade Identity-cookien, hittar den aktiva barnprofilen och använder serverns `TimeProvider`.
+- Tilldelningen hämtas med tilldelnings-ID, autentiserat barn, konto, aktiv status och samma Household på tilldelning, barn och syssla i samma SQL-fråga. Syskons, andra Households, obefintliga och inkonsekventa rader ger neutralt HTTP 404.
+- Ett positivt ID krävs. Noll och negativa ID:n ger HTTP 400. Oväntade JSON-fält ignoreras eftersom endpointen inte binder någon request body och kan inte styra den sparade raden.
+- En egen tilldelning i läget `Assigned` ändras till `PendingApproval` och får `SubmittedAt` satt till aktuell UTC-tid i backend. Barn- och sysslekopplingarna bevaras på tilldelningen.
+- Upprepad rapportering ger tydligt HTTP 409 och ändrar inte den första rapporteringstiden. `Status` är ett EF Core-concurrency token så två samtidiga uppdateringar inte båda kan lyckas.
+- Child-listningen visar nu `Status` och nullable `SubmittedAt`. Den visar både `Assigned` och `PendingApproval`; det breda kriteriet för `NeedsRedo` och `Approved` väntar på Adult-flödet.
+- Ingen completion eller poäng skapas. Approval, rejection, frontend och QR ingår inte i arbetsdelen.
 
 ## Teknik och versioner
 
@@ -195,6 +206,7 @@ Aktuella migrationer:
 - `AddHouseholdFamilyCodes` lägger till unik familjekodshash, sista fyra tecken och rotationstid på `Households`. Den säkra backfillen och det unika indexet är applicerade i `syssloappen_dev`.
 - `AddChores` skapar tabellen `Chores` med Household-, skaparkonto-, titel-, beskrivnings- och tidsfält samt främmande nycklar och index. Migrationen är applicerad i `syssloappen_dev`.
 - `AddChoreAssignments` skapar tabellen `ChoreAssignments` med Household-, sysslo-, barn-, tilldelande Adult- och tidsfält samt främmande nycklar och index. Migrationen är applicerad i `syssloappen_dev`.
+- `AddChoreAssignmentSubmission` lägger till textstatus med standardvärdet `Assigned` och nullable `SubmittedAt` på `ChoreAssignments`. Migrationen är genererad och granskad men inte applicerad i `syssloappen_dev`.
 
 Vanliga kommandon från repots rot:
 
@@ -255,6 +267,10 @@ Elva testfall för US-031:s avgränsade backenddel verifierar Adult-behörighet,
 
 Åtta integrationstester för den avgränsade Child-vyn verifierar Child-behörighet, svarsdata och sortering, tom privat vy, syskonisolering, Household-isolering, ignorerade manipulerade query-parametrar, skydd mot inkonsekventa databasrader, omedelbar nekning efter avaktivering, bevarad historisk tilldelning samt åtkomst efter både enhetskoppling och reservinloggning. Alla 77 integrationstester är godkända i Release-konfiguration.
 
+Elva testfall för US-041:s rapporteringsdel verifierar Child-behörighet, korrekt och beständig statusövergång, backendstyrt Child, Household, ägare, status och rapporteringstid, syskon- och Household-isolering, inkonsekventa databasrader, avaktiverat barn, manipulerade och oväntade ID-/ägarfält, ogiltigt och obefintligt ID, upprepad rapportering, status i barnets listning samt regression för Adult-login, barnhantering, Child-session, sysslor och tilldelning. Hela sviten med 88 integrationstester är godkänd i Release-konfiguration.
+
+Ett idempotent PostgreSQL-script från `AddChoreAssignments` till `AddChoreAssignmentSubmission` har genererats och granskats utan att köras. I en transaktion lägger det endast till `Status` som `character varying(30) NOT NULL DEFAULT 'Assigned'`, lägger till nullable `SubmittedAt` som `timestamp with time zone` och skriver migrationshistorikraden. `syssloappen_dev` har inte ändrats och inget PostgreSQL-smoke-test har gjorts för arbetsdelen.
+
 Alla tio migrationer till och med `AddChoreAssignments` är applicerade i `syssloappen_dev`. Ett manuellt end-to-end-smoke-test mot PostgreSQL verifierade Adult-registrering och login, barnskapande, maskerad familjekodsstatus, rotation och omedelbar ogiltigförklaring av den gamla koden, enhetskoppling, beständig HttpOnly-cookie, Child-logout, skiftlägesokänslig reservlogin, skydd mot manipulerade ID-/rollfält, Adult-listning och återkallelse av session samt omedelbar nekning efter avaktivering. Den glidande förnyelsealgoritmen är verifierad av integrationstesterna; smoke-testet verifierade löpande sessionvalidering mot PostgreSQL utan att manipulera tidsstämplar manuellt.
 
 Release-build och formatteringskontroll är godkända utan fel eller varningar. EF Core rapporterar inga väntande modelländringar utanför migrationen. Ett idempotent PostgreSQL-script från `AddChildPairingCodes` till `AddChildDeviceSessions` har genererats och granskats: det skapar endast den nya sessionstabellen, främmande nycklar, index och migrationshistorikraden i en transaktion. Migrationen har applicerats via EF Core; det separat genererade scriptet kördes inte.
@@ -297,7 +313,7 @@ US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad aut
 
 US-031:s avgränsade backenddel, där en Adult tilldelar en syssla till ett aktivt barn i samma Household, är färdig och testad automatiskt samt mot PostgreSQL. `AddChores` och `AddChoreAssignments` är applicerade och det finns inga väntande migrationer.
 
-Barnets autentiserade, Household-isolerade läsning av sina egna tilldelningar är färdig och testad automatiskt samt mot PostgreSQL. Ingen migration behövdes. Nästa naturliga avgränsning är status- och rapporteringsdelen där ett Child markerar sin egen tilldelning som utförd. Frontend, QR, poäng, completion och approval ska fortfarande vänta tills respektive arbetsdel.
+Barnets autentiserade, Household-isolerade läsning av sina egna tilldelningar samt status- och rapporteringsdelen för US-041 är färdiga, automatiskt testade och mergade till `main`. Den nya migrationen är genererad men inte applicerad, och arbetsdelen är ännu inte smoke-testad mot PostgreSQL. Nästa separata produktdel är Adult-vyn och approval/rejection; frontend, QR, poäng och completion ska fortsatt vänta på sina egna avgränsningar.
 
 ## Kända kvarvarande saker
 
@@ -306,4 +322,4 @@ Barnets autentiserade, Household-isolerade läsning av sina egna tilldelningar �
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
 - PostgreSQL-smoke-körningarna, inklusive transportfelsökningen inför den godkända Child-vy-körningen, skapade flera isolerade test-Households i `syssloappen_dev`. Alla namn och konton är smoke-märkta; testlösenorden genererades endast i minnet och är inte dokumenterade.
-- Household-isolering är testad för barn-, sysslo-, Adult-tilldelnings- och Child-tilldelningsendpoints. Status-, rapporterings-, completion- och approval-flöden återstår och måste få motsvarande isoleringskontroller i sina egna arbetsdelar.
+- Household-isolering är testad för barn-, sysslo-, Adult-tilldelnings-, Child-listnings- och Child-rapporteringsendpoints. Completion- och approval-flöden återstår och måste få motsvarande isoleringskontroller i sina egna arbetsdelar.

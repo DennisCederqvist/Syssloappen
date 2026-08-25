@@ -394,16 +394,16 @@ så att en vuxen kan kontrollera och godkänna arbetet.
 
 ### Acceptance Criteria
 
-- [ ] Barnet måste vara inloggat.
-- [ ] Barnet får endast rapportera sina egna tilldelningar som utförda.
-- [ ] Ett barn får inte rapportera ett syskons syssla som utförd.
-- [ ] Tilldelningen ska få status `PendingApproval`.
-- [ ] Sysslan ska inte räknas som godkänd direkt.
-- [ ] En slutgiltig completion ska inte skapas innan en Adult har godkänt sysslan.
-- [ ] Inga eventuella poäng får delas ut innan en Adult har godkänt sysslan.
-- [ ] Systemet ska spara vilket barn som utförde sysslan.
-- [ ] Systemet ska spara vilken syssla som utfördes.
-- [ ] Systemet ska spara tidpunkten då barnet rapporterade sysslan som utförd.
+- [x] Barnet måste vara inloggat.
+- [x] Barnet får endast rapportera sina egna tilldelningar som utförda.
+- [x] Ett barn får inte rapportera ett syskons syssla som utförd.
+- [x] Tilldelningen ska få status `PendingApproval`.
+- [x] Sysslan ska inte räknas som godkänd direkt.
+- [x] En slutgiltig completion ska inte skapas innan en Adult har godkänt sysslan.
+- [x] Inga eventuella poäng får delas ut innan en Adult har godkänt sysslan.
+- [x] Systemet ska spara vilket barn som utförde sysslan.
+- [x] Systemet ska spara vilken syssla som utfördes.
+- [x] Systemet ska spara tidpunkten då barnet rapporterade sysslan som utförd.
 
 ---
 
