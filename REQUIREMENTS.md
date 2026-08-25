@@ -472,7 +472,7 @@ Approved eller NeedsRedo
 
 ---
 
-# 10. User Stories – Poäng
+# 10. User Stories – Poäng och belöningar
 
 ## US-060 – Barn får poäng för godkända sysslor
 
@@ -497,6 +497,74 @@ så att jag kan se resultatet av mitt arbete.
 
 ---
 
+## US-070 – Vuxen skapar familjens belöningar
+
+**Som vuxen**
+vill jag kunna lägga till belöningar som barnet kan använda sina poäng till
+så att familjen själv kan bestämma vad poängen betyder.
+
+### Acceptance Criteria
+
+- [ ] Endast en autentiserad Adult får skapa och administrera belöningar.
+- [ ] En belöning ska ha ett namn, exempelvis `Litet gosedjur` eller `Lite godis`.
+- [ ] En belöning ska ha ett positivt poängpris i heltal.
+- [ ] En belöning ska kunna ha en valfri beskrivning.
+- [ ] En Adult ska valfritt kunna lägga till en bild till belöningen.
+- [ ] Belöningsflödet ska fungera även utan bild.
+- [ ] Bildformat, filstorlek och lagring ska valideras och beslutas innan bilduppladdning implementeras.
+- [ ] Belöningen ska automatiskt kopplas till den autentiserade Adult-användarens Household.
+- [ ] Klienten får inte styra Household, skapare, ID eller tidsuppgifter.
+- [ ] En Adult får endast se och administrera belöningar i sitt eget Household.
+- [ ] En belöning ska kunna avaktiveras utan att historiska köp eller förfrågningar raderas.
+
+---
+
+## US-071 – Barn begär att använda poäng till en belöning
+
+**Som barn**
+vill jag kunna välja en belöning från min familjs lista
+så att jag kan använda mina intjänade poäng.
+
+### Acceptance Criteria
+
+- [ ] Barnet måste vara autentiserat och aktivt.
+- [ ] Barnet ska endast se aktiva belöningar från sitt eget Household.
+- [ ] Barnet ska se belöningens namn, poängpris, valfria beskrivning och eventuell bild.
+- [ ] Tillgängliga poäng ska beräknas som intjänade poäng minus reserverade och slutligt använda poäng.
+- [ ] Backend ska kontrollera att barnet har tillräckligt många tillgängliga poäng.
+- [ ] En godkänd begäran ska reservera poängen direkt så att samma poäng inte kan användas flera gånger samtidigt.
+- [ ] Backend ska skapa en beständig redemption med status `Requested`.
+- [ ] Redemption ska spara belöningen, barnet, Household, det aktuella poängpriset och begäranstiden.
+- [ ] Det sparade poängpriset ska vara en snapshot som inte ändras om belöningens pris senare ändras.
+- [ ] Klienten får inte styra Child, Household, poängpris, status eller tidsuppgifter.
+- [ ] Otillräckliga poäng, avaktiverade belöningar och upprepade eller manipulerade anrop ska hanteras atomärt och säkert.
+- [ ] Ett barn får inte se eller begära ett syskons eller ett annat Households belöningar.
+
+---
+
+## US-072 – Vuxen hanterar barnets belöningsförfrågan
+
+**Som vuxen**
+vill jag kunna godkänna, lämna ut eller avbryta en belöningsförfrågan
+så att familjens fysiska belöningar hanteras kontrollerat.
+
+### Acceptance Criteria
+
+- [ ] Endast en autentiserad Adult i samma Household får hantera förfrågan.
+- [ ] En Adult ska kunna se Householdets förfrågningar med barn, belöning, poängpris och status.
+- [ ] En `Requested`-förfrågan ska kunna ändras till `Approved` eller `Cancelled`.
+- [ ] En `Approved`-förfrågan ska kunna markeras som `Delivered` när belöningen lämnats ut.
+- [ ] En förfrågan som avbryts före utlämning ska frigöra de reserverade poängen.
+- [ ] En `Delivered`-förfrågan ska inte kunna avbrytas eller återbetalas genom ett manipulerat anrop.
+- [ ] Systemet ska spara vilken Adult som hanterade förfrågan och när.
+- [ ] Den vuxna ska valfritt kunna lämna en kommentar.
+- [ ] Samma förfrågan får inte dra av, frigöra eller återbetala poäng flera gånger.
+- [ ] Samtidiga anrop får inte kunna skapa negativt saldo eller dubbel användning av poäng.
+- [ ] Historiken ska bevaras även om barnet eller belöningen senare avaktiveras.
+- [ ] Information och ändringar ska vara strikt isolerade per Household.
+
+---
+
 # 11. Behörighetsmatris
 
 | Funktion                     | Adult           | Child |
@@ -514,6 +582,9 @@ så att jag kan se resultatet av mitt arbete.
 | Rapportera egen syssla utförd | Nej/ej relevant | Ja    |
 | Godkänna eller neka syssla   | Ja              | Nej   |
 | Se familjens completions     | Ja              | Nej   |
+| Skapa och administrera belöning | Ja           | Nej   |
+| Begära belöning              | Nej             | Ja    |
+| Hantera belöningsförfrågan   | Ja              | Nej   |
 | Bjuda in Adult               | Ja              | Nej   |
 | Administrera annat Household | Nej             | Nej   |
 
@@ -597,6 +668,36 @@ ApprovedAt
 PointsAwarded
 ```
 
+## Reward
+
+```text
+Id
+HouseholdId
+CreatedByUserId
+Name
+Description
+PointsCost
+ImageReference
+IsActive
+CreatedAt
+```
+
+## RewardRedemption
+
+```text
+Id
+HouseholdId
+RewardId
+ChildId
+PointsCost
+Status
+RequestedAt
+ReviewedByUserId
+ReviewedAt
+DeliveredAt
+Comment
+```
+
 ---
 
 # 13. Viktiga backend-regler
@@ -637,7 +738,28 @@ För godkännandeflödet gäller dessutom:
 
 ---
 
-# 14. MVP
+# 14. Frontend och användarupplevelse
+
+Den första frontendversionen får vara visuellt enkel. Målet är först att göra de färdiga backendflödena begripliga och användbara. Färger, illustrationer och mer avancerad design ska kunna ändras senare utan att affärslogiken behöver byggas om.
+
+### Acceptance Criteria
+
+- [ ] Frontend ska byggas i Angular.
+- [ ] Frontend ska utformas mobile first eftersom både Adults och Children främst väntas använda mobil eller surfplatta.
+- [ ] Adult-flödena ska vara fullt användbara på en vanlig mobilskärm utan horisontell scrollning.
+- [ ] Child-flödena ska vara fullt användbara på både mobil och surfplatta utan horisontell scrollning.
+- [ ] Primära knappar och val ska ha tydliga texter och vara lätta att trycka på med fingret.
+- [ ] Text, status, felmeddelanden och poäng ska vara tydligt läsbara på små skärmar.
+- [ ] Adult- och Child-vyer ska vara separerade och anpassade efter respektive roll.
+- [ ] Desktoplayout får förbättras responsivt men ska inte prioriteras före mobilflödena.
+- [ ] Den första designen ska vara enkel och komponentbaserad så att utseendet kan ändras senare.
+- [ ] Skapa-syssla-formuläret ska ha en titelruta och en poängrullista med `5`, `10`, `15` och `20`, där `5` är förvalt.
+- [ ] Frontend får aldrig ersätta backendens kontroller av identitet, roll, Household, status, poäng eller ägarskap.
+- [ ] Grundläggande tillgänglighet ska beaktas, inklusive formuläretiketter, tangentbordsnavigering, fokusmarkering och tillräckliga kontraster.
+
+---
+
+# 15. MVP
 
 Första fungerande versionen ska vara liten.
 
@@ -653,20 +775,19 @@ Första fungerande versionen ska vara liten.
 - [x] Adult kan tilldela sysslor.
 - [x] Child kan logga in genom Adult-styrd enhetskoppling.
 - [x] Child kan se sina egna sysslor.
-- [ ] Child kan rapportera en syssla som utförd.
-- [ ] Adult kan godkänna eller neka en rapporterad syssla.
-- [ ] Adult kan se utförda sysslor.
+- [x] Child kan rapportera en syssla som utförd.
+- [x] Adult kan godkänna eller neka en rapporterad syssla.
+- [x] Adult kan se utförda sysslor.
 - [ ] Household-isolering fungerar.
 - [x] Authentication och authorization fungerar.
 
 ---
 
-# 15. Inte MVP
+# 16. Inte MVP
 
 Följande funktioner kan vara intressanta senare men ska **inte byggas innan kärnfunktionerna fungerar**.
 
-- Poängsystem
-- Belöningar
+- Belöningsbutik och belöningsförfrågningar enligt US-070–US-072
 - Veckopeng
 - Badges/achievements
 - Pushnotiser
@@ -684,7 +805,7 @@ Följande funktioner kan vara intressanta senare men ska **inte byggas innan kä
 
 ---
 
-# 16. Möjliga framtida funktioner
+# 17. Möjliga framtida funktioner
 
 ## Återkommande sysslor
 
@@ -703,19 +824,17 @@ Varje söndag
 
 ---
 
-## Poäng och belöningar
+## Belöningsbutik
 
-Sysslor skulle kunna ge poäng.
-
-Poäng får tilldelas först när en Adult har godkänt den rapporterade sysslan.
+Poäng för godkända sysslor är implementerade. Nästa framtida del är familjedefinierade belöningar och belöningsförfrågningar enligt US-070–US-072.
 
 ```text
-Mata katten       +5
-Städa rummet     +10
-Töm diskmaskinen  +5
+Lite godis          25 poäng
+Liten leksak       100 poäng
+Gosedjur           200 poäng
 ```
 
-Barnet skulle senare kunna använda poängen för familjedefinierade belöningar.
+Barnet ska senare kunna använda poängen för familjedefinierade belöningar utan att samma poäng kan användas flera gånger.
 
 ---
 
@@ -742,7 +861,7 @@ Den Adult-styrda enhetskopplingen med engångskod ingår i barnloginens kärnfl�
 
 ---
 
-# 17. Development Guidelines för AI-assisterad utveckling
+# 18. Development Guidelines för AI-assisterad utveckling
 
 Projektet kommer att utvecklas med hjälp av AI-verktyg som Codex och GitHub Copilot.
 
@@ -837,7 +956,7 @@ om det inte finns ett konkret behov.
 
 ---
 
-# 18. Definition of Done
+# 19. Definition of Done
 
 En user story betraktas som färdig när:
 
@@ -852,47 +971,37 @@ En user story betraktas som färdig när:
 
 ---
 
-# 19. Prioriterad implementation
+# 20. Prioriterad fortsatt implementation
 
-Föreslagen ordning:
+Backendens kärnflöde för autentisering, barn, sysslor, tilldelning, rapportering, Adult-granskning och intjänade poäng är färdigt. Föreslagen fortsatt ordning är:
 
 ```text
-1. Projektstruktur
+1. Mobile-first Angular-grund, login och rollstyrd navigation
    ↓
-2. Databas + grundläggande modeller
+2. Adult-frontend för barn, sysslor, poängval och tilldelning
    ↓
-3. Household
+3. Adult-frontend för PendingApproval, Approved och NeedsRedo
    ↓
-4. Adult authentication
+4. Child-frontend för egna sysslor, rapportering, kommentar och poängsaldo
    ↓
-5. Skapa Child
+5. Responsivitet, tillgänglighet och browserbaserade kärnflödestester
    ↓
-6. Ändra och avaktivera Child
+6. Ytterligare Adult enligt US-011
    ↓
-7. Child authentication
+7. Belöningskatalogens backend enligt US-070
    ↓
-8. Skapa Chore
+8. Säker poängreservation och redemption enligt US-071–US-072
    ↓
-9. Tilldela Chore
+9. Mobile-first belöningsbutik utan krav på bild
    ↓
-10. Child: "Mina sysslor"
+10. Säker bilduppladdning för belöningar
    ↓
-11. Child: rapportera Chore som utförd
-   ↓
-12. Adult: godkänn eller neka rapporterad Chore
-   ↓
-13. Adult: se completions
-   ↓
-14. Lägg till ytterligare Adult
-   ↓
-15. UI-förbättringar
-   ↓
-16. PWA
+11. PWA
 ```
 
 ---
 
-# 20. Projektets kärnprincip
+# 21. Projektets kärnprincip
 
 Den viktigaste regeln för systemets arkitektur är:
 
