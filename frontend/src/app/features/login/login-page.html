@@ -1,0 +1,202 @@
+<main class="page-enter mx-auto grid min-h-dvh w-full max-w-6xl lg:grid-cols-[1.05fr_0.95fr]">
+  <section
+    class="hidden overflow-hidden bg-brand-600 p-12 text-white lg:flex lg:flex-col lg:justify-between"
+  >
+    <div class="flex items-center gap-3 text-lg font-extrabold">
+      <span class="grid size-11 place-items-center rounded-2xl bg-white/15 text-2xl">✓</span
+      >Syssloappen
+    </div>
+    <div class="max-w-md">
+      <div
+        class="mb-8 grid size-32 place-items-center rounded-[2.5rem] bg-white/12 text-7xl"
+        aria-hidden="true"
+      >
+        🏡
+      </div>
+      <p class="mb-3 text-sm font-extrabold tracking-[0.18em] text-brand-100 uppercase">
+        Enklare familjevardag
+      </p>
+      <h1 class="text-5xl leading-[1.05] font-black">Små uppgifter.<br />Stora framsteg.</h1>
+      <p class="mt-5 text-lg leading-8 text-brand-100">
+        En lugn plats där familjen hjälps åt och varje insats räknas.
+      </p>
+    </div>
+    <p class="text-sm text-brand-100">Tryggt separerat för varje familj.</p>
+  </section>
+  <section class="flex min-h-dvh items-center justify-center px-5 py-8 sm:px-10">
+    <div class="w-full max-w-md">
+      <div class="mb-8 flex items-center gap-3 lg:hidden">
+        <span
+          class="grid size-11 place-items-center rounded-2xl bg-brand-500 text-xl font-black text-white shadow-lg shadow-brand-500/20"
+          >✓</span
+        ><span class="text-xl font-black">Syssloappen</span>
+      </div>
+      <div class="mb-7">
+        <p class="mb-2 text-sm font-extrabold tracking-[0.14em] text-brand-600 uppercase">
+          Välkommen
+        </p>
+        <h1 class="text-3xl font-black tracking-tight sm:text-4xl">Logga in och fortsätt</h1>
+        <p class="mt-2 leading-7 text-muted">Välj den vy som passar dig.</p>
+      </div>
+      <div
+        class="mb-7 grid grid-cols-2 rounded-2xl bg-white p-1.5 shadow-sm ring-1 ring-line"
+        role="tablist"
+        aria-label="Välj inloggning"
+      >
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="mode() === 'adult'"
+          (click)="selectMode('adult')"
+          class="min-h-12 rounded-xl px-4 font-extrabold transition"
+          [class.bg-brand-500]="mode() === 'adult'"
+          [class.text-white]="mode() === 'adult'"
+        >
+          Vuxen
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="mode() === 'child'"
+          (click)="selectMode('child')"
+          class="min-h-12 rounded-xl px-4 font-extrabold transition"
+          [class.bg-brand-500]="mode() === 'child'"
+          [class.text-white]="mode() === 'child'"
+        >
+          Barn
+        </button>
+      </div>
+      @if (errorMessage()) {
+        <div
+          class="mb-5 rounded-2xl border border-coral/30 bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+          role="alert"
+        >
+          {{ errorMessage() }}
+        </div>
+      }
+      @if (mode() === 'adult') {
+        <form [formGroup]="adultForm" (ngSubmit)="submitAdult()" class="space-y-5" novalidate>
+          <label class="block font-bold"
+            >E-post<input
+              formControlName="email"
+              type="email"
+              autocomplete="email"
+              inputmode="email"
+              placeholder="du@example.se"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm transition focus:border-brand-500"
+            />
+            @if (adultForm.controls.email.touched && adultForm.controls.email.invalid) {
+              <span class="mt-2 block text-sm text-red-700">Skriv en giltig e-postadress.</span>
+            }
+          </label>
+          <label class="block font-bold"
+            >Lösenord<input
+              formControlName="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Ditt lösenord"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm transition focus:border-brand-500"
+            />
+            @if (adultForm.controls.password.touched && adultForm.controls.password.invalid) {
+              <span class="mt-2 block text-sm text-red-700">Skriv ditt lösenord.</span>
+            }
+          </label>
+          <button
+            type="submit"
+            [disabled]="isSubmitting()"
+            class="min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
+          >
+            {{ isSubmitting() ? 'Loggar in…' : 'Logga in som vuxen' }}
+          </button>
+        </form>
+      } @else {
+        <div class="mb-5 flex justify-center gap-1 rounded-2xl bg-brand-50 p-1 text-sm font-bold">
+          <button
+            type="button"
+            (click)="selectChildLoginMode('pairing')"
+            class="min-h-11 flex-1 rounded-xl px-3"
+            [class.bg-white]="childLoginMode() === 'pairing'"
+            [class.shadow-sm]="childLoginMode() === 'pairing'"
+          >
+            Engångskod
+          </button>
+          <button
+            type="button"
+            (click)="selectChildLoginMode('fallback')"
+            class="min-h-11 flex-1 rounded-xl px-3"
+            [class.bg-white]="childLoginMode() === 'fallback'"
+            [class.shadow-sm]="childLoginMode() === 'fallback'"
+          >
+            Familjekod
+          </button>
+        </div>
+        @if (childLoginMode() === 'pairing') {
+          <form
+            [formGroup]="pairingForm"
+            (ngSubmit)="submitPairingCode()"
+            class="space-y-5"
+            novalidate
+          >
+            <label class="block font-bold"
+              >Kod från en vuxen<input
+                formControlName="code"
+                type="text"
+                autocomplete="one-time-code"
+                autocapitalize="characters"
+                placeholder="Skriv engångskoden"
+                class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-center text-lg font-black tracking-[0.2em] uppercase shadow-sm focus:border-brand-500"
+            /></label>
+            <button
+              type="submit"
+              [disabled]="isSubmitting()"
+              class="min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
+            >
+              {{ isSubmitting() ? 'Kopplar…' : 'Koppla min enhet' }}
+            </button>
+            <p class="text-center text-sm leading-6 text-muted">
+              Be en vuxen skapa en ny kod. Den gäller en kort stund och kan bara användas en gång.
+            </p>
+          </form>
+        } @else {
+          <form [formGroup]="childForm" (ngSubmit)="submitChild()" class="space-y-5" novalidate>
+            <label class="block font-bold"
+              >Familjekod<input
+                formControlName="familyCode"
+                type="text"
+                autocomplete="one-time-code"
+                autocapitalize="characters"
+                placeholder="Familjens kod"
+                class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base tracking-wider uppercase shadow-sm focus:border-brand-500"
+            /></label>
+            <label class="block font-bold"
+              >Mitt namn<input
+                formControlName="userName"
+                type="text"
+                autocomplete="username"
+                placeholder="Ditt användarnamn"
+                class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+            /></label>
+            <label class="block font-bold"
+              >Mitt lösenord<input
+                formControlName="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Ditt lösenord"
+                class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+            /></label>
+            <button
+              type="submit"
+              [disabled]="isSubmitting()"
+              class="min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
+            >
+              {{ isSubmitting() ? 'Öppnar…' : 'Öppna min sida' }}
+            </button>
+            <p class="text-center text-sm leading-6 text-muted">
+              Använd detta alternativ om en vuxen inte kan skapa en engångskod just nu.
+            </p>
+          </form>
+        }
+      }
+    </div>
+  </section>
+</main>
