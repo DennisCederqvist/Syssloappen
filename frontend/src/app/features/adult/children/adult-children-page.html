@@ -1,0 +1,236 @@
+<div class="page-enter min-h-dvh bg-canvas pb-24 md:flex md:pb-0">
+  <app-bottom-nav [items]="navItems" />
+  <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+    <app-user-header eyebrow="Familjen" title="Barn och konton" variant="adult" />
+
+    <section
+      class="mt-7 rounded-[1.75rem] bg-brand-600 p-5 text-white shadow-xl shadow-brand-600/10 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7"
+    >
+      <div>
+        <p class="text-sm font-extrabold text-brand-100">Trygga barnkonton</p>
+        <h2 class="mt-1 text-2xl font-black">En egen enkel vy för varje barn</h2>
+        <p class="mt-2 max-w-2xl leading-7 text-brand-100">
+          När du lägger till ett barn skapas profilen och kontot tillsammans i din familj.
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="openForm()"
+        class="mt-5 min-h-14 w-full shrink-0 rounded-2xl bg-white px-5 font-extrabold text-brand-600 shadow-lg transition hover:bg-brand-50 sm:mt-0 sm:w-auto"
+      >
+        + Lägg till barn
+      </button>
+    </section>
+
+    @if (createdChild(); as child) {
+      <section
+        class="mt-5 flex items-start gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-900"
+        aria-live="polite"
+      >
+        <span
+          class="grid size-9 shrink-0 place-items-center rounded-xl bg-green-200 font-black"
+          aria-hidden="true"
+          >✓</span
+        >
+        <div>
+          <h2 class="font-black">{{ child.name }} är tillagd</h2>
+          <p class="mt-1 text-sm leading-6">
+            Barnets användarnamn är <strong>{{ child.userName }}</strong
+            >. Nästa steg blir att skapa en engångskod för barnets enhet.
+          </p>
+        </div>
+      </section>
+    }
+
+    @if (showForm()) {
+      <section
+        class="mt-5 rounded-[1.75rem] bg-white p-5 shadow-lg ring-1 ring-line sm:p-7"
+        aria-labelledby="create-child-title"
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-extrabold text-brand-600">Nytt barnkonto</p>
+            <h2 id="create-child-title" class="mt-1 text-2xl font-black">Lägg till ett barn</h2>
+            <p class="mt-1 text-sm leading-6 text-muted">
+              Uppgifterna används bara inom din familj.
+            </p>
+          </div>
+          <button
+            type="button"
+            (click)="closeForm()"
+            class="grid size-11 shrink-0 place-items-center rounded-xl border border-line text-xl text-muted"
+            aria-label="Stäng formuläret"
+          >
+            ×
+          </button>
+        </div>
+
+        @if (formError()) {
+          <div
+            class="mt-5 rounded-2xl border border-coral/30 bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+            role="alert"
+          >
+            {{ formError() }}
+          </div>
+        }
+
+        <form
+          [formGroup]="childForm"
+          (ngSubmit)="submitChild()"
+          class="mt-6 grid gap-5 sm:grid-cols-2"
+          novalidate
+        >
+          <label class="block font-bold"
+            >Barnets namn<input
+              formControlName="name"
+              type="text"
+              autocomplete="off"
+              placeholder="Till exempel Maja"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+            />
+            @if (childForm.controls.name.touched && childForm.controls.name.invalid) {
+              <span class="mt-2 block text-sm text-red-700">Skriv barnets namn.</span>
+            }
+          </label>
+          <label class="block font-bold"
+            >Användarnamn<input
+              formControlName="userName"
+              type="text"
+              autocomplete="off"
+              autocapitalize="none"
+              placeholder="Till exempel maja"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+            />
+            <span class="mt-2 block text-xs leading-5 text-muted"
+              >Barnvänligt och unikt inom familjen.</span
+            >
+            @if (childForm.controls.userName.touched && childForm.controls.userName.invalid) {
+              <span class="mt-1 block text-sm text-red-700">Skriv ett användarnamn.</span>
+            }
+          </label>
+          <label class="block font-bold"
+            >Lösenord<input
+              formControlName="password"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Minst 8 tecken"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+            />
+            <span class="mt-2 block text-xs leading-5 text-muted"
+              >Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.</span
+            >
+            @if (childForm.controls.password.touched && childForm.controls.password.invalid) {
+              <span class="mt-1 block text-sm text-red-700">Lösenordet uppfyller inte kraven.</span>
+            }
+          </label>
+          <label class="block font-bold"
+            >Upprepa lösenordet<input
+              formControlName="confirmPassword"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Skriv lösenordet igen"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+            />
+            @if (
+              childForm.controls.confirmPassword.touched && childForm.hasError('passwordMismatch')
+            ) {
+              <span class="mt-2 block text-sm text-red-700">Lösenorden är inte lika.</span>
+            }
+          </label>
+          <div class="flex flex-col-reverse gap-3 sm:col-span-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              (click)="closeForm()"
+              class="min-h-13 rounded-2xl border border-line bg-white px-5 font-bold text-muted"
+            >
+              Avbryt</button
+            ><button
+              type="submit"
+              [disabled]="isSubmitting()"
+              class="min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white shadow-lg shadow-brand-500/20 hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
+            >
+              {{ isSubmitting() ? 'Skapar kontot…' : 'Skapa barnkonto' }}
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+
+    <section class="mt-7" aria-labelledby="children-title">
+      <div class="mb-4 flex items-end justify-between gap-4">
+        <div>
+          <p class="text-sm font-bold text-brand-600">Aktiva profiler</p>
+          <h2 id="children-title" class="text-xl font-black">Familjens barn</h2>
+        </div>
+        @if (!isLoading() && !loadError()) {
+          <span
+            class="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-muted shadow-sm ring-1 ring-line"
+            >{{ children().length }} barn</span
+          >
+        }
+      </div>
+
+      @if (isLoading()) {
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="h-28 animate-pulse rounded-3xl bg-white"></div>
+          <div class="h-28 animate-pulse rounded-3xl bg-white"></div>
+        </div>
+      } @else if (loadError()) {
+        <div class="rounded-3xl border border-red-200 bg-red-50 p-5">
+          <p class="font-bold text-red-800">{{ loadError() }}</p>
+          <button
+            type="button"
+            (click)="loadChildren()"
+            class="mt-4 min-h-11 rounded-xl bg-white px-4 font-extrabold text-red-800 ring-1 ring-red-200"
+          >
+            Försök igen
+          </button>
+        </div>
+      } @else if (children().length === 0) {
+        <div
+          class="rounded-[2rem] border-2 border-dashed border-brand-500/30 bg-white p-8 text-center"
+        >
+          <div
+            class="mx-auto grid size-20 place-items-center rounded-[1.75rem] bg-brand-50 text-4xl"
+            aria-hidden="true"
+          >
+            🧸
+          </div>
+          <h3 class="mt-5 text-xl font-black">Inga barn är tillagda ännu</h3>
+          <p class="mx-auto mt-2 max-w-md leading-7 text-muted">
+            Skapa familjens första barnkonto för att senare kunna tilldela sysslor.
+          </p>
+          <button
+            type="button"
+            (click)="openForm()"
+            class="mt-5 min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white"
+          >
+            + Lägg till första barnet
+          </button>
+        </div>
+      } @else {
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          @for (child of children(); track child.id; let index = $index) {
+            <article
+              class="flex items-center gap-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-line"
+            >
+              <div
+                class="grid size-14 shrink-0 place-items-center rounded-2xl text-2xl"
+                [class.bg-brand-100]="index % 3 === 0"
+                [class.bg-violet-100]="index % 3 === 1"
+                [class.bg-amber-100]="index % 3 === 2"
+                aria-hidden="true"
+              >
+                {{ index % 2 === 0 ? '🧒' : '👧' }}
+              </div>
+              <div class="min-w-0">
+                <h3 class="truncate text-lg font-black">{{ child.name }}</h3>
+                <p class="text-sm text-muted">Aktivt barnkonto</p>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </main>
+</div>

@@ -336,12 +336,12 @@ US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad aut
 
 US-031:s avgränsade backenddel, där en Adult tilldelar en syssla till ett aktivt barn i samma Household, är färdig och testad automatiskt samt mot PostgreSQL. `AddChores`, `AddChoreAssignments` och alla senare migrationer är applicerade; inga migrationer väntar.
 
-Barnets autentiserade, Household-isolerade läsning och rapportering samt Adult-listning, approval/rejection, completion och det beslutade poängsystemets backend är färdiga, mergade, migrerade och smoke-testade mot PostgreSQL. Den första mobile-first Angular-grunden med registrering, login, session, logout och rollstyrd navigation är också färdig och testad. Nästa avgränsade arbetsdel är Adult-frontend för att skapa och administrera barnkonton; därefter kopplas sysslor, poängval och tilldelning in stegvis.
+Barnets autentiserade, Household-isolerade läsning och rapportering samt Adult-listning, approval/rejection, completion och det beslutade poängsystemets backend är färdiga, mergade, migrerade och smoke-testade mot PostgreSQL. Den första mobile-first Angular-grunden med registrering, login, session, logout och rollstyrd navigation är också färdig och testad. Adult kan nu öppna en riktig barnsida, se Householdets aktiva barn och skapa barnprofil, Identity-konto och Child-roll tillsammans via det befintliga API:t. Nästa avgränsade arbetsdel är Adult-styrd engångskod för barnets enhet; därefter kan redigering, avaktivering, sysslor, poängval och tilldelning kopplas in stegvis.
 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
-- Frontendens navigation till barn, sysslor och granskning är ännu endast ett visuellt skal. Dessa flöden ska kopplas till de befintliga API-endpointsen i separata arbetsdelar.
+- Frontendens barnnavigation, aktiva barnlista och skapande av barnkonto är inkopplade. Redigering, avaktivering och enhetskoppling återstår, och navigationen till sysslor och granskning är ännu endast ett visuellt skal.
 - Belöningskatalog, poängreservation och belöningsförfrågningar enligt US-070–US-072 är dokumenterade men ännu inte implementerade. De ska byggas efter de centrala frontendflödena; bilduppladdning kommer sist i det planerade belöningsarbetet.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
