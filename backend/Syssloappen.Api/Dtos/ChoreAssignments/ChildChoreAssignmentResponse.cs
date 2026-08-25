@@ -5,4 +5,6 @@ public sealed record ChildChoreAssignmentResponse(
     int ChoreId,
     string Title,
     string? Description,
-    DateTime AssignedAt);
+    DateTime AssignedAt,
+    string Status,
+    DateTime? SubmittedAt);

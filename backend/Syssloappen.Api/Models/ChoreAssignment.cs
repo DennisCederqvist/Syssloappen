@@ -23,4 +23,8 @@ public sealed class ChoreAssignment
     public ApplicationUser AssignedByUser { get; set; } = null!;
 
     public DateTime AssignedAt { get; set; }
+
+    public ChoreAssignmentStatus Status { get; set; } = ChoreAssignmentStatus.Assigned;
+
+    public DateTime? SubmittedAt { get; set; }
 }
