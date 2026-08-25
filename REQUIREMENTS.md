@@ -256,11 +256,11 @@ så att appen blir enkel och privat.
 
 ### Acceptance Criteria
 
-- [ ] Barnet ska endast se sina egna tilldelade sysslor.
-- [ ] Barnet ska inte kunna se syskonens privata vy.
-- [ ] Barnet ska inte kunna se barn från andra Households.
-- [ ] Barnet ska inte kunna ändra vilket ChildId som används för att få tillgång till någon annans data.
-- [ ] Backend ska identifiera barnet från den autentiserade användaren.
+- [x] Barnet ska endast se sina egna tilldelade sysslor.
+- [x] Barnet ska inte kunna se syskonens privata vy.
+- [x] Barnet ska inte kunna se barn från andra Households.
+- [x] Barnet ska inte kunna ändra vilket ChildId som används för att få tillgång till någon annans data.
+- [x] Backend ska identifiera barnet från den autentiserade användaren.
 
 ---
 
@@ -340,7 +340,7 @@ så att barnet ser vad det ska göra.
 - [x] Sysslan och barnet måste tillhöra samma Household.
 - [x] Den vuxna måste tillhöra samma Household som barnet.
 - [x] Tilldelningen ska sparas i databasen.
-- [ ] Barnet ska kunna se tilldelningen efter inloggning.
+- [x] Barnet ska kunna se tilldelningen efter inloggning.
 - [x] Det ska inte gå att tilldela en syssla till ett barn från ett annat Household.
 
 ---
@@ -369,10 +369,10 @@ så att jag vet vad jag ska göra.
 
 ### Acceptance Criteria
 
-- [ ] Barnet måste vara inloggat.
-- [ ] Barnet ska endast se sysslor som är tilldelade det aktuella barnet.
+- [x] Barnet måste vara inloggat.
+- [x] Barnet ska endast se sysslor som är tilldelade det aktuella barnet.
 - [ ] Barnet ska kunna se om en syssla är tilldelad, väntar på godkännande, behöver göras om eller är godkänd.
-- [ ] Sysslor som tillhör syskon eller andra familjer får inte visas.
+- [x] Sysslor som tillhör syskon eller andra familjer får inte visas.
 
 ### Exempel
 
@@ -619,7 +619,7 @@ Första fungerande versionen ska vara liten.
 - [x] Adult kan skapa sysslor.
 - [x] Adult kan tilldela sysslor.
 - [x] Child kan logga in genom Adult-styrd enhetskoppling.
-- [ ] Child kan se sina egna sysslor.
+- [x] Child kan se sina egna sysslor.
 - [ ] Child kan rapportera en syssla som utförd.
 - [ ] Adult kan godkänna eller neka en rapporterad syssla.
 - [ ] Adult kan se utförda sysslor.
