@@ -18,6 +18,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/adult/adult-home-page').then((c) => c.AdultHomePage),
   },
   {
+    path: 'vuxen/barn',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/children/adult-children-page').then((c) => c.AdultChildrenPage),
+  },
+  {
     path: 'barn',
     canActivate: [childGuard],
     loadComponent: () => import('./features/child/child-home-page').then((c) => c.ChildHomePage),
