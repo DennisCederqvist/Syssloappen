@@ -19,6 +19,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Chore> Chores => Set<Chore>();
 
+    public DbSet<ChoreAssignment> ChoreAssignments => Set<ChoreAssignment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -165,6 +167,40 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasOne(chore => chore.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(chore => chore.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ChoreAssignment>(entity =>
+        {
+            entity.Property(assignment => assignment.AssignedByUserId)
+                .IsRequired();
+
+            entity.HasIndex(assignment => new
+            {
+                assignment.HouseholdId,
+                assignment.ChildId
+            });
+
+            entity.HasIndex(assignment => assignment.ChoreId);
+
+            entity.HasOne(assignment => assignment.Household)
+                .WithMany()
+                .HasForeignKey(assignment => assignment.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(assignment => assignment.Chore)
+                .WithMany()
+                .HasForeignKey(assignment => assignment.ChoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(assignment => assignment.Child)
+                .WithMany()
+                .HasForeignKey(assignment => assignment.ChildId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(assignment => assignment.AssignedByUser)
+                .WithMany()
+                .HasForeignKey(assignment => assignment.AssignedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }
