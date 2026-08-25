@@ -182,7 +182,7 @@ så att andra användare inte kan se eller ändra vår information.
 
 - [x] En Adult får endast se barn i sitt eget Household.
 - [x] En Adult får endast administrera barn i sitt eget Household.
-- [ ] En Adult får endast skapa sysslor för sitt eget Household.
+- [x] En Adult får endast skapa sysslor för sitt eget Household.
 - [x] En Adult får endast tilldela sysslor till barn i sitt eget Household.
 - [ ] Ett Child får endast se information som tillhör sitt eget Household.
 - [x] Backend ska kontrollera Household-tillhörighet.

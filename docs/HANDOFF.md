@@ -113,7 +113,7 @@ US-030 är implementerad, committad och testad:
 - `GET /api/chores` returnerar endast sysslor vars `HouseholdId` matchar den autentiserade Adult-användaren. Alla Adults i samma Household ser samma lista, medan andra Households förblir isolerade.
 - `Chore.CreatedByUserId` sparar vilket Identity-konto som skapade sysslan.
 
-Den avgränsade backenddelen av US-031 är implementerad och testad på feature-branchen `feature/us-031-assign-chore` men ännu inte committad eller mergad:
+Den avgränsade backenddelen av US-031 är implementerad, committad och testad:
 
 - `POST /api/chore-assignments` låter endast en autentiserad Adult tilldela en befintlig syssla till ett aktivt barn.
 - Requesten innehåller endast `ChoreId` och `ChildId`. Backend hämtar alltid `HouseholdId`, tilldelande Adult-konto och UTC-tid från den autentiserade användaren och serverns `TimeProvider`.
@@ -185,8 +185,8 @@ Aktuella migrationer:
 - `AddChildPairingCodes` skapar tabellen `ChildPairingCodes` med hash, Child-, Household- och Adult-koppling, skapad tid, utgångstid och användningstid. Migrationen är applicerad i `syssloappen_dev`.
 - `AddChildDeviceSessions` skapar `ChildDeviceSessions` med Child-, konto- och Household-koppling, hashad sessionshemlighet, aktivitetstid, förnybar utgångstid, absolut maxgräns och återkallelsetid. Migrationen är applicerad i `syssloappen_dev`.
 - `AddHouseholdFamilyCodes` lägger till unik familjekodshash, sista fyra tecken och rotationstid på `Households`. Den säkra backfillen och det unika indexet är applicerade i `syssloappen_dev`.
-- `AddChores` skapar tabellen `Chores` med Household-, skaparkonto-, titel-, beskrivnings- och tidsfält samt främmande nycklar och index. Migrationen och PostgreSQL-SQL är genererade och granskade men migrationen är inte applicerad i `syssloappen_dev`.
-- `AddChoreAssignments` skapar tabellen `ChoreAssignments` med Household-, sysslo-, barn-, tilldelande Adult- och tidsfält samt främmande nycklar och index. Migrationen och PostgreSQL-SQL är genererade och granskade men migrationen är inte applicerad i `syssloappen_dev`.
+- `AddChores` skapar tabellen `Chores` med Household-, skaparkonto-, titel-, beskrivnings- och tidsfält samt främmande nycklar och index. Migrationen är applicerad i `syssloappen_dev`.
+- `AddChoreAssignments` skapar tabellen `ChoreAssignments` med Household-, sysslo-, barn-, tilldelande Adult- och tidsfält samt främmande nycklar och index. Migrationen är applicerad i `syssloappen_dev`.
 
 Vanliga kommandon från repots rot:
 
@@ -245,13 +245,15 @@ Fyra integrationstester för US-030 verifierar Adult-behörighet, validering, ba
 
 Elva testfall för US-031:s avgränsade backenddel verifierar Adult-behörighet, korrekt och beständig tilldelning, backendstyrt Household, tilldelande Adult och tid, aktiva barn, samma-Household-krav, Household-isolering, manipulerade, oväntade, ogiltiga och obefintliga ID-/ägarfält samt regression för Adult-login, barnhantering, enhetskoppling och skapande/listning av sysslor. Alla 69 integrationstester är godkända i Release-konfiguration.
 
-Alla åtta migrationer till och med `AddHouseholdFamilyCodes` är applicerade i `syssloappen_dev`. Ett manuellt end-to-end-smoke-test mot PostgreSQL verifierade Adult-registrering och login, barnskapande, maskerad familjekodsstatus, rotation och omedelbar ogiltigförklaring av den gamla koden, enhetskoppling, beständig HttpOnly-cookie, Child-logout, skiftlägesokänslig reservlogin, skydd mot manipulerade ID-/rollfält, Adult-listning och återkallelse av session samt omedelbar nekning efter avaktivering. Den glidande förnyelsealgoritmen är verifierad av integrationstesterna; smoke-testet verifierade löpande sessionvalidering mot PostgreSQL utan att manipulera tidsstämplar manuellt.
+Alla tio migrationer till och med `AddChoreAssignments` är applicerade i `syssloappen_dev`. Ett manuellt end-to-end-smoke-test mot PostgreSQL verifierade Adult-registrering och login, barnskapande, maskerad familjekodsstatus, rotation och omedelbar ogiltigförklaring av den gamla koden, enhetskoppling, beständig HttpOnly-cookie, Child-logout, skiftlägesokänslig reservlogin, skydd mot manipulerade ID-/rollfält, Adult-listning och återkallelse av session samt omedelbar nekning efter avaktivering. Den glidande förnyelsealgoritmen är verifierad av integrationstesterna; smoke-testet verifierade löpande sessionvalidering mot PostgreSQL utan att manipulera tidsstämplar manuellt.
 
 Release-build och formatteringskontroll är godkända utan fel eller varningar. EF Core rapporterar inga väntande modelländringar utanför migrationen. Ett idempotent PostgreSQL-script från `AddChildPairingCodes` till `AddChildDeviceSessions` har genererats och granskats: det skapar endast den nya sessionstabellen, främmande nycklar, index och migrationshistorikraden i en transaktion. Migrationen har applicerats via EF Core; det separat genererade scriptet kördes inte.
 
 Ett idempotent PostgreSQL-script från `AddChildDeviceSessions` till `AddHouseholdFamilyCodes` har också genererats och granskats. Det lägger till de tre familjekodskolumnerna, backfyller befintliga Households utan klartexthemlighet, gör hashkolumnen obligatorisk, skapar det unika indexet och skriver migrationshistorikraden i en transaktion. Migrationen har applicerats via EF Core; det separat genererade scriptet kördes inte.
 
-Ett idempotent PostgreSQL-script från `AddHouseholdFamilyCodes` till `AddChoreAssignments` har genererats och granskats. Det innehåller först den väntande `AddChores` och därefter `AddChoreAssignments`; varje migration skapar endast sina tabeller, främmande nycklar, index och migrationshistorikrad i en egen transaktion. Scriptet har inte körts. En skrivskyddad migrationskontroll visar att både `AddChores` och `AddChoreAssignments` är `Pending` i `syssloappen_dev`.
+Ett idempotent PostgreSQL-script från `AddHouseholdFamilyCodes` till `AddChoreAssignments` har genererats och granskats. Det innehåller först `AddChores` och därefter `AddChoreAssignments`; varje migration skapar endast sina tabeller, främmande nycklar, index och migrationshistorikrad i en egen transaktion. Båda migrationerna har applicerats via EF Core och en efterkontroll visar inga väntande migrationer. Det separat genererade scriptet kördes inte.
+
+Ett manuellt US-030/US-031-smoke-test mot PostgreSQL verifierade Adult-registrering och login, barnskapande, enhetskoppling och Child-session, syssleskapande och listning samt beständig tilldelning. Testet verifierade också HTTP 401 utan login, HTTP 403 för Child, HTTP 404 för sysslor och barn från ett annat Household, nekad tilldelning till ett avaktiverat barn samt att manipulerade ID-, Household-, ägar-, roll- och tidsfält inte kunde styra den sparade tilldelningen. Smoke-testet skapade två isolerade test-Households med slumpmässiga uppgifter; lösenorden fanns endast i minnet och dokumenterades inte.
 
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
@@ -279,9 +281,9 @@ Den avgränsade US-021-delen med beständig Child-enhetssession, maximal livslä
 
 Den avgränsade US-021-delen med reservinloggning via familjekod, barnvänligt användarnamn och Identity-lösenord är färdig, testad och mergad. Alla tillhörande migrationer är applicerade och de centrala flödena är smoke-testade mot PostgreSQL.
 
-US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad. `AddChores` är genererad och granskad men inte applicerad.
+US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad automatiskt samt mot PostgreSQL. `AddChores` är applicerad i `syssloappen_dev`.
 
-US-031:s avgränsade backenddel, där en Adult tilldelar en syssla till ett aktivt barn i samma Household, är färdig och testad på feature-branchen. `AddChoreAssignments` och dess PostgreSQL-SQL är genererade och granskade men inte applicerade. Efter granskning, commit och merge är nästa avgränsade del barnets autentiserade, Household-isolerade läsning av sina egna tilldelningar. Frontend, QR, poäng, completion och approval-flöde ska fortfarande vänta.
+US-031:s avgränsade backenddel, där en Adult tilldelar en syssla till ett aktivt barn i samma Household, är färdig och testad automatiskt samt mot PostgreSQL. `AddChores` och `AddChoreAssignments` är applicerade och det finns inga väntande migrationer. Nästa avgränsade del är barnets autentiserade, Household-isolerade läsning av sina egna tilldelningar. Frontend, QR, poäng, completion och approval-flöde ska fortfarande vänta.
 
 ## Kända kvarvarande saker
 
