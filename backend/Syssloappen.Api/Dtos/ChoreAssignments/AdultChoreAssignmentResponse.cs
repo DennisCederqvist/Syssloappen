@@ -1,12 +1,15 @@
 namespace Syssloappen.Api.Dtos.ChoreAssignments;
 
-public sealed record ChildChoreAssignmentResponse(
+public sealed record AdultChoreAssignmentResponse(
     int AssignmentId,
     int ChoreId,
-    string Title,
-    string? Description,
+    string ChoreTitle,
+    int ChildId,
+    string ChildName,
     int Points,
     DateTime AssignedAt,
     string Status,
     DateTime? SubmittedAt,
+    string? ReviewedByUserId,
+    DateTime? ReviewedAt,
     string? ReviewComment);

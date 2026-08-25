@@ -141,6 +141,18 @@ US-041:s avgränsade rapporteringsdel är implementerad, testad och mergad till 
 - Child-listningen visar nu `Status` och nullable `SubmittedAt`. Den visar både `Assigned` och `PendingApproval`; det breda kriteriet för `NeedsRedo` och `Approved` väntar på Adult-flödet.
 - Ingen completion eller poäng skapas. Approval, rejection, frontend och QR ingår inte i arbetsdelen.
 
+Adult-granskning och poäng är implementerade, testade och mergade till `main`:
+
+- `POST /api/chores` tar nu valfritt `Points`. Backend använder `5` som standard och accepterar endast `5`, `10`, `15` eller `20`; samma begränsning finns som check constraint i databasen.
+- `ChoreAssignment.Points` är en snapshot av sysslans poäng när tilldelningen skapas. Manipulerade poäng-, status- och ägarfält i tilldelningsrequesten kan inte ändra värdet.
+- `GET /api/chore-assignments` låter en Adult se Householdets tilldelningar med barn, syssla, poäng, status, rapporteringstid, granskare, granskningstid och kommentar. SQL-frågan kräver samma Household på tilldelning, barn och syssla.
+- `POST /api/chore-assignments/{assignmentId}/approve` och `/reject` accepterar endast en valfri kommentar. Backend bestämmer Adult, Household, status, tid och utdelade poäng.
+- Endast `PendingApproval` kan granskas. Godkännande sätter `Approved` och skapar atomärt exakt en `ChoreCompletion`; nekande sätter `NeedsRedo` utan completion eller poäng.
+- Ett barn kan rapportera en `NeedsRedo`-tilldelning igen. Den gamla granskningsinformationen rensas då och status återgår till `PendingApproval` med en ny backendtid.
+- Varje completion sparar Household, tilldelning, barn, syssla, godkännande Adult, UTC-tid och de utdelade snapshot-poängen. Ett unikt index på `AssignmentId` skyddar dessutom mot dubbel utdelning.
+- `GET /api/child/points` summerar endast det autentiserade aktiva barnets egna, Household-konsistenta completions. Child-listningen visar tilldelningens poäng, alla fyra statuslägen och eventuell omarbetningskommentar.
+- Frontend är inte skapad. Den beslutade framtida vyn är en titelruta och en poängrullista med `5`, `10`, `15`, `20`, där `5` är förvalt.
+
 ## Teknik och versioner
 
 - Node.js `22.23.2`
@@ -206,7 +218,8 @@ Aktuella migrationer:
 - `AddHouseholdFamilyCodes` lägger till unik familjekodshash, sista fyra tecken och rotationstid på `Households`. Den säkra backfillen och det unika indexet är applicerade i `syssloappen_dev`.
 - `AddChores` skapar tabellen `Chores` med Household-, skaparkonto-, titel-, beskrivnings- och tidsfält samt främmande nycklar och index. Migrationen är applicerad i `syssloappen_dev`.
 - `AddChoreAssignments` skapar tabellen `ChoreAssignments` med Household-, sysslo-, barn-, tilldelande Adult- och tidsfält samt främmande nycklar och index. Migrationen är applicerad i `syssloappen_dev`.
-- `AddChoreAssignmentSubmission` lägger till textstatus med standardvärdet `Assigned` och nullable `SubmittedAt` på `ChoreAssignments`. Migrationen är genererad och granskad men inte applicerad i `syssloappen_dev`.
+- `AddChoreAssignmentSubmission` lägger till textstatus med standardvärdet `Assigned` och nullable `SubmittedAt` på `ChoreAssignments`. Migrationen är applicerad i `syssloappen_dev`.
+- `AddAdultReviewAndChorePoints` lägger till poäng på sysslor och tilldelningar, granskningsfält på tilldelningar samt `ChoreCompletions` med unikt Assignment-ID och utdelade poäng. Migrationen är applicerad i `syssloappen_dev`.
 
 Vanliga kommandon från repots rot:
 
@@ -269,9 +282,15 @@ Elva testfall för US-031:s avgränsade backenddel verifierar Adult-behörighet,
 
 Elva testfall för US-041:s rapporteringsdel verifierar Child-behörighet, korrekt och beständig statusövergång, backendstyrt Child, Household, ägare, status och rapporteringstid, syskon- och Household-isolering, inkonsekventa databasrader, avaktiverat barn, manipulerade och oväntade ID-/ägarfält, ogiltigt och obefintligt ID, upprepad rapportering, status i barnets listning samt regression för Adult-login, barnhantering, Child-session, sysslor och tilldelning. Hela sviten med 88 integrationstester är godkänd i Release-konfiguration.
 
-Ett idempotent PostgreSQL-script från `AddChoreAssignments` till `AddChoreAssignmentSubmission` har genererats och granskats utan att köras. I en transaktion lägger det endast till `Status` som `character varying(30) NOT NULL DEFAULT 'Assigned'`, lägger till nullable `SubmittedAt` som `timestamp with time zone` och skriver migrationshistorikraden. `syssloappen_dev` har inte ändrats och inget PostgreSQL-smoke-test har gjorts för arbetsdelen.
+Ett idempotent PostgreSQL-script från `AddChoreAssignments` till `AddChoreAssignmentSubmission` har genererats och granskats. Migrationen applicerades därefter via EF Core i `syssloappen_dev`. Ett manuellt PostgreSQL-smoke-test verifierade Adult-registrering och login, två Households, tre barn, tre sysslor och tre tilldelningar, Child-enhetskoppling, privat listning med `Assigned`, backendstyrd övergång till `PendingApproval`, beständig `SubmittedAt`, HTTP 404 för syskon och annat Household samt HTTP 409 vid upprepad rapportering. Testuppgifterna var slumpmässiga, lösenordet fanns endast i minnet och smoke-märkt data lämnades kvar enligt tidigare praxis.
 
-Alla tio migrationer till och med `AddChoreAssignments` är applicerade i `syssloappen_dev`. Ett manuellt end-to-end-smoke-test mot PostgreSQL verifierade Adult-registrering och login, barnskapande, maskerad familjekodsstatus, rotation och omedelbar ogiltigförklaring av den gamla koden, enhetskoppling, beständig HttpOnly-cookie, Child-logout, skiftlägesokänslig reservlogin, skydd mot manipulerade ID-/rollfält, Adult-listning och återkallelse av session samt omedelbar nekning efter avaktivering. Den glidande förnyelsealgoritmen är verifierad av integrationstesterna; smoke-testet verifierade löpande sessionvalidering mot PostgreSQL utan att manipulera tidsstämplar manuellt.
+Sju nya integrationstester för Adult-granskning och poäng verifierar standardvärde och de fyra tillåtna poängvärdena, nekade ogiltiga värden, snapshot vid tilldelning, manipulerade ägar-/poäng-/status-/tidsfält, Adult-behörighet, Household-isolering, granskningslistan, approval, rejection, kommentar, omrapportering, completion, exakt en utdelning och privata Child-poängsummor. Hela sviten med 95 integrationstester är godkänd i Release-konfiguration.
+
+Ett idempotent PostgreSQL-script från `AddChoreAssignmentSubmission` till `AddAdultReviewAndChorePoints` har genererats och granskats utan att köras. Det använder en transaktion, ger befintliga sysslor och tilldelningar 5 poäng, lägger till granskningsfält och check constraints, skapar `ChoreCompletions` med främmande nycklar och ett unikt Assignment-index samt skriver migrationshistorikraden. Migrationen applicerades därefter via EF Core i `syssloappen_dev`.
+
+Ett manuellt PostgreSQL-smoke-test av Adult-granskning och poäng verifierade standardvärdet 5, HTTP 400 för värdet 6, snapshotvärdena 10 och 20, Adult-listning av `PendingApproval`, HTTP 404 för granskning från annat Household, `NeedsRedo` med kommentar och noll poäng, omrapportering, backendstyrda godkännanden med 10 och 20 poäng, totalsumman 30 samt HTTP 409 vid upprepat godkännande. Flera avbrutna smoke-försök skapade ytterligare tydligt smoke-märkta Households innan ett PowerShell 5-specifikt listproblem i testskriptet rättades; inga klartextlösenord sparades.
+
+Alla tolv migrationer till och med `AddAdultReviewAndChorePoints` är applicerade i `syssloappen_dev`. Ett manuellt end-to-end-smoke-test mot PostgreSQL verifierade Adult-registrering och login, barnskapande, maskerad familjekodsstatus, rotation och omedelbar ogiltigförklaring av den gamla koden, enhetskoppling, beständig HttpOnly-cookie, Child-logout, skiftlägesokänslig reservlogin, skydd mot manipulerade ID-/rollfält, Adult-listning och återkallelse av session samt omedelbar nekning efter avaktivering. Den glidande förnyelsealgoritmen är verifierad av integrationstesterna; smoke-testet verifierade löpande sessionvalidering mot PostgreSQL utan att manipulera tidsstämplar manuellt.
 
 Release-build och formatteringskontroll är godkända utan fel eller varningar. EF Core rapporterar inga väntande modelländringar utanför migrationen. Ett idempotent PostgreSQL-script från `AddChildPairingCodes` till `AddChildDeviceSessions` har genererats och granskats: det skapar endast den nya sessionstabellen, främmande nycklar, index och migrationshistorikraden i en transaktion. Migrationen har applicerats via EF Core; det separat genererade scriptet kördes inte.
 
@@ -311,9 +330,9 @@ Den avgränsade US-021-delen med reservinloggning via familjekod, barnvänligt a
 
 US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad automatiskt samt mot PostgreSQL. `AddChores` är applicerad i `syssloappen_dev`.
 
-US-031:s avgränsade backenddel, där en Adult tilldelar en syssla till ett aktivt barn i samma Household, är färdig och testad automatiskt samt mot PostgreSQL. `AddChores` och `AddChoreAssignments` är applicerade och det finns inga väntande migrationer.
+US-031:s avgränsade backenddel, där en Adult tilldelar en syssla till ett aktivt barn i samma Household, är färdig och testad automatiskt samt mot PostgreSQL. `AddChores`, `AddChoreAssignments` och alla senare migrationer är applicerade; inga migrationer väntar.
 
-Barnets autentiserade, Household-isolerade läsning av sina egna tilldelningar samt status- och rapporteringsdelen för US-041 är färdiga, automatiskt testade och mergade till `main`. Den nya migrationen är genererad men inte applicerad, och arbetsdelen är ännu inte smoke-testad mot PostgreSQL. Nästa separata produktdel är Adult-vyn och approval/rejection; frontend, QR, poäng och completion ska fortsatt vänta på sina egna avgränsningar.
+Barnets autentiserade, Household-isolerade läsning och rapportering samt Adult-listning, approval/rejection, completion och det beslutade poängsystemets backend är färdiga, mergade, migrerade och smoke-testade mot PostgreSQL. Frontend, inklusive titelruta och poängrullista, återstår.
 
 ## Kända kvarvarande saker
 
@@ -322,4 +341,4 @@ Barnets autentiserade, Household-isolerade läsning av sina egna tilldelningar s
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
 - PostgreSQL-smoke-körningarna, inklusive transportfelsökningen inför den godkända Child-vy-körningen, skapade flera isolerade test-Households i `syssloappen_dev`. Alla namn och konton är smoke-märkta; testlösenorden genererades endast i minnet och är inte dokumenterade.
-- Household-isolering är testad för barn-, sysslo-, Adult-tilldelnings-, Child-listnings- och Child-rapporteringsendpoints. Completion- och approval-flöden återstår och måste få motsvarande isoleringskontroller i sina egna arbetsdelar.
+- Household-isolering är automatiskt testad för barn, sysslor, Adult-tilldelning/listning/granskning, Child-listning/rapportering och Child-poäng. Adult-/poängflödet är också smoke-testat mot PostgreSQL; frontend återstår.

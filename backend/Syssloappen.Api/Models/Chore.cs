@@ -18,5 +18,7 @@ public sealed class Chore
 
     public string? Description { get; set; }
 
+    public int Points { get; set; } = 5;
+
     public DateTime CreatedAt { get; set; }
 }

@@ -21,6 +21,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<ChoreAssignment> ChoreAssignments => Set<ChoreAssignment>();
 
+    public DbSet<ChoreCompletion> ChoreCompletions => Set<ChoreCompletion>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -157,6 +159,13 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(chore => chore.CreatedByUserId)
                 .IsRequired();
 
+            entity.Property(chore => chore.Points)
+                .HasDefaultValue(5);
+
+            entity.ToTable(table => table.HasCheckConstraint(
+                "CK_Chores_Points",
+                "\"Points\" IN (5, 10, 15, 20)"));
+
             entity.HasIndex(chore => chore.HouseholdId);
 
             entity.HasOne(chore => chore.Household)
@@ -180,6 +189,16 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasMaxLength(30)
                 .HasDefaultValue(ChoreAssignmentStatus.Assigned)
                 .IsConcurrencyToken();
+
+            entity.Property(assignment => assignment.Points)
+                .HasDefaultValue(5);
+
+            entity.Property(assignment => assignment.ReviewComment)
+                .HasMaxLength(500);
+
+            entity.ToTable(table => table.HasCheckConstraint(
+                "CK_ChoreAssignments_Points",
+                "\"Points\" IN (5, 10, 15, 20)"));
 
             entity.HasIndex(assignment => new
             {
@@ -207,6 +226,55 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasOne(assignment => assignment.AssignedByUser)
                 .WithMany()
                 .HasForeignKey(assignment => assignment.AssignedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(assignment => assignment.ReviewedByUser)
+                .WithMany()
+                .HasForeignKey(assignment => assignment.ReviewedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ChoreCompletion>(entity =>
+        {
+            entity.Property(completion => completion.ApprovedByUserId)
+                .IsRequired();
+
+            entity.ToTable(table => table.HasCheckConstraint(
+                "CK_ChoreCompletions_PointsAwarded",
+                "\"PointsAwarded\" IN (5, 10, 15, 20)"));
+
+            entity.HasIndex(completion => completion.AssignmentId)
+                .IsUnique();
+
+            entity.HasIndex(completion => new
+            {
+                completion.HouseholdId,
+                completion.ChildId
+            });
+
+            entity.HasOne(completion => completion.Household)
+                .WithMany()
+                .HasForeignKey(completion => completion.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(completion => completion.Assignment)
+                .WithMany()
+                .HasForeignKey(completion => completion.AssignmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(completion => completion.Child)
+                .WithMany()
+                .HasForeignKey(completion => completion.ChildId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(completion => completion.Chore)
+                .WithMany()
+                .HasForeignKey(completion => completion.ChoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(completion => completion.ApprovedByUser)
+                .WithMany()
+                .HasForeignKey(completion => completion.ApprovedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

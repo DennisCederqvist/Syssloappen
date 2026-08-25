@@ -10,4 +10,6 @@ public sealed class CreateChoreRequest
 
     [StringLength(500)]
     public string? Description { get; init; }
+
+    public int Points { get; init; } = 5;
 }

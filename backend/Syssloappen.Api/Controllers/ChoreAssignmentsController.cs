@@ -35,11 +35,11 @@ public sealed class ChoreAssignmentsController(
 
         // Combining every client-selected ID with the authenticated Adult's HouseholdId
         // prevents either ID from reaching another household's data.
-        var choreExists = await dbContext.Chores.AnyAsync(chore =>
+        var chore = await dbContext.Chores.SingleOrDefaultAsync(chore =>
             chore.Id == request.ChoreId
             && chore.HouseholdId == currentUser.HouseholdId);
 
-        if (!choreExists)
+        if (chore is null)
         {
             return NotFound();
         }
@@ -61,7 +61,9 @@ public sealed class ChoreAssignmentsController(
             ChoreId = request.ChoreId,
             ChildId = request.ChildId,
             AssignedByUserId = currentUser.Id,
-            AssignedAt = timeProvider.GetUtcNow().UtcDateTime
+            AssignedAt = timeProvider.GetUtcNow().UtcDateTime,
+            // Snapshot the promised value so later chore edits cannot rewrite history.
+            Points = chore.Points
         };
 
         dbContext.ChoreAssignments.Add(assignment);
@@ -71,8 +73,157 @@ public sealed class ChoreAssignmentsController(
             assignment.Id,
             assignment.ChoreId,
             assignment.ChildId,
+            assignment.Points,
             assignment.AssignedAt);
 
         return Created("/api/chore-assignments", response);
+    }
+
+    [HttpGet]
+    [ProducesResponseType<IReadOnlyList<AdultChoreAssignmentResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IReadOnlyList<AdultChoreAssignmentResponse>>> GetAll()
+    {
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        var assignments = await dbContext.ChoreAssignments
+            .AsNoTracking()
+            .Where(assignment =>
+                assignment.HouseholdId == currentUser.HouseholdId
+                && assignment.Child.HouseholdId == currentUser.HouseholdId
+                && assignment.Chore.HouseholdId == currentUser.HouseholdId)
+            .OrderByDescending(assignment => assignment.SubmittedAt)
+            .ThenByDescending(assignment => assignment.AssignedAt)
+            .ThenByDescending(assignment => assignment.Id)
+            .Select(assignment => new AdultChoreAssignmentResponse(
+                assignment.Id,
+                assignment.ChoreId,
+                assignment.Chore.Title,
+                assignment.ChildId,
+                assignment.Child.Name,
+                assignment.Points,
+                assignment.AssignedAt,
+                assignment.Status.ToString(),
+                assignment.SubmittedAt,
+                assignment.ReviewedByUserId,
+                assignment.ReviewedAt,
+                assignment.ReviewComment))
+            .ToListAsync();
+
+        return Ok(assignments);
+    }
+
+    [HttpPost("{assignmentId:int}/approve")]
+    [ProducesResponseType<ReviewChoreAssignmentResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<ActionResult<ReviewChoreAssignmentResponse>> Approve(
+        int assignmentId,
+        ReviewChoreAssignmentRequest request) => Review(assignmentId, request, approve: true);
+
+    [HttpPost("{assignmentId:int}/reject")]
+    [ProducesResponseType<ReviewChoreAssignmentResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public Task<ActionResult<ReviewChoreAssignmentResponse>> Reject(
+        int assignmentId,
+        ReviewChoreAssignmentRequest request) => Review(assignmentId, request, approve: false);
+
+    private async Task<ActionResult<ReviewChoreAssignmentResponse>> Review(
+        int assignmentId,
+        ReviewChoreAssignmentRequest request,
+        bool approve)
+    {
+        if (assignmentId <= 0)
+        {
+            ModelState.AddModelError(nameof(assignmentId), "Assignment ID must be positive.");
+            return ValidationProblem(ModelState);
+        }
+
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        var assignment = await dbContext.ChoreAssignments.SingleOrDefaultAsync(item =>
+            item.Id == assignmentId
+            && item.HouseholdId == currentUser.HouseholdId
+            && item.Child.HouseholdId == currentUser.HouseholdId
+            && item.Chore.HouseholdId == currentUser.HouseholdId);
+
+        if (assignment is null)
+        {
+            return NotFound();
+        }
+
+        if (assignment.Status != ChoreAssignmentStatus.PendingApproval)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Assignment cannot be reviewed",
+                Detail = "Only an assignment waiting for approval can be reviewed."
+            });
+        }
+
+        var reviewedAt = timeProvider.GetUtcNow().UtcDateTime;
+        var comment = string.IsNullOrWhiteSpace(request.Comment)
+            ? null
+            : request.Comment.Trim();
+        assignment.Status = approve
+            ? ChoreAssignmentStatus.Approved
+            : ChoreAssignmentStatus.NeedsRedo;
+        assignment.ReviewedByUserId = currentUser.Id;
+        assignment.ReviewedAt = reviewedAt;
+        assignment.ReviewComment = comment;
+
+        if (approve)
+        {
+            dbContext.ChoreCompletions.Add(new ChoreCompletion
+            {
+                HouseholdId = currentUser.HouseholdId,
+                AssignmentId = assignment.Id,
+                ChildId = assignment.ChildId,
+                ChoreId = assignment.ChoreId,
+                ApprovedByUserId = currentUser.Id,
+                ApprovedAt = reviewedAt,
+                PointsAwarded = assignment.Points
+            });
+        }
+
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Assignment cannot be reviewed",
+                Detail = "The assignment was already reviewed by another request."
+            });
+        }
+
+        return Ok(new ReviewChoreAssignmentResponse(
+            assignment.Id,
+            assignment.Status.ToString(),
+            reviewedAt,
+            comment,
+            approve ? assignment.Points : null));
     }
 }

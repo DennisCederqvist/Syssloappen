@@ -17,6 +17,8 @@ public sealed class ChoresController(
     UserManager<ApplicationUser> userManager,
     TimeProvider timeProvider) : ControllerBase
 {
+    private static readonly int[] AllowedPointValues = [5, 10, 15, 20];
+
     [HttpPost]
     [ProducesResponseType<ChoreResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -29,6 +31,12 @@ public sealed class ChoresController(
         if (title.Length == 0)
         {
             ModelState.AddModelError(nameof(request.Title), "A chore title is required.");
+            return ValidationProblem(ModelState);
+        }
+
+        if (!AllowedPointValues.Contains(request.Points))
+        {
+            ModelState.AddModelError(nameof(request.Points), "Points must be 5, 10, 15 or 20.");
             return ValidationProblem(ModelState);
         }
 
@@ -50,6 +58,7 @@ public sealed class ChoresController(
             CreatedByUserId = currentUser.Id,
             Title = title,
             Description = description,
+            Points = request.Points,
             CreatedAt = timeProvider.GetUtcNow().UtcDateTime
         };
 
@@ -83,6 +92,7 @@ public sealed class ChoresController(
                 chore.Id,
                 chore.Title,
                 chore.Description,
+                chore.Points,
                 chore.CreatedAt))
             .ToListAsync();
 
@@ -93,5 +103,6 @@ public sealed class ChoresController(
         chore.Id,
         chore.Title,
         chore.Description,
+        chore.Points,
         chore.CreatedAt);
 }
