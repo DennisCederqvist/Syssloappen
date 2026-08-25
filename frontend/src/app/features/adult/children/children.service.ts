@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
+  ChildDeviceSession,
   ChildPairingCode,
   ChildSummary,
   CreateChildRequest,
@@ -22,5 +23,13 @@ export class ChildrenService {
 
   createPairingCode(childId: number): Observable<ChildPairingCode> {
     return this.http.post<ChildPairingCode>(`/api/children/${childId}/pairing-codes`, {});
+  }
+
+  getDeviceSessions(childId: number): Observable<ChildDeviceSession[]> {
+    return this.http.get<ChildDeviceSession[]>(`/api/children/${childId}/device-sessions`);
+  }
+
+  revokeDeviceSession(childId: number, sessionId: string): Observable<void> {
+    return this.http.delete<void>(`/api/children/${childId}/device-sessions/${sessionId}`);
   }
 }

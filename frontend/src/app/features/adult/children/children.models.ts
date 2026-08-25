@@ -20,3 +20,12 @@ export interface ChildPairingCode {
   code: string;
   expiresAt: string;
 }
+
+export interface ChildDeviceSession {
+  sessionId: string;
+  createdAt: string;
+  lastSeenAt: string;
+  expiresAt: string;
+  absoluteExpiresAt: string;
+  revokedAt: string | null;
+}

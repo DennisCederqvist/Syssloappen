@@ -157,6 +157,8 @@ Adult-granskning och poäng är implementerade, testade och mergade till `main`:
 - Adult-vyn har en riktig barnsida som hämtar aktiva barn från `GET /api/children` och skapar barnprofil och Child-konto atomärt via `POST /api/children`.
 - Adult-vyn skapar en åttateckens engångskod via `POST /api/children/{childId}/pairing-codes`, visar dess utgångstid och håller klartextkoden endast i sidans tillfälliga Angular-state.
 - Child-login validerar och löser in den åttateckens koden via `POST /api/auth/child/pair`. Ett manuellt end-to-end-test har verifierat separat Adult- och Child-session, privat Child-endpoint samt att samma kod inte kan återanvändas.
+- Adult-vyn visar barnets kopplade sessioner med status, skapad tid, senaste aktivitet och absolut slutdatum via `GET /api/children/{childId}/device-sessions`.
+- Återkallning kräver en tydlig bekräftelse i UI:t och använder `DELETE /api/children/{childId}/device-sessions/{sessionId}`. En lyckad återkallning markerar enheten utloggad och backend nekar omedelbart den tidigare Child-cookien.
 
 ## Teknik och versioner
 
@@ -318,7 +320,7 @@ Ett manuellt US-030/US-031-smoke-test mot PostgreSQL verifierade Adult-registrer
 
 Ett manuellt smoke-test av Child-vyn mot PostgreSQL verifierade två egna tilldelningar med rätt svarsdata och nyaste-först-sortering, ignorerade manipulerade `ChildId`-/`HouseholdId`-parametrar, syskonisolering och isolering mellan två Households. Samma privata vy fungerade efter både Adult-styrd enhetskoppling och reservinloggning. Anonyma användare fick HTTP 401, Adults HTTP 403 och ett avaktiverat barns redan utgivna session nekades omedelbart medan den historiska tilldelningen låg kvar. Ingen migration behövdes eller applicerades.
 
-Den mergade Angular-frontenden har 13 godkända tester för appskal, auth-tjänst, barnservice och Adult-barnsidan. Produktionsbygget är godkänt. Ett manuellt frontend-smoke-test via Angular-proxyn verifierade Adult-registrering och login, barnskapande, generering av engångskod, inlösen på en separat Child-session, åtkomst till den privata Child-endpointen och HTTP 401 när samma kod försökte återanvändas.
+Angular-frontenden har 17 godkända tester för appskal, auth-tjänst, barnservice och Adult-barnsidan. Produktionsbygget är godkänt. Manuella frontend-smoke-tester via Angular-proxyn verifierar Adult-registrering och login, barnskapande, generering av engångskod, inlösen på en separat Child-session, sessionslistning, åtkomst till den privata Child-endpointen, engångsanvändning av koden och HTTP 401 direkt efter Adult-återkallning.
 
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
@@ -326,14 +328,14 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-Backendens MVP-kärna är färdig, mergad, migrerad och verifierad med 95 integrationstester. Frontendens första mobile-first-del är också mergad: Adult-registrering och login, sessionsåterställning, logout, rollstyrd navigation, listning och skapande av barn samt Adult-styrd enhetskoppling fungerar mot det riktiga API:t. Barnets kodinlösen skapar den beständiga Child-sessionen och är verifierad i ett separat webbläsarliknande sessionsflöde.
+Backendens MVP-kärna är färdig, mergad, migrerad och verifierad med 95 integrationstester. Frontendens första mobile-first-del omfattar Adult-registrering och login, sessionsåterställning, logout, rollstyrd navigation, listning och skapande av barn, Adult-styrd enhetskoppling samt visning och återkallning av kopplade enheter. Barnets kodinlösen skapar den beständiga Child-sessionen, och återkallning nekar sessionen omedelbart i backend.
 
-Nästa rekommenderade, avgränsade arbetsdel är att koppla in `GET /api/children/{childId}/device-sessions` och `DELETE /api/children/{childId}/device-sessions/{sessionId}` i Adult-vyn. Därefter bör frontend för redigering och avaktivering av barn byggas innan sysslor, poängval, tilldelning, Adult-granskning och barnets riktiga uppgiftsvy kopplas in stegvis.
+Nästa rekommenderade, avgränsade arbetsdel är frontend för redigering och avaktivering av barn. Därefter bör sysslor, poängval, tilldelning, Adult-granskning och barnets riktiga uppgiftsvy kopplas in stegvis.
 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
-- Frontendens barnnavigation, aktiva barnlista, skapande av barnkonto och enhetskoppling via engångskod är inkopplade. Visning/återkallning av enheter samt redigering och avaktivering återstår, och navigationen till sysslor och granskning är ännu endast ett visuellt skal.
+- Frontendens barnnavigation, aktiva barnlista, skapande av barnkonto, enhetskoppling via engångskod samt visning och återkallning av enheter är inkopplade. Redigering och avaktivering återstår, och navigationen till sysslor och granskning är ännu endast ett visuellt skal.
 - Belöningskatalog, poängreservation och belöningsförfrågningar enligt US-070–US-072 är dokumenterade men ännu inte implementerade. De ska byggas efter de centrala frontendflödena; bilduppladdning kommer sist i det planerade belöningsarbetet.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.

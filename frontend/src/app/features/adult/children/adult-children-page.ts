@@ -11,7 +11,12 @@ import {
 import { finalize } from 'rxjs';
 import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
 import { UserHeader } from '../../../shared/user-header';
-import { ChildPairingCode, ChildSummary, CreatedChild } from './children.models';
+import {
+  ChildDeviceSession,
+  ChildPairingCode,
+  ChildSummary,
+  CreatedChild,
+} from './children.models';
 import { ChildrenService } from './children.service';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
@@ -40,6 +45,13 @@ export class AdultChildrenPage implements OnInit {
   readonly generatingCodeFor = signal<number | null>(null);
   readonly pairingError = signal('');
   readonly pairingCodeCopied = signal(false);
+  readonly deviceSessionsChild = signal<ChildSummary | null>(null);
+  readonly deviceSessions = signal<ChildDeviceSession[]>([]);
+  readonly deviceSessionsLoading = signal(false);
+  readonly deviceSessionsError = signal('');
+  readonly confirmingRevocation = signal<string | null>(null);
+  readonly revokingSession = signal<string | null>(null);
+  readonly revocationError = signal('');
 
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: '⌂', route: '/vuxen' },
@@ -161,5 +173,93 @@ export class AdultChildrenPage implements OnInit {
     } catch {
       this.pairingError.set('Koden kunde inte kopieras automatiskt. Kopiera den manuellt.');
     }
+  }
+
+  openDeviceSessions(child: ChildSummary): void {
+    this.deviceSessionsChild.set(child);
+    this.confirmingRevocation.set(null);
+    this.revocationError.set('');
+    this.loadDeviceSessions(child);
+  }
+
+  closeDeviceSessions(): void {
+    this.deviceSessionsChild.set(null);
+    this.deviceSessions.set([]);
+    this.deviceSessionsError.set('');
+    this.confirmingRevocation.set(null);
+    this.revocationError.set('');
+  }
+
+  retryDeviceSessions(): void {
+    const child = this.deviceSessionsChild();
+    if (child) this.loadDeviceSessions(child);
+  }
+
+  requestRevocation(sessionId: string): void {
+    this.confirmingRevocation.set(sessionId);
+    this.revocationError.set('');
+  }
+
+  cancelRevocation(): void {
+    this.confirmingRevocation.set(null);
+  }
+
+  revokeDeviceSession(session: ChildDeviceSession): void {
+    const child = this.deviceSessionsChild();
+    if (!child || this.revokingSession()) return;
+
+    this.revokingSession.set(session.sessionId);
+    this.revocationError.set('');
+    this.childrenService
+      .revokeDeviceSession(child.id, session.sessionId)
+      .pipe(finalize(() => this.revokingSession.set(null)))
+      .subscribe({
+        next: () => {
+          this.deviceSessions.update((sessions) =>
+            sessions.map((current) =>
+              current.sessionId === session.sessionId
+                ? { ...current, revokedAt: new Date().toISOString() }
+                : current,
+            ),
+          );
+          this.confirmingRevocation.set(null);
+        },
+        error: (error: HttpErrorResponse) =>
+          this.revocationError.set(
+            error.status === 404
+              ? 'Enheten finns inte längre. Uppdatera listan och försök igen.'
+              : 'Enheten kunde inte loggas ut. Försök igen om en liten stund.',
+          ),
+      });
+  }
+
+  isSessionExpired(session: ChildDeviceSession): boolean {
+    return new Date(session.expiresAt).getTime() <= Date.now();
+  }
+
+  private loadDeviceSessions(child: ChildSummary): void {
+    this.deviceSessionsLoading.set(true);
+    this.deviceSessionsError.set('');
+    this.deviceSessions.set([]);
+    this.childrenService
+      .getDeviceSessions(child.id)
+      .pipe(
+        finalize(() => {
+          if (this.deviceSessionsChild()?.id === child.id) this.deviceSessionsLoading.set(false);
+        }),
+      )
+      .subscribe({
+        next: (sessions) => {
+          if (this.deviceSessionsChild()?.id === child.id) this.deviceSessions.set(sessions);
+        },
+        error: (error: HttpErrorResponse) => {
+          if (this.deviceSessionsChild()?.id !== child.id) return;
+          this.deviceSessionsError.set(
+            error.status === 404
+              ? 'Barnet finns inte längre i den aktiva familjevyn.'
+              : 'De kopplade enheterna kunde inte hämtas. Försök igen.',
+          );
+        },
+      });
   }
 }
