@@ -21,7 +21,7 @@ Följande är implementerat och mergat till `main`:
 - `POST /api/auth/login` loggar in med ASP.NET Core Identity och en sessionscookie.
 - `GET /api/auth/me` kräver inloggning och hämtar användar-ID, roll och `HouseholdId` från den autentiserade användaren.
 - `POST /api/auth/logout` tar bort autentiseringscookien.
-- Ett integrationstestprojekt använder en tillfällig SQLite-databas och testar login, fel lösenord, logout och två separata Households.
+- Integrationstestprojektet använder en tillfällig SQLite-databas. Hela sviten omfattar nu 95 godkända backendtester för autentisering, Household-isolering, barn, Child-sessioner, sysslor, tilldelningar, rapportering, Adult-granskning och poäng.
 
 Adult authentication för US-002 och US-003 är mergad och pushad till `main`.
 
@@ -48,7 +48,7 @@ US-024 är implementerad, verifierad och mergad till `main`:
 - Avaktivering sätter `IsActive` till `false`; databasraden raderas inte och kan därför behålla framtida historikrelationer.
 - `GET /api/children` visar endast aktiva barn, och avaktiverade barn kan inte ändras via den aktiva barn-endpointen.
 - Integrationstester verifierar rollbehörighet, soft delete, aktiv filtrering, Household-isolering och skydd mot manipulerade Child-ID:n.
-- Kriterier som kräver framtida chores eller ett kopplat barnkonto är fortsatt okryssade och ska implementeras med respektive senare story.
+- Historiska tilldelningar bevaras vid avaktivering. Det breda kriteriet om historiska tilldelningar, godkännanden och completions är fortsatt okryssat i `REQUIREMENTS.md` tills hela formuleringen har verifierats uttryckligen.
 
 Första delen av US-021 är implementerad och testad:
 
@@ -68,7 +68,7 @@ Adult-styrd enhetskoppling är implementerad och testad:
 - Endast kodens SHA-256-hash lagras i databasen; klartexten returneras en gång till den vuxna.
 - `POST /api/auth/child/pair` tar endast koden. Barnets enhet skickar varken `ChildId` eller `HouseholdId`.
 - Backend härleder exakt Child, Identity-konto och Household från den hashade koden och verifierar aktiv status samt rollen `Child`.
-- På mergad `main` markerar lyckad inlösen koden använd och autentiserar barnet med en vanlig, icke-beständig sessionscookie. Samma kod kan inte användas igen.
+- På mergad `main` markerar lyckad inlösen koden använd och skapar en beständig, återkallningsbar `ChildDeviceSession` med HttpOnly-cookie. Samma kod kan inte användas igen.
 - Felaktig, utgången eller redan använd kod ger samma neutrala HTTP 401-svar.
 - Inlösen begränsas till tio försök per minut och klientadress; ytterligare försök ger HTTP 429.
 - Beständiga Child-enhetssessioner ingår i den färdiga sessionsdelen enligt avsnittet nedan.
@@ -126,9 +126,9 @@ Den avgränsade Child-vyn är implementerad, committad och testad:
 - `GET /api/child/chore-assignments` kräver en autentiserad användare med rollen `Child`; anonyma användare får HTTP 401 och Adults HTTP 403.
 - Endpointen tar inget `ChildId`, `HouseholdId` eller annat ägarfält. Backend härleder kontot från den validerade cookien och hittar den aktiva barnprofil vars konto- och Household-koppling matchar.
 - SQL-frågan kräver samma autentiserade konto, ChildProfile och Household på tilldelningen samt samma Household på sysslan. Syskons, andra familjers och inkonsekventa tilldelningsrader returneras inte.
-- Svaret innehåller endast tilldelnings-ID, sysslo-ID, titel, valfri beskrivning och tilldelningstid. Nyaste tilldelningar visas först.
+- Svaret innehåller tilldelnings-ID, sysslo-ID, titel, valfri beskrivning, tilldelningstid, snapshot-poäng, status, rapporteringstid och eventuell omarbetningskommentar. Nyaste tilldelningar visas först.
 - Både Adult-styrd enhetskoppling och reservinloggning ger åtkomst till samma privata vy. Avaktivering gör sessionen ogiltig medan den historiska tilldelningsraden bevaras.
-- Själva US-040-delen ändrade ingen datamodell. Status och rapportering läggs till i den efterföljande US-041-delen nedan; completion, approval och frontend väntar fortfarande.
+- Själva US-040-delen ändrade ingen datamodell. Status, rapportering, Adult-granskning, completions och poäng har därefter lagts till i de efterföljande backenddelarna. Den riktiga Child-vyn för dessa flöden återstår i frontend.
 
 US-041:s avgränsade rapporteringsdel är implementerad, testad och mergad till `main`:
 
@@ -138,8 +138,8 @@ US-041:s avgränsade rapporteringsdel är implementerad, testad och mergad till 
 - Ett positivt ID krävs. Noll och negativa ID:n ger HTTP 400. Oväntade JSON-fält ignoreras eftersom endpointen inte binder någon request body och kan inte styra den sparade raden.
 - En egen tilldelning i läget `Assigned` ändras till `PendingApproval` och får `SubmittedAt` satt till aktuell UTC-tid i backend. Barn- och sysslekopplingarna bevaras på tilldelningen.
 - Upprepad rapportering ger tydligt HTTP 409 och ändrar inte den första rapporteringstiden. `Status` är ett EF Core-concurrency token så två samtidiga uppdateringar inte båda kan lyckas.
-- Child-listningen visar nu `Status` och nullable `SubmittedAt`. Den visar både `Assigned` och `PendingApproval`; det breda kriteriet för `NeedsRedo` och `Approved` väntar på Adult-flödet.
-- Ingen completion eller poäng skapas. Approval, rejection, frontend och QR ingår inte i arbetsdelen.
+- Child-listningen visar nu `Status`, nullable `SubmittedAt`, poäng och eventuell omarbetningskommentar för samtliga statuslägen: `Assigned`, `PendingApproval`, `NeedsRedo` och `Approved`.
+- Ingen completion eller poäng skapas när barnet enbart rapporterar uppgiften. Completion och poäng skapas först av det efterföljande Adult-godkännandeflödet. Frontend för uppgifter och QR-presentation återstår.
 
 Adult-granskning och poäng är implementerade, testade och mergade till `main`:
 
@@ -154,6 +154,9 @@ Adult-granskning och poäng är implementerade, testade och mergade till `main`:
 - En första Angular-frontend är skapad med Adult-login, Adult-registrering, Child-enhetskoppling, Child-reservlogin, sessionsåterställning, logout och rollstyrda startsidor. Skapa-syssla-flödet med titelruta och poängrullista återstår.
 - `REQUIREMENTS.md` beskriver nu det senare belöningsflödet i US-070–US-072: en Adult administrerar Householdets belöningar, barnet begär att använda intjänade poäng och en Adult hanterar förfrågan. Detta är endast kravställt och är ännu inte implementerat.
 - Frontenden är byggd mobile-first för mobil och surfplatta med separata Adult- och Child-skal, stora tryckytor, bottom navigation på mobil och responsiv sidnavigation. Referensbilden har använts som visuell riktning utan att kopieras exakt.
+- Adult-vyn har en riktig barnsida som hämtar aktiva barn från `GET /api/children` och skapar barnprofil och Child-konto atomärt via `POST /api/children`.
+- Adult-vyn skapar en åttateckens engångskod via `POST /api/children/{childId}/pairing-codes`, visar dess utgångstid och håller klartextkoden endast i sidans tillfälliga Angular-state.
+- Child-login validerar och löser in den åttateckens koden via `POST /api/auth/child/pair`. Ett manuellt end-to-end-test har verifierat separat Adult- och Child-session, privat Child-endpoint samt att samma kod inte kan återanvändas.
 
 ## Teknik och versioner
 
@@ -247,6 +250,15 @@ Lokala adresser från launch-profilen:
 - HTTPS: `https://localhost:7216`
 - HTTP: `http://localhost:5047`
 
+Starta Angular-frontenden från `frontend/`:
+
+```bash
+npm ci
+npm start
+```
+
+Frontendens lokala adress är `http://localhost:4200`. Använd ett privat webbläsarfönster eller en separat enhet för Child-flödet när en Adult-session redan är aktiv i den vanliga webbläsaren.
+
 ## Genomförda tester
 
 - API-projektet bygger med 0 fel och 0 varningar.
@@ -306,37 +318,17 @@ Ett manuellt US-030/US-031-smoke-test mot PostgreSQL verifierade Adult-registrer
 
 Ett manuellt smoke-test av Child-vyn mot PostgreSQL verifierade två egna tilldelningar med rätt svarsdata och nyaste-först-sortering, ignorerade manipulerade `ChildId`-/`HouseholdId`-parametrar, syskonisolering och isolering mellan två Households. Samma privata vy fungerade efter både Adult-styrd enhetskoppling och reservinloggning. Anonyma användare fick HTTP 401, Adults HTTP 403 och ett avaktiverat barns redan utgivna session nekades omedelbart medan den historiska tilldelningen låg kvar. Ingen migration behövdes eller applicerades.
 
+Den mergade Angular-frontenden har 13 godkända tester för appskal, auth-tjänst, barnservice och Adult-barnsidan. Produktionsbygget är godkänt. Ett manuellt frontend-smoke-test via Angular-proxyn verifierade Adult-registrering och login, barnskapande, generering av engångskod, inlösen på en separat Child-session, åtkomst till den privata Child-endpointen och HTTP 401 när samma kod försökte återanvändas.
+
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
 Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; PostgreSQL lade till den obligatoriska `IsActive`-kolumnen med standardvärdet `true` utan fel.
 
 ## Aktuell arbetsdel
 
-Första delen av US-021 är färdig och testad:
+Backendens MVP-kärna är färdig, mergad, migrerad och verifierad med 95 integrationstester. Frontendens första mobile-first-del är också mergad: Adult-registrering och login, sessionsåterställning, logout, rollstyrd navigation, listning och skapande av barn samt Adult-styrd enhetskoppling fungerar mot det riktiga API:t. Barnets kodinlösen skapar den beständiga Child-sessionen och är verifierad i ett separat webbläsarliknande sessionsflöde.
 
-1. Adult skapar barnprofil och Child-konto tillsammans med `POST /api/children`.
-2. Profil, konto, Household och Child-roll kopplas atomärt.
-3. Barnvänligt användarnamn är skiftlägesokänsligt unikt inom Householdet men kan återanvändas i andra Households.
-4. Child-konton saknar e-post och Adult-e-post förblir unik.
-5. Automatiska integrationstester, Release-build, formatteringskontroll, EF-modellkontroll och genererad PostgreSQL-migrations-SQL är godkända.
-
-Adult-styrd, kortlivad enhetskoppling är färdig och testad:
-
-1. Endast Adult kan skapa kod för ett aktivt barn i eget Household.
-2. Koden är kryptografiskt slumpmässig, kortlivad, hashad i databasen och kan bara användas en gång.
-3. Barnets enhet löser in endast koden; backend bestämmer Child, konto och Household.
-4. Lyckad inlösen autentiserar rätt Child och felaktiga försök begränsas.
-5. Automatiska integrationstester, Release-build, formatteringskontroll, EF-modellkontroll och genererad PostgreSQL-migrations-SQL är godkända.
-
-Den avgränsade US-021-delen med beständig Child-enhetssession, maximal livslängd, säker förnyelse, logout, Adult-återkallning och omedelbar backendkontroll av barnets aktiva status är färdig och testad.
-
-Den avgränsade US-021-delen med reservinloggning via familjekod, barnvänligt användarnamn och Identity-lösenord är färdig, testad och mergad. Alla tillhörande migrationer är applicerade och de centrala flödena är smoke-testade mot PostgreSQL.
-
-US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad automatiskt samt mot PostgreSQL. `AddChores` är applicerad i `syssloappen_dev`.
-
-US-031:s avgränsade backenddel, där en Adult tilldelar en syssla till ett aktivt barn i samma Household, är färdig och testad automatiskt samt mot PostgreSQL. `AddChores`, `AddChoreAssignments` och alla senare migrationer är applicerade; inga migrationer väntar.
-
-Barnets autentiserade, Household-isolerade läsning och rapportering samt Adult-listning, approval/rejection, completion och det beslutade poängsystemets backend är färdiga, mergade, migrerade och smoke-testade mot PostgreSQL. Den första mobile-first Angular-grunden med registrering, login, session, logout och rollstyrd navigation är också färdig och testad. Adult kan nu öppna en riktig barnsida, se Householdets aktiva barn, skapa barnkonto och generera en kortlivad engångskod för barnets enhet. Barnets loginvy löser in koden och etablerar den beständiga Child-sessionen. Nästa avgränsade arbetsdel kan vara visning och återkallning av kopplade enheter; därefter kan redigering, avaktivering, sysslor, poängval och tilldelning kopplas in stegvis.
+Nästa rekommenderade, avgränsade arbetsdel är att koppla in `GET /api/children/{childId}/device-sessions` och `DELETE /api/children/{childId}/device-sessions/{sessionId}` i Adult-vyn. Därefter bör frontend för redigering och avaktivering av barn byggas innan sysslor, poängval, tilldelning, Adult-granskning och barnets riktiga uppgiftsvy kopplas in stegvis.
 
 ## Kända kvarvarande saker
 
