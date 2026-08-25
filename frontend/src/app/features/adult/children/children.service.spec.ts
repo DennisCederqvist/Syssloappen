@@ -38,4 +38,11 @@ describe('ChildrenService', () => {
     });
     request.flush({ id: 1, name: 'Maja', userName: 'maja', role: 'Child' });
   });
+
+  it('creates a pairing code for the selected child', () => {
+    service.createPairingCode(42).subscribe((result) => expect(result.code).toBe('ABC234XY'));
+    const request = http.expectOne('/api/children/42/pairing-codes');
+    expect(request.request.method).toBe('POST');
+    request.flush({ code: 'ABC234XY', expiresAt: '2026-08-25T20:10:00Z' });
+  });
 });

@@ -1,7 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ChildSummary, CreateChildRequest, CreatedChild } from './children.models';
+import {
+  ChildPairingCode,
+  ChildSummary,
+  CreateChildRequest,
+  CreatedChild,
+} from './children.models';
 
 @Injectable({ providedIn: 'root' })
 export class ChildrenService {
@@ -13,5 +18,9 @@ export class ChildrenService {
 
   createChild(request: CreateChildRequest): Observable<CreatedChild> {
     return this.http.post<CreatedChild>('/api/children', request);
+  }
+
+  createPairingCode(childId: number): Observable<ChildPairingCode> {
+    return this.http.post<ChildPairingCode>(`/api/children/${childId}/pairing-codes`, {});
   }
 }

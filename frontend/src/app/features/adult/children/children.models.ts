@@ -15,3 +15,8 @@ export interface CreatedChild {
   userName: string;
   role: 'Child';
 }
+
+export interface ChildPairingCode {
+  code: string;
+  expiresAt: string;
+}
