@@ -52,6 +52,14 @@ export class AdultChildrenPage implements OnInit {
   readonly confirmingRevocation = signal<string | null>(null);
   readonly revokingSession = signal<string | null>(null);
   readonly revocationError = signal('');
+  readonly editingChild = signal<ChildSummary | null>(null);
+  readonly isUpdatingChild = signal(false);
+  readonly editChildError = signal('');
+  readonly editChildSuccess = signal('');
+  readonly confirmingDeactivation = signal(false);
+  readonly isDeactivatingChild = signal(false);
+  readonly deactivationError = signal('');
+  readonly deactivationSuccess = signal('');
 
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: '⌂', route: '/vuxen' },
@@ -76,6 +84,10 @@ export class AdultChildrenPage implements OnInit {
     },
     { validators: passwordsMatch },
   );
+
+  readonly editChildForm = this.formBuilder.nonNullable.group({
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+  });
 
   ngOnInit(): void {
     this.loadChildren();
@@ -235,6 +247,106 @@ export class AdultChildrenPage implements OnInit {
 
   isSessionExpired(session: ChildDeviceSession): boolean {
     return new Date(session.expiresAt).getTime() <= Date.now();
+  }
+
+  openEditChild(child: ChildSummary): void {
+    this.editingChild.set(child);
+    this.editChildForm.setValue({ name: child.name });
+    this.editChildError.set('');
+    this.editChildSuccess.set('');
+    this.confirmingDeactivation.set(false);
+    this.deactivationError.set('');
+  }
+
+  closeEditChild(): void {
+    this.editingChild.set(null);
+    this.editChildForm.reset();
+    this.editChildError.set('');
+    this.editChildSuccess.set('');
+    this.confirmingDeactivation.set(false);
+    this.deactivationError.set('');
+  }
+
+  updateChild(): void {
+    const child = this.editingChild();
+    if (!child) return;
+    if (this.editChildForm.invalid) {
+      this.editChildForm.markAllAsTouched();
+      return;
+    }
+
+    const name = this.editChildForm.getRawValue().name.trim();
+    if (!name) {
+      this.editChildForm.controls.name.setErrors({ required: true });
+      this.editChildForm.controls.name.markAsTouched();
+      return;
+    }
+
+    this.isUpdatingChild.set(true);
+    this.editChildError.set('');
+    this.editChildSuccess.set('');
+    this.childrenService
+      .updateChild(child.id, { name })
+      .pipe(finalize(() => this.isUpdatingChild.set(false)))
+      .subscribe({
+        next: (updatedChild) => {
+          this.children.update((children) =>
+            children
+              .map((current) => (current.id === updatedChild.id ? updatedChild : current))
+              .sort((a, b) => a.name.localeCompare(b.name, 'sv')),
+          );
+          this.editingChild.set(updatedChild);
+          this.editChildForm.setValue({ name: updatedChild.name });
+          this.editChildSuccess.set('Namnet är uppdaterat.');
+        },
+        error: (error: HttpErrorResponse) =>
+          this.editChildError.set(
+            error.status === 404
+              ? 'Barnet är inte längre aktivt eller finns inte i din familj.'
+              : error.status === 400
+                ? 'Skriv ett namn med högst 100 tecken.'
+                : 'Namnet kunde inte uppdateras. Försök igen om en liten stund.',
+          ),
+      });
+  }
+
+  requestDeactivation(): void {
+    this.confirmingDeactivation.set(true);
+    this.deactivationError.set('');
+  }
+
+  cancelDeactivation(): void {
+    this.confirmingDeactivation.set(false);
+    this.deactivationError.set('');
+  }
+
+  deactivateChild(): void {
+    const child = this.editingChild();
+    if (!child || !this.confirmingDeactivation() || this.isDeactivatingChild()) return;
+
+    this.isDeactivatingChild.set(true);
+    this.deactivationError.set('');
+    this.childrenService
+      .deactivateChild(child.id)
+      .pipe(finalize(() => this.isDeactivatingChild.set(false)))
+      .subscribe({
+        next: () => {
+          this.children.update((children) => children.filter((current) => current.id !== child.id));
+          if (this.deviceSessionsChild()?.id === child.id) this.closeDeviceSessions();
+          if (this.createdChild()?.id === child.id) this.createdChild.set(null);
+          this.closePairingCode();
+          this.editingChild.set(null);
+          this.editChildForm.reset();
+          this.confirmingDeactivation.set(false);
+          this.deactivationSuccess.set(`${child.name} är avaktiverad och visas inte längre.`);
+        },
+        error: (error: HttpErrorResponse) =>
+          this.deactivationError.set(
+            error.status === 404
+              ? 'Barnet är redan avaktiverat eller finns inte i din familj.'
+              : 'Barnet kunde inte avaktiveras. Försök igen om en liten stund.',
+          ),
+      });
   }
 
   private loadDeviceSessions(child: ChildSummary): void {
