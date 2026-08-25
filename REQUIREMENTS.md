@@ -313,6 +313,9 @@ så att den senare kan tilldelas ett barn.
 
 - [x] Endast en Adult får skapa sysslor.
 - [x] Sysslan ska ha ett namn.
+- [x] En Adult ska kunna välja om sysslan är värd `5`, `10`, `15` eller `20` poäng.
+- [x] Om inget poängvärde anges ska backend använda `5` poäng.
+- [x] Andra poängvärden ska nekas av backend.
 - [x] Sysslan ska kopplas till den vuxnas Household.
 - [x] En syssla från ett Household får inte vara synlig i ett annat Household.
 - [x] Systemet ska spara vem som skapade sysslan.
@@ -340,6 +343,7 @@ så att barnet ser vad det ska göra.
 - [x] Sysslan och barnet måste tillhöra samma Household.
 - [x] Den vuxna måste tillhöra samma Household som barnet.
 - [x] Tilldelningen ska sparas i databasen.
+- [x] Tilldelningen ska spara sysslans poängvärde när den skapas, så att senare ändringar inte påverkar redan tilldelade sysslor.
 - [x] Barnet ska kunna se tilldelningen efter inloggning.
 - [x] Det ska inte gå att tilldela en syssla till ett barn från ett annat Household.
 
@@ -354,8 +358,8 @@ så att jag vet vem som ska göra vad.
 ### Acceptance Criteria
 
 - [x] Adults ska kunna se Householdets barn.
-- [ ] Adults ska kunna se vilka sysslor varje barn har.
-- [ ] Information från andra Households får inte visas.
+- [x] Adults ska kunna se vilka sysslor varje barn har.
+- [x] Information från andra Households får inte visas.
 
 ---
 
@@ -371,7 +375,7 @@ så att jag vet vad jag ska göra.
 
 - [x] Barnet måste vara inloggat.
 - [x] Barnet ska endast se sysslor som är tilldelade det aktuella barnet.
-- [ ] Barnet ska kunna se om en syssla är tilldelad, väntar på godkännande, behöver göras om eller är godkänd.
+- [x] Barnet ska kunna se om en syssla är tilldelad, väntar på godkännande, behöver göras om eller är godkänd.
 - [x] Sysslor som tillhör syskon eller andra familjer får inte visas.
 
 ### Exempel
@@ -417,12 +421,12 @@ så att jag kan följa deras aktivitet.
 
 ### Acceptance Criteria
 
-- [ ] Adults ska kunna se utförda sysslor inom sitt Household.
-- [ ] Det ska framgå vilket barn som gjorde sysslan.
-- [ ] Det ska framgå vilken syssla som utfördes.
-- [ ] Det ska framgå när barnet rapporterade sysslan som utförd.
-- [ ] För godkända sysslor ska det framgå vem som godkände dem och när.
-- [ ] Information från andra Households får inte visas.
+- [x] Adults ska kunna se utförda sysslor inom sitt Household.
+- [x] Det ska framgå vilket barn som gjorde sysslan.
+- [x] Det ska framgå vilken syssla som utfördes.
+- [x] Det ska framgå när barnet rapporterade sysslan som utförd.
+- [x] För godkända sysslor ska det framgå vem som godkände dem och när.
+- [x] Information från andra Households får inte visas.
 
 ### Exempel
 
@@ -444,17 +448,17 @@ så att endast korrekt utförda sysslor blir godkända.
 
 ### Acceptance Criteria
 
-- [ ] Endast en Adult får godkänna eller neka en rapporterad syssla.
-- [ ] En Adult ska kunna se vilka sysslor inom sitt Household som väntar på godkännande.
-- [ ] Den vuxna, barnet och sysslan måste tillhöra samma Household.
-- [ ] En Adult får inte granska sysslor från ett annat Household.
-- [ ] Vid godkännande ska tilldelningens status ändras till `Approved`.
-- [ ] En completion ska skapas först när sysslan godkänns.
-- [ ] Systemet ska spara vilken Adult som godkände sysslan och när.
-- [ ] Eventuella poäng får delas ut först efter godkännande.
-- [ ] Vid nekande ska tilldelningens status ändras till `NeedsRedo`.
-- [ ] Barnet ska kunna se att sysslan behöver göras om.
-- [ ] Den vuxna ska valfritt kunna lämna en kommentar.
+- [x] Endast en Adult får godkänna eller neka en rapporterad syssla.
+- [x] En Adult ska kunna se vilka sysslor inom sitt Household som väntar på godkännande.
+- [x] Den vuxna, barnet och sysslan måste tillhöra samma Household.
+- [x] En Adult får inte granska sysslor från ett annat Household.
+- [x] Vid godkännande ska tilldelningens status ändras till `Approved`.
+- [x] En completion ska skapas först när sysslan godkänns.
+- [x] Systemet ska spara vilken Adult som godkände sysslan och när.
+- [x] Eventuella poäng får delas ut först efter godkännande.
+- [x] Vid nekande ska tilldelningens status ändras till `NeedsRedo`.
+- [x] Barnet ska kunna se att sysslan behöver göras om.
+- [x] Den vuxna ska valfritt kunna lämna en kommentar.
 
 ### Statusflöde
 
@@ -468,7 +472,32 @@ Approved eller NeedsRedo
 
 ---
 
-# 10. Behörighetsmatris
+# 10. User Stories – Poäng
+
+## US-060 – Barn får poäng för godkända sysslor
+
+**Som barn**
+vill jag få poäng när en vuxen godkänner en utförd syssla
+så att jag kan se resultatet av mitt arbete.
+
+### Acceptance Criteria
+
+- [x] Poängvärdet ska bestämmas av en Adult när sysslan skapas.
+- [x] Tillåtna poängvärden ska vara `5`, `10`, `15` och `20`.
+- [x] Standardvärdet ska vara `5` poäng.
+- [x] Barnet ska kunna se hur många poäng en tilldelning är värd.
+- [x] Inga poäng får delas ut när barnet endast rapporterar sysslan som utförd.
+- [x] Inga poäng får delas ut när en Adult markerar sysslan som `NeedsRedo`.
+- [x] Poäng ska delas ut först när en Adult godkänner sysslan.
+- [x] Godkännandet ska spara exakt hur många poäng som delades ut.
+- [x] Samma tilldelning får aldrig dela ut poäng mer än en gång.
+- [x] Barnets totala poäng ska kunna beräknas från godkända completions.
+- [x] Klienten får inte själv välja utdelade poäng vid godkännandet.
+- [x] Poäng och completions ska vara strikt isolerade per Household.
+
+---
+
+# 11. Behörighetsmatris
 
 | Funktion                     | Adult           | Child |
 | ---------------------------- | --------------- | ----- |
@@ -492,7 +521,7 @@ Approved eller NeedsRedo
 
 ---
 
-# 11. Föreslagen datamodell
+# 12. Föreslagen datamodell
 
 Detta är en initial modell och kan ändras under implementationen.
 
@@ -534,6 +563,7 @@ HouseholdId
 CreatedByUserId
 Title
 Description
+Points
 CreatedAt
 ```
 
@@ -546,6 +576,7 @@ ChoreId
 ChildId
 AssignedByUserId
 AssignedAt
+Points
 Status
 SubmittedAt
 ReviewedByUserId
@@ -560,13 +591,15 @@ Id
 HouseholdId
 AssignmentId
 ChildId
+ChoreId
 ApprovedByUserId
 ApprovedAt
+PointsAwarded
 ```
 
 ---
 
-# 12. Viktiga backend-regler
+# 13. Viktiga backend-regler
 
 Backend ska betraktas som den auktoritativa delen av systemet.
 
@@ -604,7 +637,7 @@ För godkännandeflödet gäller dessutom:
 
 ---
 
-# 13. MVP
+# 14. MVP
 
 Första fungerande versionen ska vara liten.
 
@@ -628,7 +661,7 @@ Första fungerande versionen ska vara liten.
 
 ---
 
-# 14. Inte MVP
+# 15. Inte MVP
 
 Följande funktioner kan vara intressanta senare men ska **inte byggas innan kärnfunktionerna fungerar**.
 
@@ -651,7 +684,7 @@ Följande funktioner kan vara intressanta senare men ska **inte byggas innan kä
 
 ---
 
-# 15. Möjliga framtida funktioner
+# 16. Möjliga framtida funktioner
 
 ## Återkommande sysslor
 
@@ -709,7 +742,7 @@ Den Adult-styrda enhetskopplingen med engångskod ingår i barnloginens kärnfl�
 
 ---
 
-# 16. Development Guidelines för AI-assisterad utveckling
+# 17. Development Guidelines för AI-assisterad utveckling
 
 Projektet kommer att utvecklas med hjälp av AI-verktyg som Codex och GitHub Copilot.
 
@@ -804,7 +837,7 @@ om det inte finns ett konkret behov.
 
 ---
 
-# 17. Definition of Done
+# 18. Definition of Done
 
 En user story betraktas som färdig när:
 
@@ -819,7 +852,7 @@ En user story betraktas som färdig när:
 
 ---
 
-# 18. Prioriterad implementation
+# 19. Prioriterad implementation
 
 Föreslagen ordning:
 
@@ -859,7 +892,7 @@ Föreslagen ordning:
 
 ---
 
-# 19. Projektets kärnprincip
+# 20. Projektets kärnprincip
 
 Den viktigaste regeln för systemets arkitektur är:
 

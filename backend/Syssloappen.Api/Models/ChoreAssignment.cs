@@ -24,7 +24,17 @@ public sealed class ChoreAssignment
 
     public DateTime AssignedAt { get; set; }
 
+    public int Points { get; set; } = 5;
+
     public ChoreAssignmentStatus Status { get; set; } = ChoreAssignmentStatus.Assigned;
 
     public DateTime? SubmittedAt { get; set; }
+
+    public string? ReviewedByUserId { get; set; }
+
+    public ApplicationUser? ReviewedByUser { get; set; }
+
+    public DateTime? ReviewedAt { get; set; }
+
+    public string? ReviewComment { get; set; }
 }

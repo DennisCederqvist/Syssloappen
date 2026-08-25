@@ -62,9 +62,11 @@ public sealed class ChildChoreAssignmentsController(
                 assignment.ChoreId,
                 assignment.Chore.Title,
                 assignment.Chore.Description,
+                assignment.Points,
                 assignment.AssignedAt,
                 assignment.Status.ToString(),
-                assignment.SubmittedAt))
+                assignment.SubmittedAt,
+                assignment.ReviewComment))
             .ToListAsync();
 
         return Ok(assignments);
@@ -123,7 +125,8 @@ public sealed class ChildChoreAssignmentsController(
             return NotFound();
         }
 
-        if (assignment.Status != ChoreAssignmentStatus.Assigned)
+        if (assignment.Status is not ChoreAssignmentStatus.Assigned
+            and not ChoreAssignmentStatus.NeedsRedo)
         {
             return Conflict(new ProblemDetails
             {
@@ -135,6 +138,9 @@ public sealed class ChildChoreAssignmentsController(
 
         assignment.Status = ChoreAssignmentStatus.PendingApproval;
         assignment.SubmittedAt = timeProvider.GetUtcNow().UtcDateTime;
+        assignment.ReviewedByUserId = null;
+        assignment.ReviewedAt = null;
+        assignment.ReviewComment = null;
 
         try
         {
