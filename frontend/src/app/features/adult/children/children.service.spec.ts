@@ -45,4 +45,29 @@ describe('ChildrenService', () => {
     expect(request.request.method).toBe('POST');
     request.flush({ code: 'ABC234XY', expiresAt: '2026-08-25T20:10:00Z' });
   });
+
+  it('loads device sessions for the selected child', () => {
+    service.getDeviceSessions(42).subscribe((sessions) => expect(sessions).toHaveLength(1));
+    const request = http.expectOne('/api/children/42/device-sessions');
+    expect(request.request.method).toBe('GET');
+    request.flush([
+      {
+        sessionId: '11111111-1111-1111-1111-111111111111',
+        createdAt: '2026-08-25T10:00:00Z',
+        lastSeenAt: '2026-08-25T12:00:00Z',
+        expiresAt: '2026-09-01T12:00:00Z',
+        absoluteExpiresAt: '2026-09-24T10:00:00Z',
+        revokedAt: null,
+      },
+    ]);
+  });
+
+  it('revokes only the selected child device session', () => {
+    service.revokeDeviceSession(42, '11111111-1111-1111-1111-111111111111').subscribe();
+    const request = http.expectOne(
+      '/api/children/42/device-sessions/11111111-1111-1111-1111-111111111111',
+    );
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+  });
 });

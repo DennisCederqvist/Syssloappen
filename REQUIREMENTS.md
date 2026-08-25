@@ -980,32 +980,30 @@ En user story betraktas som färdig när:
 
 # 20. Prioriterad fortsatt implementation
 
-Backendens kärnflöde för autentisering, barn, sysslor, tilldelning, rapportering, Adult-granskning och intjänade poäng är färdigt. Angular-grunden, Adult-registrering och login, rollstyrd navigation, Adult-listning och skapande av barn samt Adult-styrd enhetskoppling är också färdiga och mergade. Föreslagen fortsatt ordning är:
+Backendens kärnflöde för autentisering, barn, sysslor, tilldelning, rapportering, Adult-granskning och intjänade poäng är färdigt. Angular-grunden, Adult-registrering och login, rollstyrd navigation, Adult-listning och skapande av barn, Adult-styrd enhetskoppling samt visning och återkallning av kopplade enheter är också färdiga. Föreslagen fortsatt ordning är:
 
 ```text
-1. Visa och återkalla barnets kopplade enheter i Adult-vyn
+1. Adult-frontend för redigering och avaktivering av barn
    ↓
-2. Adult-frontend för redigering och avaktivering av barn
+2. Adult-frontend för sysslor, poängval och tilldelning
    ↓
-3. Adult-frontend för sysslor, poängval och tilldelning
+3. Adult-frontend för PendingApproval, Approved och NeedsRedo
    ↓
-4. Adult-frontend för PendingApproval, Approved och NeedsRedo
+4. Child-frontend för egna sysslor, rapportering, kommentar och poängsaldo
    ↓
-5. Child-frontend för egna sysslor, rapportering, kommentar och poängsaldo
+5. Responsivitet, tillgänglighet och browserbaserade kärnflödestester
    ↓
-6. Responsivitet, tillgänglighet och browserbaserade kärnflödestester
+6. Ytterligare Adult enligt US-011
    ↓
-7. Ytterligare Adult enligt US-011
+7. Belöningskatalogens backend enligt US-070
    ↓
-8. Belöningskatalogens backend enligt US-070
+8. Säker poängreservation och redemption enligt US-071–US-072
    ↓
-9. Säker poängreservation och redemption enligt US-071–US-072
+9. Mobile-first belöningsbutik utan krav på bild
    ↓
-10. Mobile-first belöningsbutik utan krav på bild
+10. Säker bilduppladdning för belöningar
    ↓
-11. Säker bilduppladdning för belöningar
-   ↓
-12. PWA
+11. PWA
 ```
 
 ---
