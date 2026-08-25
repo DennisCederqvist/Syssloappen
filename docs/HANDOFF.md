@@ -121,7 +121,7 @@ Den avgränsade backenddelen av US-031 är implementerad, committad och testad:
 - Noll och negativa ID:n ger HTTP 400. Oväntade ID-, Household-, ägar-, roll- och tidsfält kan inte styra den lagrade raden.
 - `ChoreAssignment` sparar `HouseholdId`, `ChoreId`, `ChildId`, `AssignedByUserId` och `AssignedAt`. Ingen status, completion, approval, poäng-, QR- eller frontendfunktion har lagts till.
 
-Den avgränsade Child-vyn är implementerad och testad på feature-branchen `feature/us-040-child-view-assignments` men ännu inte committad eller mergad:
+Den avgränsade Child-vyn är implementerad, committad och testad:
 
 - `GET /api/child/chore-assignments` kräver en autentiserad användare med rollen `Child`; anonyma användare får HTTP 401 och Adults HTTP 403.
 - Endpointen tar inget `ChildId`, `HouseholdId` eller annat ägarfält. Backend härleder kontot från den validerade cookien och hittar den aktiva barnprofil vars konto- och Household-koppling matchar.
@@ -265,6 +265,8 @@ Ett idempotent PostgreSQL-script från `AddHouseholdFamilyCodes` till `AddChoreA
 
 Ett manuellt US-030/US-031-smoke-test mot PostgreSQL verifierade Adult-registrering och login, barnskapande, enhetskoppling och Child-session, syssleskapande och listning samt beständig tilldelning. Testet verifierade också HTTP 401 utan login, HTTP 403 för Child, HTTP 404 för sysslor och barn från ett annat Household, nekad tilldelning till ett avaktiverat barn samt att manipulerade ID-, Household-, ägar-, roll- och tidsfält inte kunde styra den sparade tilldelningen. Smoke-testet skapade två isolerade test-Households med slumpmässiga uppgifter; lösenorden fanns endast i minnet och dokumenterades inte.
 
+Ett manuellt smoke-test av Child-vyn mot PostgreSQL verifierade två egna tilldelningar med rätt svarsdata och nyaste-först-sortering, ignorerade manipulerade `ChildId`-/`HouseholdId`-parametrar, syskonisolering och isolering mellan två Households. Samma privata vy fungerade efter både Adult-styrd enhetskoppling och reservinloggning. Anonyma användare fick HTTP 401, Adults HTTP 403 och ett avaktiverat barns redan utgivna session nekades omedelbart medan den historiska tilldelningen låg kvar. Ingen migration behövdes eller applicerades.
+
 Migrationen `AddChildProfiles` är applicerad i `syssloappen_dev`. Ett manuellt HTTP-test mot PostgreSQL verifierade HTTP 401 utan login, lyckad skapning som Adult och isolering mellan två Households.
 Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt Household, HTTP 404 från ett annat Household och fortsatt isolering i barnlistan.
 Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; PostgreSQL lade till den obligatoriska `IsActive`-kolumnen med standardvärdet `true` utan fel.
@@ -295,7 +297,7 @@ US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad aut
 
 US-031:s avgränsade backenddel, där en Adult tilldelar en syssla till ett aktivt barn i samma Household, är färdig och testad automatiskt samt mot PostgreSQL. `AddChores` och `AddChoreAssignments` är applicerade och det finns inga väntande migrationer.
 
-Barnets autentiserade, Household-isolerade läsning av sina egna tilldelningar är färdig och automatiskt testad på feature-branchen. Ingen migration behövs. Efter granskning, commit och merge är nästa naturliga avgränsning status- och rapporteringsdelen där ett Child markerar sin egen tilldelning som utförd. Frontend, QR, poäng, completion och approval ska fortfarande vänta tills respektive arbetsdel.
+Barnets autentiserade, Household-isolerade läsning av sina egna tilldelningar är färdig och testad automatiskt samt mot PostgreSQL. Ingen migration behövdes. Nästa naturliga avgränsning är status- och rapporteringsdelen där ett Child markerar sin egen tilldelning som utförd. Frontend, QR, poäng, completion och approval ska fortfarande vänta tills respektive arbetsdel.
 
 ## Kända kvarvarande saker
 
@@ -303,5 +305,5 @@ Barnets autentiserade, Household-isolerade läsning av sina egna tilldelningar �
 - Ingen frontend finns ännu.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
-- PostgreSQL-smoke-körningarna skapade isolerade test-Households i `syssloappen_dev`; den sista helt godkända körningen skapade Household `17` och ChildProfile `10`. Testlösenorden genererades endast i minnet och är inte dokumenterade.
+- PostgreSQL-smoke-körningarna, inklusive transportfelsökningen inför den godkända Child-vy-körningen, skapade flera isolerade test-Households i `syssloappen_dev`. Alla namn och konton är smoke-märkta; testlösenorden genererades endast i minnet och är inte dokumenterade.
 - Household-isolering är testad för barn-, sysslo-, Adult-tilldelnings- och Child-tilldelningsendpoints. Status-, rapporterings-, completion- och approval-flöden återstår och måste få motsvarande isoleringskontroller i sina egna arbetsdelar.
