@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import {
   AbstractControl,
@@ -10,7 +11,7 @@ import {
 import { finalize } from 'rxjs';
 import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
 import { UserHeader } from '../../../shared/user-header';
-import { ChildSummary, CreatedChild } from './children.models';
+import { ChildPairingCode, ChildSummary, CreatedChild } from './children.models';
 import { ChildrenService } from './children.service';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
@@ -21,7 +22,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-adult-children-page',
-  imports: [AppBottomNav, ReactiveFormsModule, UserHeader],
+  imports: [AppBottomNav, DatePipe, ReactiveFormsModule, UserHeader],
   templateUrl: './adult-children-page.html',
 })
 export class AdultChildrenPage implements OnInit {
@@ -35,6 +36,10 @@ export class AdultChildrenPage implements OnInit {
   readonly loadError = signal('');
   readonly formError = signal('');
   readonly createdChild = signal<CreatedChild | null>(null);
+  readonly pairingCode = signal<(ChildPairingCode & { childName: string }) | null>(null);
+  readonly generatingCodeFor = signal<number | null>(null);
+  readonly pairingError = signal('');
+  readonly pairingCodeCopied = signal(false);
 
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: '⌂', route: '/vuxen' },
@@ -121,5 +126,40 @@ export class AdultChildrenPage implements OnInit {
           }
         },
       });
+  }
+
+  generatePairingCode(child: ChildSummary): void {
+    this.generatingCodeFor.set(child.id);
+    this.pairingError.set('');
+    this.pairingCode.set(null);
+    this.pairingCodeCopied.set(false);
+    this.childrenService
+      .createPairingCode(child.id)
+      .pipe(finalize(() => this.generatingCodeFor.set(null)))
+      .subscribe({
+        next: (result) => this.pairingCode.set({ ...result, childName: child.name }),
+        error: (error: HttpErrorResponse) =>
+          this.pairingError.set(
+            error.status === 404
+              ? 'Barnet är inte längre aktivt eller saknar ett konto.'
+              : 'Koden kunde inte skapas. Försök igen om en liten stund.',
+          ),
+      });
+  }
+
+  closePairingCode(): void {
+    this.pairingCode.set(null);
+    this.pairingCodeCopied.set(false);
+  }
+
+  async copyPairingCode(): Promise<void> {
+    const code = this.pairingCode()?.code;
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      this.pairingCodeCopied.set(true);
+    } catch {
+      this.pairingError.set('Koden kunde inte kopieras automatiskt. Kopiera den manuellt.');
+    }
   }
 }

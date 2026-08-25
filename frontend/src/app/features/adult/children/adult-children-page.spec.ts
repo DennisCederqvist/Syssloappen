@@ -6,6 +6,7 @@ import { ChildrenService } from './children.service';
 
 class FakeChildrenService {
   createCalls = 0;
+  pairingCalls: number[] = [];
 
   getActiveChildren() {
     return of([{ id: 1, name: 'Leo' }]);
@@ -14,6 +15,11 @@ class FakeChildrenService {
   createChild(request: CreateChildRequest) {
     this.createCalls += 1;
     return of({ id: 2, name: request.name, userName: request.userName, role: 'Child' as const });
+  }
+
+  createPairingCode(childId: number) {
+    this.pairingCalls.push(childId);
+    return of({ code: 'ABC234XY', expiresAt: '2026-08-25T20:10:00Z' });
   }
 }
 
@@ -63,5 +69,19 @@ describe('AdultChildrenPage', () => {
       { id: 2, name: 'Maja' },
     ]);
     expect(component.createdChild()?.userName).toBe('maja');
+  });
+
+  it('keeps the one-time pairing code only in page state', () => {
+    component.generatePairingCode({ id: 1, name: 'Leo' });
+
+    expect(service.pairingCalls).toEqual([1]);
+    expect(component.pairingCode()).toEqual({
+      childName: 'Leo',
+      code: 'ABC234XY',
+      expiresAt: '2026-08-25T20:10:00Z',
+    });
+
+    component.closePairingCode();
+    expect(component.pairingCode()).toBeNull();
   });
 });

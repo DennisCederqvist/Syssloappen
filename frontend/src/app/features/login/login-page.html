@@ -307,9 +307,14 @@
                 type="text"
                 autocomplete="one-time-code"
                 autocapitalize="characters"
+                maxlength="8"
                 placeholder="Skriv engångskoden"
                 class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-center text-lg font-black tracking-[0.2em] uppercase shadow-sm focus:border-brand-500"
-            /></label>
+              />
+              @if (pairingForm.controls.code.touched && pairingForm.controls.code.invalid) {
+                <span class="mt-2 block text-sm text-red-700">Koden ska innehålla 8 tecken.</span>
+              }
+            </label>
             <button
               type="submit"
               [disabled]="isSubmitting()"

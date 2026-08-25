@@ -65,7 +65,7 @@ export class LoginPage {
     password: ['', Validators.required],
   });
   readonly pairingForm = this.formBuilder.nonNullable.group({
-    code: ['', Validators.required],
+    code: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(8)]],
   });
 
   selectMode(mode: LoginMode): void {

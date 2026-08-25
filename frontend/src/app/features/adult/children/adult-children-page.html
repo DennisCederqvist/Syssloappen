@@ -36,7 +36,98 @@
           <h2 class="font-black">{{ child.name }} är tillagd</h2>
           <p class="mt-1 text-sm leading-6">
             Barnets användarnamn är <strong>{{ child.userName }}</strong
-            >. Nästa steg blir att skapa en engångskod för barnets enhet.
+            >. Nu kan du koppla barnets enhet med en engångskod.
+          </p>
+          <button
+            type="button"
+            (click)="generatePairingCode(child)"
+            [disabled]="generatingCodeFor() === child.id"
+            class="mt-3 min-h-11 rounded-xl bg-white px-4 text-sm font-extrabold text-green-900 shadow-sm ring-1 ring-green-200 disabled:opacity-60"
+          >
+            {{ generatingCodeFor() === child.id ? 'Skapar kod…' : 'Koppla enhet' }}
+          </button>
+        </div>
+      </section>
+    }
+
+    @if (pairingError()) {
+      <div
+        class="mt-5 rounded-2xl border border-coral/30 bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+        role="alert"
+      >
+        {{ pairingError() }}
+      </div>
+    }
+
+    @if (pairingCode(); as pairing) {
+      <section
+        class="mt-5 overflow-hidden rounded-[1.75rem] bg-white shadow-xl ring-1 ring-brand-500/25"
+        aria-labelledby="pairing-code-title"
+        aria-live="polite"
+      >
+        <div class="bg-brand-600 p-5 text-white sm:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-sm font-extrabold text-brand-100">
+                Koppla {{ pairing.childName }}s enhet
+              </p>
+              <h2 id="pairing-code-title" class="mt-1 text-2xl font-black">Engångskoden är klar</h2>
+            </div>
+            <button
+              type="button"
+              (click)="closePairingCode()"
+              class="grid size-11 shrink-0 place-items-center rounded-xl bg-white/10 text-xl"
+              aria-label="Stäng engångskoden"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <div class="p-5 sm:p-6">
+          <div class="rounded-3xl bg-brand-50 p-5 text-center ring-1 ring-brand-500/20">
+            <p class="text-xs font-extrabold tracking-wider text-brand-600 uppercase">
+              Kod för barnets enhet
+            </p>
+            <p class="mt-3 break-all text-3xl font-black tracking-[0.2em] text-ink sm:text-4xl">
+              {{ pairing.code }}
+            </p>
+            <p class="mt-3 text-sm font-bold text-muted">
+              Gäller till {{ pairing.expiresAt | date: 'HH:mm' }}
+            </p>
+            <button
+              type="button"
+              (click)="copyPairingCode()"
+              class="mt-4 min-h-11 rounded-xl bg-white px-4 text-sm font-extrabold text-brand-600 shadow-sm ring-1 ring-line"
+            >
+              {{ pairingCodeCopied() ? 'Kopierad ✓' : 'Kopiera koden' }}
+            </button>
+          </div>
+          <div class="mt-5 grid gap-3 sm:grid-cols-3">
+            <div class="rounded-2xl bg-canvas p-4">
+              <span
+                class="grid size-8 place-items-center rounded-xl bg-brand-100 text-sm font-black text-brand-600"
+                >1</span
+              >
+              <p class="mt-3 text-sm font-bold">Öppna Syssloappen på barnets enhet.</p>
+            </div>
+            <div class="rounded-2xl bg-canvas p-4">
+              <span
+                class="grid size-8 place-items-center rounded-xl bg-brand-100 text-sm font-black text-brand-600"
+                >2</span
+              >
+              <p class="mt-3 text-sm font-bold">Välj Barn och sedan Engångskod.</p>
+            </div>
+            <div class="rounded-2xl bg-canvas p-4">
+              <span
+                class="grid size-8 place-items-center rounded-xl bg-brand-100 text-sm font-black text-brand-600"
+                >3</span
+              >
+              <p class="mt-3 text-sm font-bold">Skriv koden innan den går ut.</p>
+            </div>
+          </div>
+          <p class="mt-5 rounded-2xl bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+            <strong>Säker kod:</strong> Den kan bara användas en gång och sparas inte i klartext.
+            Skapa en ny kod om tiden hinner gå ut.
           </p>
         </div>
       </section>
@@ -211,22 +302,30 @@
       } @else {
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           @for (child of children(); track child.id; let index = $index) {
-            <article
-              class="flex items-center gap-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-line"
-            >
-              <div
-                class="grid size-14 shrink-0 place-items-center rounded-2xl text-2xl"
-                [class.bg-brand-100]="index % 3 === 0"
-                [class.bg-violet-100]="index % 3 === 1"
-                [class.bg-amber-100]="index % 3 === 2"
-                aria-hidden="true"
+            <article class="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-line">
+              <div class="flex items-center gap-4">
+                <div
+                  class="grid size-14 shrink-0 place-items-center rounded-2xl text-2xl"
+                  [class.bg-brand-100]="index % 3 === 0"
+                  [class.bg-violet-100]="index % 3 === 1"
+                  [class.bg-amber-100]="index % 3 === 2"
+                  aria-hidden="true"
+                >
+                  {{ index % 2 === 0 ? '🧒' : '👧' }}
+                </div>
+                <div class="min-w-0">
+                  <h3 class="truncate text-lg font-black">{{ child.name }}</h3>
+                  <p class="text-sm text-muted">Aktivt barnkonto</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                (click)="generatePairingCode(child)"
+                [disabled]="generatingCodeFor() === child.id"
+                class="mt-4 min-h-11 w-full rounded-xl bg-brand-50 px-4 text-sm font-extrabold text-brand-600 transition hover:bg-brand-100 disabled:cursor-wait disabled:opacity-60"
               >
-                {{ index % 2 === 0 ? '🧒' : '👧' }}
-              </div>
-              <div class="min-w-0">
-                <h3 class="truncate text-lg font-black">{{ child.name }}</h3>
-                <p class="text-sm text-muted">Aktivt barnkonto</p>
-              </div>
+                {{ generatingCodeFor() === child.id ? 'Skapar kod…' : 'Koppla enhet' }}
+              </button>
             </article>
           }
         </div>
