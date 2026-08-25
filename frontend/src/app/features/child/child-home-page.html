@@ -1,0 +1,60 @@
+<div
+  class="page-enter min-h-dvh bg-[linear-gradient(180deg,#eefaf6_0%,#f7f8f5_55%)] pb-24 md:flex md:pb-0"
+>
+  <app-bottom-nav [items]="navItems" />
+  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-5 sm:px-7 md:py-8">
+    <app-user-header eyebrow="Min dag" title="Hej kompis! 👋" variant="child" />
+    <section class="mt-7 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line sm:p-7">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="font-black">Dagens framsteg</p>
+          <p class="mt-1 text-sm text-muted">Snart kan du se allt du gjort här.</p>
+        </div>
+        <div
+          class="grid size-14 shrink-0 place-items-center rounded-2xl bg-amber-50 text-2xl font-black text-amber-700"
+          aria-label="Poäng kommer snart"
+        >
+          ⭐
+        </div>
+      </div>
+      <div class="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
+        <div class="h-full w-1/4 rounded-full bg-brand-500"></div>
+      </div>
+    </section>
+    <section class="mt-7" aria-labelledby="today-title">
+      <p class="text-sm font-extrabold text-brand-600">Idag</p>
+      <h2 id="today-title" class="mt-1 text-2xl font-black">Det här händer idag</h2>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        <article
+          class="flex min-h-48 flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-brand-500/30 bg-white p-6 text-center shadow-sm sm:col-span-2"
+        >
+          <div
+            class="grid size-20 place-items-center rounded-[1.75rem] bg-brand-50 text-4xl"
+            aria-hidden="true"
+          >
+            🧸
+          </div>
+          <h3 class="mt-5 text-xl font-black">Dina sysslor flyttar snart in</h3>
+          <p class="mt-2 max-w-md leading-7 text-muted">
+            Inloggningen och din egen trygga sida fungerar nu. I nästa steg kopplas dagens riktiga
+            uppgifter hit.
+          </p>
+        </article>
+        <article class="rounded-[2rem] bg-lilac p-5 text-white shadow-lg shadow-lilac/15">
+          <span class="text-3xl" aria-hidden="true">🎯</span>
+          <h3 class="mt-8 text-lg font-black">En sak i taget</h3>
+          <p class="mt-1 text-sm leading-6 text-violet-100">
+            Stora knappar och tydliga steg gör sidan lätt att använda.
+          </p>
+        </article>
+        <article class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line">
+          <span class="text-3xl" aria-hidden="true">🔐</span>
+          <h3 class="mt-8 text-lg font-black">Bara din sida</h3>
+          <p class="mt-1 text-sm leading-6 text-muted">
+            Din roll och familj kontrolleras säkert av appen.
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+</div>

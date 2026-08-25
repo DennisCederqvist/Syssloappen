@@ -1,0 +1,366 @@
+<main class="page-enter mx-auto grid min-h-dvh w-full max-w-6xl lg:grid-cols-[1.05fr_0.95fr]">
+  <section
+    class="hidden overflow-hidden bg-brand-600 p-12 text-white lg:flex lg:flex-col lg:justify-between"
+  >
+    <div class="flex items-center gap-3 text-lg font-extrabold">
+      <span class="grid size-11 place-items-center rounded-2xl bg-white/15 text-2xl">✓</span
+      >Syssloappen
+    </div>
+    <div class="max-w-md">
+      <div
+        class="mb-8 grid size-32 place-items-center rounded-[2.5rem] bg-white/12 text-7xl"
+        aria-hidden="true"
+      >
+        🏡
+      </div>
+      <p class="mb-3 text-sm font-extrabold tracking-[0.18em] text-brand-100 uppercase">
+        Enklare familjevardag
+      </p>
+      <h1 class="text-5xl leading-[1.05] font-black">Små uppgifter.<br />Stora framsteg.</h1>
+      <p class="mt-5 text-lg leading-8 text-brand-100">
+        En lugn plats där familjen hjälps åt och varje insats räknas.
+      </p>
+    </div>
+    <p class="text-sm text-brand-100">Tryggt separerat för varje familj.</p>
+  </section>
+  <section class="flex min-h-dvh items-center justify-center px-5 py-8 sm:px-10">
+    <div class="w-full max-w-md">
+      <div class="mb-8 flex items-center gap-3 lg:hidden">
+        <span
+          class="grid size-11 place-items-center rounded-2xl bg-brand-500 text-xl font-black text-white shadow-lg shadow-brand-500/20"
+          >✓</span
+        ><span class="text-xl font-black">Syssloappen</span>
+      </div>
+      <div class="mb-7">
+        <p class="mb-2 text-sm font-extrabold tracking-[0.14em] text-brand-600 uppercase">
+          Välkommen
+        </p>
+        <h1 class="text-3xl font-black tracking-tight sm:text-4xl">
+          {{
+            mode() === 'adult' && adultView() === 'register'
+              ? 'Skapa din familj'
+              : 'Logga in och fortsätt'
+          }}
+        </h1>
+        <p class="mt-2 leading-7 text-muted">
+          {{
+            mode() === 'adult' && adultView() === 'register'
+              ? 'Kom igång med ett vuxenkonto på någon minut.'
+              : 'Välj den vy som passar dig.'
+          }}
+        </p>
+      </div>
+      <div
+        class="mb-7 grid grid-cols-2 rounded-2xl bg-white p-1.5 shadow-sm ring-1 ring-line"
+        role="tablist"
+        aria-label="Välj inloggning"
+      >
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="mode() === 'adult'"
+          (click)="selectMode('adult')"
+          class="min-h-12 rounded-xl px-4 font-extrabold transition"
+          [class.bg-brand-500]="mode() === 'adult'"
+          [class.text-white]="mode() === 'adult'"
+        >
+          Vuxen
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="mode() === 'child'"
+          (click)="selectMode('child')"
+          class="min-h-12 rounded-xl px-4 font-extrabold transition"
+          [class.bg-brand-500]="mode() === 'child'"
+          [class.text-white]="mode() === 'child'"
+        >
+          Barn
+        </button>
+      </div>
+      @if (errorMessage()) {
+        <div
+          class="mb-5 rounded-2xl border border-coral/30 bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+          role="alert"
+        >
+          {{ errorMessage() }}
+        </div>
+      }
+      @if (mode() === 'adult') {
+        @if (registrationResult(); as result) {
+          <section
+            class="rounded-[1.75rem] bg-white p-5 shadow-lg ring-1 ring-line sm:p-6"
+            aria-live="polite"
+          >
+            <div
+              class="grid size-14 place-items-center rounded-2xl bg-green-100 text-2xl"
+              aria-hidden="true"
+            >
+              ✓
+            </div>
+            <p class="mt-5 text-sm font-extrabold tracking-wider text-brand-600 uppercase">
+              Kontot är skapat
+            </p>
+            <h2 class="mt-1 text-2xl font-black">Välkommen till Syssloappen!</h2>
+            <p class="mt-2 leading-7 text-muted">
+              Din familj och ditt vuxenkonto är klara. Spara familjekoden innan du fortsätter.
+            </p>
+            <div class="mt-5 rounded-2xl bg-brand-50 p-4 text-center ring-1 ring-brand-500/20">
+              <p class="text-xs font-extrabold tracking-wider text-brand-600 uppercase">
+                Familjekod
+              </p>
+              <p class="mt-2 break-all text-2xl font-black tracking-[0.12em] text-ink">
+                {{ result.familyCode }}
+              </p>
+              <button
+                type="button"
+                (click)="copyFamilyCode()"
+                class="mt-4 min-h-11 rounded-xl bg-white px-4 text-sm font-extrabold text-brand-600 shadow-sm ring-1 ring-line"
+              >
+                {{ familyCodeCopied() ? 'Kopierad ✓' : 'Kopiera koden' }}
+              </button>
+            </div>
+            <p class="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+              <strong>Viktigt:</strong> Koden visas bara nu. Den behövs tillsammans med barnets namn
+              och lösenord vid reservinloggning.
+            </p>
+            <button
+              type="button"
+              (click)="continueToLogin()"
+              class="mt-5 min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 hover:bg-brand-600"
+            >
+              Jag har sparat koden – fortsätt
+            </button>
+          </section>
+        } @else {
+          <div class="mb-5 flex justify-center gap-1 rounded-2xl bg-brand-50 p-1 text-sm font-bold">
+            <button
+              type="button"
+              (click)="selectAdultView('login')"
+              class="min-h-11 flex-1 rounded-xl px-3"
+              [class.bg-white]="adultView() === 'login'"
+              [class.shadow-sm]="adultView() === 'login'"
+            >
+              Logga in
+            </button>
+            <button
+              type="button"
+              (click)="selectAdultView('register')"
+              class="min-h-11 flex-1 rounded-xl px-3"
+              [class.bg-white]="adultView() === 'register'"
+              [class.shadow-sm]="adultView() === 'register'"
+            >
+              Skapa konto
+            </button>
+          </div>
+          @if (adultView() === 'login') {
+            <form [formGroup]="adultForm" (ngSubmit)="submitAdult()" class="space-y-5" novalidate>
+              <label class="block font-bold"
+                >E-post<input
+                  formControlName="email"
+                  type="email"
+                  autocomplete="email"
+                  inputmode="email"
+                  placeholder="du@example.se"
+                  class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm transition focus:border-brand-500"
+                />
+                @if (adultForm.controls.email.touched && adultForm.controls.email.invalid) {
+                  <span class="mt-2 block text-sm text-red-700">Skriv en giltig e-postadress.</span>
+                }
+              </label>
+              <label class="block font-bold"
+                >Lösenord<input
+                  formControlName="password"
+                  type="password"
+                  autocomplete="current-password"
+                  placeholder="Ditt lösenord"
+                  class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm transition focus:border-brand-500"
+                />
+                @if (adultForm.controls.password.touched && adultForm.controls.password.invalid) {
+                  <span class="mt-2 block text-sm text-red-700">Skriv ditt lösenord.</span>
+                }
+              </label>
+              <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
+              >
+                {{ isSubmitting() ? 'Loggar in…' : 'Logga in som vuxen' }}
+              </button>
+            </form>
+          } @else {
+            <form
+              [formGroup]="registrationForm"
+              (ngSubmit)="submitRegistration()"
+              class="space-y-4"
+              novalidate
+            >
+              <label class="block font-bold"
+                >Familjens namn<input
+                  formControlName="householdName"
+                  type="text"
+                  autocomplete="organization"
+                  placeholder="Till exempel Familjen Andersson"
+                  class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+                />
+                @if (
+                  registrationForm.controls.householdName.touched &&
+                  registrationForm.controls.householdName.invalid
+                ) {
+                  <span class="mt-2 block text-sm text-red-700">Skriv familjens namn.</span>
+                }
+              </label>
+              <label class="block font-bold"
+                >Din e-post<input
+                  formControlName="email"
+                  type="email"
+                  autocomplete="email"
+                  inputmode="email"
+                  placeholder="du@example.se"
+                  class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+                />
+                @if (
+                  registrationForm.controls.email.touched && registrationForm.controls.email.invalid
+                ) {
+                  <span class="mt-2 block text-sm text-red-700">Skriv en giltig e-postadress.</span>
+                }
+              </label>
+              <label class="block font-bold"
+                >Välj lösenord<input
+                  formControlName="password"
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="Minst 8 tecken"
+                  class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+                />
+                <span class="mt-2 block text-xs leading-5 text-muted"
+                  >Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.</span
+                >
+                @if (
+                  registrationForm.controls.password.touched &&
+                  registrationForm.controls.password.invalid
+                ) {
+                  <span class="mt-1 block text-sm text-red-700"
+                    >Lösenordet uppfyller inte kraven.</span
+                  >
+                }
+              </label>
+              <label class="block font-bold"
+                >Upprepa lösenordet<input
+                  formControlName="confirmPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="Skriv lösenordet igen"
+                  class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+                />
+                @if (
+                  registrationForm.controls.confirmPassword.touched &&
+                  registrationForm.hasError('passwordMismatch')
+                ) {
+                  <span class="mt-2 block text-sm text-red-700">Lösenorden är inte lika.</span>
+                }
+              </label>
+              <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
+              >
+                {{ isSubmitting() ? 'Skapar familjen…' : 'Skapa familj och konto' }}
+              </button>
+              <p class="text-center text-xs leading-5 text-muted">
+                När du fortsätter skapas en ny, separat familj där du blir vuxen administratör.
+              </p>
+            </form>
+          }
+        }
+      } @else {
+        <div class="mb-5 flex justify-center gap-1 rounded-2xl bg-brand-50 p-1 text-sm font-bold">
+          <button
+            type="button"
+            (click)="selectChildLoginMode('pairing')"
+            class="min-h-11 flex-1 rounded-xl px-3"
+            [class.bg-white]="childLoginMode() === 'pairing'"
+            [class.shadow-sm]="childLoginMode() === 'pairing'"
+          >
+            Engångskod
+          </button>
+          <button
+            type="button"
+            (click)="selectChildLoginMode('fallback')"
+            class="min-h-11 flex-1 rounded-xl px-3"
+            [class.bg-white]="childLoginMode() === 'fallback'"
+            [class.shadow-sm]="childLoginMode() === 'fallback'"
+          >
+            Familjekod
+          </button>
+        </div>
+        @if (childLoginMode() === 'pairing') {
+          <form
+            [formGroup]="pairingForm"
+            (ngSubmit)="submitPairingCode()"
+            class="space-y-5"
+            novalidate
+          >
+            <label class="block font-bold"
+              >Kod från en vuxen<input
+                formControlName="code"
+                type="text"
+                autocomplete="one-time-code"
+                autocapitalize="characters"
+                placeholder="Skriv engångskoden"
+                class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-center text-lg font-black tracking-[0.2em] uppercase shadow-sm focus:border-brand-500"
+            /></label>
+            <button
+              type="submit"
+              [disabled]="isSubmitting()"
+              class="min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
+            >
+              {{ isSubmitting() ? 'Kopplar…' : 'Koppla min enhet' }}
+            </button>
+            <p class="text-center text-sm leading-6 text-muted">
+              Be en vuxen skapa en ny kod. Den gäller en kort stund och kan bara användas en gång.
+            </p>
+          </form>
+        } @else {
+          <form [formGroup]="childForm" (ngSubmit)="submitChild()" class="space-y-5" novalidate>
+            <label class="block font-bold"
+              >Familjekod<input
+                formControlName="familyCode"
+                type="text"
+                autocomplete="one-time-code"
+                autocapitalize="characters"
+                placeholder="Familjens kod"
+                class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base tracking-wider uppercase shadow-sm focus:border-brand-500"
+            /></label>
+            <label class="block font-bold"
+              >Mitt namn<input
+                formControlName="userName"
+                type="text"
+                autocomplete="username"
+                placeholder="Ditt användarnamn"
+                class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+            /></label>
+            <label class="block font-bold"
+              >Mitt lösenord<input
+                formControlName="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Ditt lösenord"
+                class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+            /></label>
+            <button
+              type="submit"
+              [disabled]="isSubmitting()"
+              class="min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
+            >
+              {{ isSubmitting() ? 'Öppnar…' : 'Öppna min sida' }}
+            </button>
+            <p class="text-center text-sm leading-6 text-muted">
+              Använd detta alternativ om en vuxen inte kan skapa en engångskod just nu.
+            </p>
+          </form>
+        }
+      }
+    </div>
+  </section>
+</main>

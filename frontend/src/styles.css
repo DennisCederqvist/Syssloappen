@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Nunito', 'Avenir Next', 'Segoe UI', sans-serif;
+  --color-ink: #18312f;
+  --color-muted: #667774;
+  --color-canvas: #f4f7f5;
+  --color-line: #dfe8e4;
+  --color-brand-50: #e9f8f5;
+  --color-brand-100: #d5f1eb;
+  --color-brand-500: #14a38f;
+  --color-brand-600: #087f72;
+  --color-lilac: #8e74cc;
+  --color-coral: #ed7e68;
+}
+
+:root {
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  min-width: 320px;
+  background: var(--color-canvas);
+}
+body {
+  min-height: 100dvh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 5% 0%, rgb(213 241 235 / 55%), transparent 32rem), var(--color-canvas);
+}
+button,
+input {
+  font: inherit;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+:focus-visible {
+  outline: 3px solid rgb(20 163 143 / 35%);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .page-enter {
+    animation: page-enter 320ms ease-out both;
+  }
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}

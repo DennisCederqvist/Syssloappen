@@ -20,7 +20,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    // Local Angular development uses an HTTP proxy. Other environments must
+    // continue to send the authentication cookie over HTTPS only.
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
     options.SlidingExpiration = false;
     // Custom events validate Child sessions and return API status codes instead of redirects.
     options.EventsType = typeof(ChildSessionCookieEvents);
