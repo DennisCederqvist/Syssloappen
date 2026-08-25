@@ -184,7 +184,7 @@ så att andra användare inte kan se eller ändra vår information.
 - [x] En Adult får endast administrera barn i sitt eget Household.
 - [x] En Adult får endast skapa sysslor för sitt eget Household.
 - [x] En Adult får endast tilldela sysslor till barn i sitt eget Household.
-- [ ] Ett Child får endast se information som tillhör sitt eget Household.
+- [x] Ett Child får endast se information som tillhör sitt eget Household.
 - [x] Backend ska kontrollera Household-tillhörighet.
 - [x] Manipulering av ID:n i API-anrop får inte ge åtkomst till ett annat Households data.
 
@@ -245,6 +245,13 @@ så att barnet kan logga in på sin egen enhet.
 - [x] Ett tekniskt Identity-användarnamn får skapas internt för global unikhet men ska inte behöva visas för barnet.
 - [x] Felaktig familjekod, felaktigt användarnamn och felaktigt lösenord ska ge samma neutrala felmeddelande.
 - [x] Upprepade misslyckade reservinloggningar ska begränsas eller leda till en tillfällig kontolåsning.
+
+### Beslutad sessionspolicy för barnets enhet
+
+- Den beständiga Child-sessionen gäller i sju dagar från koppling eller senaste säkra förnyelse.
+- Aktivitet när mindre än ett dygn återstår förnyar sessionen med upp till sju dagar.
+- Sessionen får aldrig förlängas förbi den absoluta maxgränsen på trettio dagar från den ursprungliga inloggningen.
+- Efter sju dagars inaktivitet, trettio dagars total livslängd, logout, Adult-återkallning eller avaktivering krävs en ny kopplingskod eller reservinloggning.
 
 ---
 
@@ -567,26 +574,26 @@ så att familjens fysiska belöningar hanteras kontrollerat.
 
 # 11. Behörighetsmatris
 
-| Funktion                     | Adult           | Child |
-| ---------------------------- | --------------- | ----- |
-| Logga in                     | Ja              | Ja    |
-| Logga ut                     | Ja              | Ja    |
-| Se egna sysslor              | Ja\*            | Ja    |
-| Se familjens barn            | Ja              | Nej   |
-| Skapa barn                   | Ja              | Nej   |
-| Ändra barn                   | Ja              | Nej   |
-| Avaktivera barn              | Ja              | Nej   |
-| Skapa barnkonto              | Ja              | Nej   |
-| Skapa syssla                 | Ja              | Nej   |
-| Tilldela syssla              | Ja              | Nej   |
-| Rapportera egen syssla utförd | Nej/ej relevant | Ja    |
-| Godkänna eller neka syssla   | Ja              | Nej   |
-| Se familjens completions     | Ja              | Nej   |
-| Skapa och administrera belöning | Ja           | Nej   |
-| Begära belöning              | Nej             | Ja    |
-| Hantera belöningsförfrågan   | Ja              | Nej   |
-| Bjuda in Adult               | Ja              | Nej   |
-| Administrera annat Household | Nej             | Nej   |
+| Funktion                        | Adult           | Child |
+| ------------------------------- | --------------- | ----- |
+| Logga in                        | Ja              | Ja    |
+| Logga ut                        | Ja              | Ja    |
+| Se egna sysslor                 | Ja\*            | Ja    |
+| Se familjens barn               | Ja              | Nej   |
+| Skapa barn                      | Ja              | Nej   |
+| Ändra barn                      | Ja              | Nej   |
+| Avaktivera barn                 | Ja              | Nej   |
+| Skapa barnkonto                 | Ja              | Nej   |
+| Skapa syssla                    | Ja              | Nej   |
+| Tilldela syssla                 | Ja              | Nej   |
+| Rapportera egen syssla utförd   | Nej/ej relevant | Ja    |
+| Godkänna eller neka syssla      | Ja              | Nej   |
+| Se familjens completions        | Ja              | Nej   |
+| Skapa och administrera belöning | Ja              | Nej   |
+| Begära belöning                 | Nej             | Ja    |
+| Hantera belöningsförfrågan      | Ja              | Nej   |
+| Bjuda in Adult                  | Ja              | Nej   |
+| Administrera annat Household    | Nej             | Nej   |
 
 - Adult-vyn behöver inte nödvändigtvis använda samma typ av tilldelning som Child-vyn.
 
@@ -744,17 +751,17 @@ Den första frontendversionen får vara visuellt enkel. Målet är först att g�
 
 ### Acceptance Criteria
 
-- [ ] Frontend ska byggas i Angular.
-- [ ] Frontend ska utformas mobile first eftersom både Adults och Children främst väntas använda mobil eller surfplatta.
+- [x] Frontend ska byggas i Angular.
+- [x] Frontend ska utformas mobile first eftersom både Adults och Children främst väntas använda mobil eller surfplatta.
 - [ ] Adult-flödena ska vara fullt användbara på en vanlig mobilskärm utan horisontell scrollning.
 - [ ] Child-flödena ska vara fullt användbara på både mobil och surfplatta utan horisontell scrollning.
 - [ ] Primära knappar och val ska ha tydliga texter och vara lätta att trycka på med fingret.
 - [ ] Text, status, felmeddelanden och poäng ska vara tydligt läsbara på små skärmar.
-- [ ] Adult- och Child-vyer ska vara separerade och anpassade efter respektive roll.
-- [ ] Desktoplayout får förbättras responsivt men ska inte prioriteras före mobilflödena.
-- [ ] Den första designen ska vara enkel och komponentbaserad så att utseendet kan ändras senare.
+- [x] Adult- och Child-vyer ska vara separerade och anpassade efter respektive roll.
+- [x] Desktoplayout får förbättras responsivt men ska inte prioriteras före mobilflödena.
+- [x] Den första designen ska vara enkel och komponentbaserad så att utseendet kan ändras senare.
 - [ ] Skapa-syssla-formuläret ska ha en titelruta och en poängrullista med `5`, `10`, `15` och `20`, där `5` är förvalt.
-- [ ] Frontend får aldrig ersätta backendens kontroller av identitet, roll, Household, status, poäng eller ägarskap.
+- [x] Frontend får aldrig ersätta backendens kontroller av identitet, roll, Household, status, poäng eller ägarskap.
 - [ ] Grundläggande tillgänglighet ska beaktas, inklusive formuläretiketter, tangentbordsnavigering, fokusmarkering och tillräckliga kontraster.
 
 ---
@@ -778,7 +785,7 @@ Första fungerande versionen ska vara liten.
 - [x] Child kan rapportera en syssla som utförd.
 - [x] Adult kan godkänna eller neka en rapporterad syssla.
 - [x] Adult kan se utförda sysslor.
-- [ ] Household-isolering fungerar.
+- [x] Household-isolering fungerar.
 - [x] Authentication och authorization fungerar.
 
 ---
@@ -973,30 +980,32 @@ En user story betraktas som färdig när:
 
 # 20. Prioriterad fortsatt implementation
 
-Backendens kärnflöde för autentisering, barn, sysslor, tilldelning, rapportering, Adult-granskning och intjänade poäng är färdigt. Föreslagen fortsatt ordning är:
+Backendens kärnflöde för autentisering, barn, sysslor, tilldelning, rapportering, Adult-granskning och intjänade poäng är färdigt. Angular-grunden, Adult-registrering och login, rollstyrd navigation, Adult-listning och skapande av barn samt Adult-styrd enhetskoppling är också färdiga och mergade. Föreslagen fortsatt ordning är:
 
 ```text
-1. Mobile-first Angular-grund, login och rollstyrd navigation
+1. Visa och återkalla barnets kopplade enheter i Adult-vyn
    ↓
-2. Adult-frontend för barn, sysslor, poängval och tilldelning
+2. Adult-frontend för redigering och avaktivering av barn
    ↓
-3. Adult-frontend för PendingApproval, Approved och NeedsRedo
+3. Adult-frontend för sysslor, poängval och tilldelning
    ↓
-4. Child-frontend för egna sysslor, rapportering, kommentar och poängsaldo
+4. Adult-frontend för PendingApproval, Approved och NeedsRedo
    ↓
-5. Responsivitet, tillgänglighet och browserbaserade kärnflödestester
+5. Child-frontend för egna sysslor, rapportering, kommentar och poängsaldo
    ↓
-6. Ytterligare Adult enligt US-011
+6. Responsivitet, tillgänglighet och browserbaserade kärnflödestester
    ↓
-7. Belöningskatalogens backend enligt US-070
+7. Ytterligare Adult enligt US-011
    ↓
-8. Säker poängreservation och redemption enligt US-071–US-072
+8. Belöningskatalogens backend enligt US-070
    ↓
-9. Mobile-first belöningsbutik utan krav på bild
+9. Säker poängreservation och redemption enligt US-071–US-072
    ↓
-10. Säker bilduppladdning för belöningar
+10. Mobile-first belöningsbutik utan krav på bild
    ↓
-11. PWA
+11. Säker bilduppladdning för belöningar
+   ↓
+12. PWA
 ```
 
 ---
