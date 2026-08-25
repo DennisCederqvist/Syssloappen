@@ -151,9 +151,9 @@ Adult-granskning och poäng är implementerade, testade och mergade till `main`:
 - Ett barn kan rapportera en `NeedsRedo`-tilldelning igen. Den gamla granskningsinformationen rensas då och status återgår till `PendingApproval` med en ny backendtid.
 - Varje completion sparar Household, tilldelning, barn, syssla, godkännande Adult, UTC-tid och de utdelade snapshot-poängen. Ett unikt index på `AssignmentId` skyddar dessutom mot dubbel utdelning.
 - `GET /api/child/points` summerar endast det autentiserade aktiva barnets egna, Household-konsistenta completions. Child-listningen visar tilldelningens poäng, alla fyra statuslägen och eventuell omarbetningskommentar.
-- Frontend är inte skapad. Den beslutade framtida vyn är en titelruta och en poängrullista med `5`, `10`, `15`, `20`, där `5` är förvalt.
+- En första Angular-frontend är skapad med Adult-login, Adult-registrering, Child-enhetskoppling, Child-reservlogin, sessionsåterställning, logout och rollstyrda startsidor. Skapa-syssla-flödet med titelruta och poängrullista återstår.
 - `REQUIREMENTS.md` beskriver nu det senare belöningsflödet i US-070–US-072: en Adult administrerar Householdets belöningar, barnet begär att använda intjänade poäng och en Adult hanterar förfrågan. Detta är endast kravställt och är ännu inte implementerat.
-- Frontenden ska byggas mobile-first för mobil och surfplatta. Den första versionen får vara visuellt enkel och ska prioritera fungerande, rollanpassade flöden; utseendet ska kunna utvecklas senare med referensbilder som grund.
+- Frontenden är byggd mobile-first för mobil och surfplatta med separata Adult- och Child-skal, stora tryckytor, bottom navigation på mobil och responsiv sidnavigation. Referensbilden har använts som visuell riktning utan att kopieras exakt.
 
 ## Teknik och versioner
 
@@ -167,7 +167,9 @@ Adult-granskning och poäng är implementerade, testade och mergade till `main`:
 - Npgsql Entity Framework Core provider `10.0.3`
 - Lokalt `dotnet-ef`-verktyg `10.0.11` via `dotnet-tools.json`
 
-Angular-projektet har ännu inte skapats. Den första backend-kärnan är nu stabil, migrerad och smoke-testad. Nästa avgränsade arbetsdel är därför en mobile-first Angular-grund med login och rollstyrd navigation.
+Frontendprojektet använder Angular 22, standalone components, reactive forms och Tailwind CSS 4. Angulars dev-server proxyar `/api` till API:t på `http://localhost:5047`. Autentiseringstjänsten använder backendens HttpOnly-cookie, och route guards väljer rätt startsida för `Adult` respektive `Child` utan att ersätta backendens behörighetskontroller.
+
+Adult-registreringen skapar Household och Adult-konto via `POST /api/auth/register`, visar den engångsutlämnade familjekoden och leder därefter användaren till login med förifylld e-post. Development-miljön använder `SameAsRequest` för autentiseringscookien så HTTP-proxyn fungerar lokalt; övriga miljöer behåller `SecurePolicy.Always`.
 
 ## Viktiga arkitekturbeslut
 
@@ -334,12 +336,12 @@ US-030 med Adult-skapade, Household-isolerade sysslor är färdig och testad aut
 
 US-031:s avgränsade backenddel, där en Adult tilldelar en syssla till ett aktivt barn i samma Household, är färdig och testad automatiskt samt mot PostgreSQL. `AddChores`, `AddChoreAssignments` och alla senare migrationer är applicerade; inga migrationer väntar.
 
-Barnets autentiserade, Household-isolerade läsning och rapportering samt Adult-listning, approval/rejection, completion och det beslutade poängsystemets backend är färdiga, mergade, migrerade och smoke-testade mot PostgreSQL. Nästa avgränsade arbetsdel är mobile-first Angular-grund, login och rollstyrd navigation. Därefter kan de befintliga Adult- och Child-flödena kopplas till gränssnittet stegvis. Referensbilder kan användas som visuell riktning utan att låsa den första implementationen vid en slutlig design.
+Barnets autentiserade, Household-isolerade läsning och rapportering samt Adult-listning, approval/rejection, completion och det beslutade poängsystemets backend är färdiga, mergade, migrerade och smoke-testade mot PostgreSQL. Den första mobile-first Angular-grunden med registrering, login, session, logout och rollstyrd navigation är också färdig och testad. Nästa avgränsade arbetsdel är Adult-frontend för att skapa och administrera barnkonton; därefter kopplas sysslor, poängval och tilldelning in stegvis.
 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
-- Ingen frontend finns ännu.
+- Frontendens navigation till barn, sysslor och granskning är ännu endast ett visuellt skal. Dessa flöden ska kopplas till de befintliga API-endpointsen i separata arbetsdelar.
 - Belöningskatalog, poängreservation och belöningsförfrågningar enligt US-070–US-072 är dokumenterade men ännu inte implementerade. De ska byggas efter de centrala frontendflödena; bilduppladdning kommer sist i det planerade belöningsarbetet.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
