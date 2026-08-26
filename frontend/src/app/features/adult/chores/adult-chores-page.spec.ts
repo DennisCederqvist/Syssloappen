@@ -124,6 +124,15 @@ describe('AdultChoresPage', () => {
       'button[aria-label="Plocka bort Mata katten"]',
     ) as HTMLButtonElement | null;
     expect(cross).not.toBeNull();
+    expect(cross?.classList.contains('size-12')).toBe(true);
+  });
+
+  it('shows understandable Swedish assignment statuses', () => {
+    expect(component.assignmentStatusLabel('Assigned')).toBe('Tilldelad');
+    expect(component.assignmentStatusLabel('PendingApproval')).toBe('Väntar på granskning');
+    expect(component.assignmentStatusLabel('NeedsRedo')).toBe('Behöver göras om');
+    expect(component.assignmentStatusLabel('Approved')).toBe('Godkänd');
+    expect(component.assignmentStatusLabel('Cancelled')).toBe('Borttagen');
   });
 
   it('requires confirmation and removes a cancelled assignment immediately', () => {

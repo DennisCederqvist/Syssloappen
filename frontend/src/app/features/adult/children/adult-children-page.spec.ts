@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AdultChildrenPage } from './adult-children-page';
 import { CreateChildRequest, UpdateChildRequest } from './children.models';
@@ -63,7 +64,7 @@ describe('AdultChildrenPage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AdultChildrenPage],
-      providers: [{ provide: ChildrenService, useClass: FakeChildrenService }],
+      providers: [provideRouter([]), { provide: ChildrenService, useClass: FakeChildrenService }],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AdultChildrenPage);
@@ -109,6 +110,7 @@ describe('AdultChildrenPage', () => {
 
     expect(service.pairingCalls).toEqual([1]);
     expect(component.pairingCode()).toEqual({
+      childId: 1,
       childName: 'Leo',
       code: 'ABC234XY',
       expiresAt: '2026-08-25T20:10:00Z',
@@ -116,6 +118,23 @@ describe('AdultChildrenPage', () => {
 
     component.closePairingCode();
     expect(component.pairingCode()).toBeNull();
+  });
+
+  it('connects expandable child panels to accessible controls', () => {
+    const fixture = TestBed.createComponent(AdultChildrenPage);
+    fixture.detectChanges();
+
+    const createButton = fixture.nativeElement.querySelector(
+      '#create-child-trigger',
+    ) as HTMLButtonElement;
+    expect(createButton.getAttribute('aria-controls')).toBeNull();
+    expect(createButton.getAttribute('aria-expanded')).toBe('false');
+
+    createButton.click();
+    fixture.detectChanges();
+    expect(createButton.getAttribute('aria-expanded')).toBe('true');
+    expect(createButton.getAttribute('aria-controls')).toBe('create-child-panel');
+    expect(fixture.nativeElement.querySelector('#create-child-panel')).not.toBeNull();
   });
 
   it('loads device sessions for the selected child', () => {

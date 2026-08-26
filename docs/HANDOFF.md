@@ -220,6 +220,24 @@ Adult-granskningen implementerades och verifierades på `feature/adult-chore-rev
 
 Adult-granskningen användartestades 2026-08-26 med en riktig rapporterad Child-tilldelning. Både `NeedsRedo` med kommentar och ett senare godkännande fungerade. Godkännandet delade ut poängen; en redan öppen Child-vy uppdateras inte i realtid utan hämtar det aktuella saldot vid sidladdning. Användaren godkände därefter merge till `main`, som genomfördes och pushades i merge-commit `df0ead7`.
 
+## Responsivitets- och tillgänglighetsgenomgång
+
+Kärnflödenas breda genomgång är implementerad och verifierad på `feature/responsive-accessibility-audit`, men ännu inte mergad:
+
+- Login/registrering, Adult-start, barn/konton, sysslor/tilldelningar, Adult-granskning och Child-vyn ingår.
+- Den befintliga Playwright-resan kör nu responsivitetskontroller vid 390, 768 och 1280 px, nekar horisontell dokument-scroll och kräver minst 44 × 44 px för synliga knappar och länkar.
+- `@axe-core/playwright` är tillagd som dev dependency och verifierar WCAG 2 A/AA samt WCAG 2.1 A/AA i centrala tillstånd genom det riktiga API-/PostgreSQL-flödet.
+- Browserkörningen fångade verkliga kontrastproblem. Brand-, lilac- och muted-tokens mörkades; fokusmarkeringen är nu opak och tydlig.
+- Långa header-rubriker radbryts, uppgiftsbankens kryss är 48 px och Adult-tilldelningarnas svenska statustext visas även på mobil.
+- Formulärfel är kopplade till fälten. Ogiltig submit, öppnade inline-paneler, bekräftelser, borttagna åtgärdsknappar och lyckade statusövergångar får avsiktlig fokusplacering.
+- Växlingsknapparna på login använder `aria-pressed` i namngivna grupper i stället för ett ofullständigt tabs-mönster. Paneler och bekräftelser har namngivna regioner/grupper, och loading-/fel-/resultatlägen använder relevanta live-statusar.
+- Reduced motion stänger effektivt av dekorativa animationer och övergångar; E2E-testet kör och verifierar detta läge.
+- Slutverifiering: Prettier godkänd, 55/55 Angular-tester, Angular-produktionsbygge, Playwright-E2E med Chromium/API/PostgreSQL och 106/106 backendtester i Release är gröna.
+
+Genomgången användartestades och godkändes 2026-08-26 utan upptäckta blockerande problem. Produktbeslutet är att ytterligare grafisk UI/UX-finslipning görs i projektets slutskede, såvida inte ett specifikt användbarhets- eller tillgänglighetsproblem motiverar en tidigare ändring.
+
+`REQUIREMENTS.md`:s fyra breda, öppna checkboxar i frontendavsnittet ska markeras efter merge till `main`, i enlighet med dokumentets statusregel.
+
 ## Teknik och versioner
 
 - Node.js `22.23.2`
@@ -411,13 +429,13 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-Det browserbaserade end-to-end-testet av det centrala syssleflödet är implementerat, verifierat och mergat till `main` i merge-commit `1cba8f3`.
+Det browserbaserade end-to-end-testet av det centrala syssleflödet är implementerat, verifierat och mergat till `main` i merge-commit `1cba8f3`. Responsivitets- och tillgänglighetsutökningen är verifierad och användargodkänd på `feature/responsive-accessibility-audit` samt redo för merge.
 
 - Playwright kör Chromium i mobil viewport.
 - Adult och Child använder två separata browser-contexts och därmed isolerade cookies.
 - Testet skapar ett unikt E2E-märkt Household och går genom registrering, barnkonto, engångskod, syssla, tilldelning, rapportering, `NeedsRedo` med kommentar, omrapportering, godkännande och uppdaterat poängsaldo.
 - Körningen använder riktiga Angular-anrop via proxyn till API:t och den lokala PostgreSQL-databasen.
-- `npm run e2e` passerar. Även 53/53 Angular-tester, formatteringskontroll, Angular-produktionsbygge och 106/106 backendtester i Release passerar.
+- `npm run e2e` passerar med kärnflöde, Axe, reduced motion samt 390/768/1280-kontroller. Även 55/55 Angular-tester, formatteringskontroll, Angular-produktionsbygge och 106/106 backendtester i Release passerar.
 
 Adult-frontenden för US-050/US-051 är implementerad, automatiskt verifierad, manuellt användartestad och mergad till `main` i `df0ead7`. Child-frontenden för US-040/US-041 är motsvarande mergad till `main` i `7a0fec8`.
 
@@ -427,7 +445,7 @@ Adult-flödet för sysslor och tilldelningar är användartestat och mergat till
 
 Produktbeslutet är att en `Chore` är en återanvändbar mall i Householdets uppgiftsbank, inte en engångsuppgift. En Adult skapar exempelvis `Bädda sängen` en gång och kan sedan skapa flera separata `ChoreAssignment`-rader för samma eller olika barn. Efter ny skapning får UI:t gärna leda direkt till en valfri tilldelning, men mallen finns kvar för framtida användning. Varje tilldelning fryser poängvärdet som gällde vid tilldelningstillfället.
 
-US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041, Adult-granskningen för US-050/US-051 och det browserbaserade E2E-testet är implementerade, verifierade och mergade. Aktuell arbetsdel är en bredare responsivitets- och tillgänglighetsgenomgång av kärnflödena, därefter ytterligare Adult-funktion enligt US-011.
+US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041, Adult-granskningen för US-050/US-051 och det browserbaserade E2E-testet är implementerade, verifierade och mergade. Responsivitets- och tillgänglighetsgenomgången är färdigverifierad och användargodkänd på feature-branchen; efter merge är nästa planerade funktion ytterligare Adult enligt US-011.
 
 ## Kända kvarvarande saker
 

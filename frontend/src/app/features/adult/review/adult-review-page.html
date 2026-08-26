@@ -24,6 +24,8 @@
 
     @if (successMessage()) {
       <div
+        id="review-success-message"
+        tabindex="-1"
         class="mt-5 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 font-bold text-green-900"
         role="status"
       >
@@ -92,12 +94,24 @@
                 maxlength="500"
                 [value]="reviewComments()[assignment.assignmentId] || ''"
                 (input)="setComment(assignment.assignmentId, $any($event.target).value)"
+                [attr.aria-invalid]="reviewErrors()[assignment.assignmentId] ? 'true' : null"
+                [attr.aria-describedby]="
+                  reviewErrors()[assignment.assignmentId]
+                    ? 'review-error-' + assignment.assignmentId
+                    : null
+                "
                 class="mt-2 w-full rounded-2xl border border-line p-4"
                 placeholder="Till exempel: Glöm inte att fylla på vattnet"
               ></textarea>
 
               @if (reviewErrors()[assignment.assignmentId]; as reviewError) {
-                <p class="mt-3 text-sm font-bold text-red-700" role="alert">{{ reviewError }}</p>
+                <p
+                  [id]="'review-error-' + assignment.assignmentId"
+                  class="mt-3 text-sm font-bold text-red-700"
+                  role="alert"
+                >
+                  {{ reviewError }}
+                </p>
               }
 
               <div class="mt-5 grid gap-3 sm:grid-cols-2">

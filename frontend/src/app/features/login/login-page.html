@@ -16,7 +16,7 @@
       <p class="mb-3 text-sm font-extrabold tracking-[0.18em] text-brand-100 uppercase">
         Enklare familjevardag
       </p>
-      <h1 class="text-5xl leading-[1.05] font-black">Små uppgifter.<br />Stora framsteg.</h1>
+      <h2 class="text-5xl leading-[1.05] font-black">Små uppgifter.<br />Stora framsteg.</h2>
       <p class="mt-5 text-lg leading-8 text-brand-100">
         En lugn plats där familjen hjälps åt och varje insats räknas.
       </p>
@@ -52,13 +52,12 @@
       </div>
       <div
         class="mb-7 grid grid-cols-2 rounded-2xl bg-white p-1.5 shadow-sm ring-1 ring-line"
-        role="tablist"
+        role="group"
         aria-label="Välj inloggning"
       >
         <button
           type="button"
-          role="tab"
-          [attr.aria-selected]="mode() === 'adult'"
+          [attr.aria-pressed]="mode() === 'adult'"
           (click)="selectMode('adult')"
           class="min-h-12 rounded-xl px-4 font-extrabold transition"
           [class.bg-brand-500]="mode() === 'adult'"
@@ -68,8 +67,7 @@
         </button>
         <button
           type="button"
-          role="tab"
-          [attr.aria-selected]="mode() === 'child'"
+          [attr.aria-pressed]="mode() === 'child'"
           (click)="selectMode('child')"
           class="min-h-12 rounded-xl px-4 font-extrabold transition"
           [class.bg-brand-500]="mode() === 'child'"
@@ -133,10 +131,15 @@
             </button>
           </section>
         } @else {
-          <div class="mb-5 flex justify-center gap-1 rounded-2xl bg-brand-50 p-1 text-sm font-bold">
+          <div
+            class="mb-5 flex justify-center gap-1 rounded-2xl bg-brand-50 p-1 text-sm font-bold"
+            role="group"
+            aria-label="Vuxenkonto"
+          >
             <button
               type="button"
               (click)="selectAdultView('login')"
+              [attr.aria-pressed]="adultView() === 'login'"
               class="min-h-11 flex-1 rounded-xl px-3"
               [class.bg-white]="adultView() === 'login'"
               [class.shadow-sm]="adultView() === 'login'"
@@ -146,6 +149,7 @@
             <button
               type="button"
               (click)="selectAdultView('register')"
+              [attr.aria-pressed]="adultView() === 'register'"
               class="min-h-11 flex-1 rounded-xl px-3"
               [class.bg-white]="adultView() === 'register'"
               [class.shadow-sm]="adultView() === 'register'"
@@ -157,27 +161,41 @@
             <form [formGroup]="adultForm" (ngSubmit)="submitAdult()" class="space-y-5" novalidate>
               <label class="block font-bold"
                 >E-post<input
+                  id="adult-email"
                   formControlName="email"
                   type="email"
                   autocomplete="email"
                   inputmode="email"
                   placeholder="du@example.se"
+                  [attr.aria-invalid]="
+                    adultForm.controls.email.touched && adultForm.controls.email.invalid
+                  "
+                  aria-describedby="adult-email-error"
                   class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm transition focus:border-brand-500"
                 />
                 @if (adultForm.controls.email.touched && adultForm.controls.email.invalid) {
-                  <span class="mt-2 block text-sm text-red-700">Skriv en giltig e-postadress.</span>
+                  <span id="adult-email-error" class="mt-2 block text-sm text-red-700"
+                    >Skriv en giltig e-postadress.</span
+                  >
                 }
               </label>
               <label class="block font-bold"
                 >Lösenord<input
+                  id="adult-password"
                   formControlName="password"
                   type="password"
                   autocomplete="current-password"
                   placeholder="Ditt lösenord"
+                  [attr.aria-invalid]="
+                    adultForm.controls.password.touched && adultForm.controls.password.invalid
+                  "
+                  aria-describedby="adult-password-error"
                   class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm transition focus:border-brand-500"
                 />
                 @if (adultForm.controls.password.touched && adultForm.controls.password.invalid) {
-                  <span class="mt-2 block text-sm text-red-700">Skriv ditt lösenord.</span>
+                  <span id="adult-password-error" class="mt-2 block text-sm text-red-700"
+                    >Skriv ditt lösenord.</span
+                  >
                 }
               </label>
               <button
@@ -197,67 +215,101 @@
             >
               <label class="block font-bold"
                 >Familjens namn<input
+                  id="household-name"
                   formControlName="householdName"
                   type="text"
                   autocomplete="organization"
                   placeholder="Till exempel Familjen Andersson"
+                  [attr.aria-invalid]="
+                    registrationForm.controls.householdName.touched &&
+                    registrationForm.controls.householdName.invalid
+                  "
+                  aria-describedby="household-name-error"
                   class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
                 />
                 @if (
                   registrationForm.controls.householdName.touched &&
                   registrationForm.controls.householdName.invalid
                 ) {
-                  <span class="mt-2 block text-sm text-red-700">Skriv familjens namn.</span>
+                  <span id="household-name-error" class="mt-2 block text-sm text-red-700"
+                    >Skriv familjens namn.</span
+                  >
                 }
               </label>
               <label class="block font-bold"
                 >Din e-post<input
+                  id="registration-email"
                   formControlName="email"
                   type="email"
                   autocomplete="email"
                   inputmode="email"
                   placeholder="du@example.se"
+                  [attr.aria-invalid]="
+                    registrationForm.controls.email.touched &&
+                    registrationForm.controls.email.invalid
+                  "
+                  aria-describedby="registration-email-error"
                   class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
                 />
                 @if (
                   registrationForm.controls.email.touched && registrationForm.controls.email.invalid
                 ) {
-                  <span class="mt-2 block text-sm text-red-700">Skriv en giltig e-postadress.</span>
+                  <span id="registration-email-error" class="mt-2 block text-sm text-red-700"
+                    >Skriv en giltig e-postadress.</span
+                  >
                 }
               </label>
               <label class="block font-bold"
                 >Välj lösenord<input
+                  id="registration-password"
                   formControlName="password"
                   type="password"
                   autocomplete="new-password"
                   placeholder="Minst 8 tecken"
+                  [attr.aria-invalid]="
+                    registrationForm.controls.password.touched &&
+                    registrationForm.controls.password.invalid
+                  "
+                  aria-describedby="registration-password-help registration-password-error"
                   class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
                 />
-                <span class="mt-2 block text-xs leading-5 text-muted"
+                <span
+                  id="registration-password-help"
+                  class="mt-2 block text-xs leading-5 text-muted"
                   >Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.</span
                 >
                 @if (
                   registrationForm.controls.password.touched &&
                   registrationForm.controls.password.invalid
                 ) {
-                  <span class="mt-1 block text-sm text-red-700"
+                  <span id="registration-password-error" class="mt-1 block text-sm text-red-700"
                     >Lösenordet uppfyller inte kraven.</span
                   >
                 }
               </label>
               <label class="block font-bold"
                 >Upprepa lösenordet<input
+                  id="confirm-registration-password"
                   formControlName="confirmPassword"
                   type="password"
                   autocomplete="new-password"
                   placeholder="Skriv lösenordet igen"
+                  [attr.aria-invalid]="
+                    registrationForm.controls.confirmPassword.touched &&
+                    registrationForm.hasError('passwordMismatch')
+                  "
+                  aria-describedby="confirm-registration-password-error"
                   class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
                 />
                 @if (
                   registrationForm.controls.confirmPassword.touched &&
                   registrationForm.hasError('passwordMismatch')
                 ) {
-                  <span class="mt-2 block text-sm text-red-700">Lösenorden är inte lika.</span>
+                  <span
+                    id="confirm-registration-password-error"
+                    class="mt-2 block text-sm text-red-700"
+                    >Lösenorden är inte lika.</span
+                  >
                 }
               </label>
               <button
@@ -274,10 +326,15 @@
           }
         }
       } @else {
-        <div class="mb-5 flex justify-center gap-1 rounded-2xl bg-brand-50 p-1 text-sm font-bold">
+        <div
+          class="mb-5 flex justify-center gap-1 rounded-2xl bg-brand-50 p-1 text-sm font-bold"
+          role="group"
+          aria-label="Barnets inloggningssätt"
+        >
           <button
             type="button"
             (click)="selectChildLoginMode('pairing')"
+            [attr.aria-pressed]="childLoginMode() === 'pairing'"
             class="min-h-11 flex-1 rounded-xl px-3"
             [class.bg-white]="childLoginMode() === 'pairing'"
             [class.shadow-sm]="childLoginMode() === 'pairing'"
@@ -287,6 +344,7 @@
           <button
             type="button"
             (click)="selectChildLoginMode('fallback')"
+            [attr.aria-pressed]="childLoginMode() === 'fallback'"
             class="min-h-11 flex-1 rounded-xl px-3"
             [class.bg-white]="childLoginMode() === 'fallback'"
             [class.shadow-sm]="childLoginMode() === 'fallback'"
@@ -303,16 +361,23 @@
           >
             <label class="block font-bold"
               >Kod från en vuxen<input
+                id="pairing-code-input"
                 formControlName="code"
                 type="text"
                 autocomplete="one-time-code"
                 autocapitalize="characters"
                 maxlength="8"
                 placeholder="Skriv engångskoden"
+                [attr.aria-invalid]="
+                  pairingForm.controls.code.touched && pairingForm.controls.code.invalid
+                "
+                aria-describedby="pairing-code-error"
                 class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-center text-lg font-black tracking-[0.2em] uppercase shadow-sm focus:border-brand-500"
               />
               @if (pairingForm.controls.code.touched && pairingForm.controls.code.invalid) {
-                <span class="mt-2 block text-sm text-red-700">Koden ska innehålla 8 tecken.</span>
+                <span id="pairing-code-error" class="mt-2 block text-sm text-red-700"
+                  >Koden ska innehålla 8 tecken.</span
+                >
               }
             </label>
             <button
@@ -330,29 +395,62 @@
           <form [formGroup]="childForm" (ngSubmit)="submitChild()" class="space-y-5" novalidate>
             <label class="block font-bold"
               >Familjekod<input
+                id="family-code"
                 formControlName="familyCode"
                 type="text"
                 autocomplete="one-time-code"
                 autocapitalize="characters"
                 placeholder="Familjens kod"
+                [attr.aria-invalid]="
+                  childForm.controls.familyCode.touched && childForm.controls.familyCode.invalid
+                "
+                aria-describedby="family-code-error"
                 class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base tracking-wider uppercase shadow-sm focus:border-brand-500"
-            /></label>
+              />
+              @if (childForm.controls.familyCode.touched && childForm.controls.familyCode.invalid) {
+                <span id="family-code-error" class="mt-2 block text-sm text-red-700"
+                  >Skriv familjekoden.</span
+                >
+              }
+            </label>
             <label class="block font-bold"
               >Mitt namn<input
+                id="child-username"
                 formControlName="userName"
                 type="text"
                 autocomplete="username"
                 placeholder="Ditt användarnamn"
+                [attr.aria-invalid]="
+                  childForm.controls.userName.touched && childForm.controls.userName.invalid
+                "
+                aria-describedby="child-username-error"
                 class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
-            /></label>
+              />
+              @if (childForm.controls.userName.touched && childForm.controls.userName.invalid) {
+                <span id="child-username-error" class="mt-2 block text-sm text-red-700"
+                  >Skriv ditt användarnamn.</span
+                >
+              }
+            </label>
             <label class="block font-bold"
               >Mitt lösenord<input
+                id="child-password"
                 formControlName="password"
                 type="password"
                 autocomplete="current-password"
                 placeholder="Ditt lösenord"
+                [attr.aria-invalid]="
+                  childForm.controls.password.touched && childForm.controls.password.invalid
+                "
+                aria-describedby="child-password-error"
                 class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
-            /></label>
+              />
+              @if (childForm.controls.password.touched && childForm.controls.password.invalid) {
+                <span id="child-password-error" class="mt-2 block text-sm text-red-700"
+                  >Skriv ditt lösenord.</span
+                >
+              }
+            </label>
             <button
               type="submit"
               [disabled]="isSubmitting()"

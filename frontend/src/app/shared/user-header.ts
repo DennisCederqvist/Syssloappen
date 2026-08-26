@@ -4,7 +4,7 @@ import { AuthService } from '../core/auth/auth.service';
 
 @Component({
   selector: 'app-user-header',
-  template: `<header class="flex items-center justify-between gap-4">
+  template: `<header class="flex items-start justify-between gap-3 sm:items-center sm:gap-4">
     <div class="flex min-w-0 items-center gap-3">
       <div
         class="grid size-12 shrink-0 place-items-center rounded-2xl text-2xl shadow-sm"
@@ -15,16 +15,16 @@ import { AuthService } from '../core/auth/auth.service';
         {{ variant() === 'adult' ? '🏡' : '🌟' }}
       </div>
       <div class="min-w-0">
-        <p class="truncate text-xs font-extrabold tracking-wider text-brand-600 uppercase">
+        <p class="text-xs font-extrabold tracking-wider text-brand-600 uppercase">
           {{ eyebrow() }}
         </p>
-        <h1 class="truncate text-xl font-black sm:text-2xl">{{ title() }}</h1>
+        <h1 class="text-xl leading-tight font-black sm:text-2xl">{{ title() }}</h1>
       </div>
     </div>
     <button
       type="button"
       (click)="logout()"
-      class="min-h-11 shrink-0 rounded-xl border border-line bg-white px-3 text-sm font-bold text-muted shadow-sm hover:text-ink"
+      class="min-h-12 shrink-0 rounded-xl border border-line bg-white px-3 text-sm font-bold text-muted shadow-sm hover:text-ink"
     >
       Logga ut
     </button>

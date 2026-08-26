@@ -79,6 +79,8 @@
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
           @for (assignment of assignments(); track assignment.assignmentId) {
             <article
+              [id]="'child-assignment-' + assignment.assignmentId"
+              tabindex="-1"
               class="flex flex-col rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line sm:p-6"
               [class.ring-2]="assignment.status === 'NeedsRedo'"
               [class.ring-coral]="assignment.status === 'NeedsRedo'"

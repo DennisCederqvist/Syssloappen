@@ -5,6 +5,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
 import { UserHeader } from '../../../shared/user-header';
+import { focusAfterRender } from '../../../shared/focus';
 import { ChildSummary } from '../children/children.models';
 import { ChildrenService } from '../children/children.service';
 import { AdultAssignment, Chore } from './chores.models';
@@ -41,6 +42,8 @@ export class AdultChoresPage implements OnInit {
   readonly assignmentError = signal('');
   readonly assignmentCancellationError = signal('');
   readonly successMessage = signal('');
+  private assignmentReturnFocusId = 'open-assignment-trigger';
+  private editChoreReturnFocusId = '';
 
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: '⌂', route: '/vuxen' },
@@ -93,17 +96,22 @@ export class AdultChoresPage implements OnInit {
     this.choreError.set('');
     this.successMessage.set('');
     this.showChoreForm.set(true);
+    focusAfterRender('new-chore-panel');
   }
 
   closeChoreForm(): void {
     this.showChoreForm.set(false);
     this.choreError.set('');
     this.choreForm.reset({ title: '', description: '', points: 5 });
+    focusAfterRender('new-chore-trigger');
   }
 
   createChore(): void {
     if (this.choreForm.invalid) {
       this.choreForm.markAllAsTouched();
+      focusAfterRender(
+        this.choreForm.controls.title.invalid ? 'new-chore-name' : 'new-chore-description',
+      );
       return;
     }
     const value = this.choreForm.getRawValue();
@@ -141,6 +149,7 @@ export class AdultChoresPage implements OnInit {
   }
 
   openEditChore(chore: Chore): void {
+    this.editChoreReturnFocusId = `edit-chore-${chore.id}`;
     this.editingChore.set(chore);
     this.editChoreForm.setValue({
       title: chore.title,
@@ -150,18 +159,23 @@ export class AdultChoresPage implements OnInit {
     this.editChoreError.set('');
     this.deactivationError.set('');
     this.confirmingDeactivationId.set(null);
+    focusAfterRender('edit-chore-panel');
   }
 
   closeEditChore(): void {
     this.editingChore.set(null);
     this.editChoreForm.reset({ title: '', description: '', points: 5 });
     this.editChoreError.set('');
+    if (this.editChoreReturnFocusId) focusAfterRender(this.editChoreReturnFocusId);
   }
 
   updateChore(): void {
     const chore = this.editingChore();
     if (!chore || this.editChoreForm.invalid) {
       this.editChoreForm.markAllAsTouched();
+      focusAfterRender(
+        this.editChoreForm.controls.title.invalid ? 'edit-chore-name' : 'edit-chore-description',
+      );
       return;
     }
     const value = this.editChoreForm.getRawValue();
@@ -189,6 +203,7 @@ export class AdultChoresPage implements OnInit {
           );
           this.closeEditChore();
           this.successMessage.set(`${updated.title} är uppdaterad.`);
+          focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
           this.editChoreError.set(
@@ -205,11 +220,14 @@ export class AdultChoresPage implements OnInit {
     this.confirmingDeactivationId.set(choreId);
     this.deactivationError.set('');
     this.successMessage.set('');
+    focusAfterRender(`cancel-chore-deactivation-${choreId}`);
   }
 
   cancelDeactivation(): void {
+    const choreId = this.confirmingDeactivationId();
     this.confirmingDeactivationId.set(null);
     this.deactivationError.set('');
+    if (choreId) focusAfterRender(`deactivate-chore-${choreId}`);
   }
 
   deactivateChore(chore: Chore): void {
@@ -228,6 +246,7 @@ export class AdultChoresPage implements OnInit {
           if (this.assignmentForm.controls.choreId.value === chore.id) this.closeAssignmentForm();
           this.confirmingDeactivationId.set(null);
           this.successMessage.set(`${chore.title} är bortplockad från uppgiftsbanken.`);
+          focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
           this.deactivationError.set(
@@ -238,21 +257,28 @@ export class AdultChoresPage implements OnInit {
       });
   }
 
-  openAssignmentForm(choreId = 0): void {
+  openAssignmentForm(choreId = 0, returnFocusId?: string): void {
+    this.assignmentReturnFocusId =
+      returnFocusId ?? (choreId ? `assign-chore-${choreId}` : 'open-assignment-trigger');
     this.assignmentForm.setValue({ choreId, childId: 0 });
     this.assignmentError.set('');
     this.showAssignmentForm.set(true);
+    focusAfterRender('assignment-panel');
   }
 
   closeAssignmentForm(): void {
     this.showAssignmentForm.set(false);
     this.assignmentError.set('');
     this.assignmentForm.reset({ choreId: 0, childId: 0 });
+    focusAfterRender(this.assignmentReturnFocusId);
   }
 
   createAssignment(): void {
     if (this.assignmentForm.invalid) {
       this.assignmentForm.markAllAsTouched();
+      focusAfterRender(
+        this.assignmentForm.controls.choreId.invalid ? 'assignment-chore' : 'assignment-child',
+      );
       return;
     }
     const request = this.assignmentForm.getRawValue();
@@ -290,6 +316,7 @@ export class AdultChoresPage implements OnInit {
           ]);
           this.closeAssignmentForm();
           this.successMessage.set(`${chore.title} är tilldelad till ${child.name}.`);
+          focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
           this.assignmentError.set(
@@ -304,11 +331,14 @@ export class AdultChoresPage implements OnInit {
     this.confirmingAssignmentCancellationId.set(assignmentId);
     this.assignmentCancellationError.set('');
     this.successMessage.set('');
+    focusAfterRender(`cancel-assignment-cancellation-${assignmentId}`);
   }
 
   cancelAssignmentCancellation(): void {
+    const assignmentId = this.confirmingAssignmentCancellationId();
     this.confirmingAssignmentCancellationId.set(null);
     this.assignmentCancellationError.set('');
+    if (assignmentId) focusAfterRender(`request-assignment-cancellation-${assignmentId}`);
   }
 
   cancelAssignment(assignment: AdultAssignment): void {
@@ -333,6 +363,7 @@ export class AdultChoresPage implements OnInit {
           this.successMessage.set(
             `${assignment.choreTitle} är borttagen från ${assignment.childName}.`,
           );
+          focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
           this.assignmentCancellationError.set(
@@ -343,5 +374,20 @@ export class AdultChoresPage implements OnInit {
                 : 'Tilldelningen kunde inte tas bort. Försök igen.',
           ),
       });
+  }
+
+  assignmentStatusLabel(status: AdultAssignment['status']): string {
+    switch (status) {
+      case 'Assigned':
+        return 'Tilldelad';
+      case 'PendingApproval':
+        return 'Väntar på granskning';
+      case 'NeedsRedo':
+        return 'Behöver göras om';
+      case 'Approved':
+        return 'Godkänd';
+      case 'Cancelled':
+        return 'Borttagen';
+    }
   }
 }

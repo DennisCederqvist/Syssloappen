@@ -14,8 +14,11 @@
         </p>
       </div>
       <button
+        id="create-child-trigger"
         type="button"
         (click)="openForm()"
+        [attr.aria-controls]="showForm() ? 'create-child-panel' : null"
+        [attr.aria-expanded]="showForm()"
         class="mt-5 min-h-14 w-full shrink-0 rounded-2xl bg-white px-5 font-extrabold text-brand-600 shadow-lg transition hover:bg-brand-50 sm:mt-0 sm:w-auto"
       >
         + Lägg till barn
@@ -24,6 +27,8 @@
 
     @if (createdChild(); as child) {
       <section
+        id="created-child-message"
+        tabindex="-1"
         class="mt-5 flex items-start gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-900"
         aria-live="polite"
       >
@@ -40,7 +45,8 @@
           </p>
           <button
             type="button"
-            (click)="generatePairingCode(child)"
+            (click)="generatePairingCode(child, 'pair-created-child-' + child.id)"
+            [id]="'pair-created-child-' + child.id"
             [disabled]="generatingCodeFor() === child.id"
             class="mt-3 min-h-11 rounded-xl bg-white px-4 text-sm font-extrabold text-green-900 shadow-sm ring-1 ring-green-200 disabled:opacity-60"
           >
@@ -61,6 +67,8 @@
 
     @if (deactivationSuccess()) {
       <div
+        id="child-deactivation-success"
+        tabindex="-1"
         class="mt-5 flex items-start gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-900"
         role="status"
       >
@@ -76,7 +84,7 @@
         <button
           type="button"
           (click)="deactivationSuccess.set('')"
-          class="grid size-9 shrink-0 place-items-center rounded-xl text-lg"
+          class="grid size-12 shrink-0 place-items-center rounded-xl text-xl"
           aria-label="Stäng bekräftelsen"
         >
           ×
@@ -86,6 +94,8 @@
 
     @if (pairingCode(); as pairing) {
       <section
+        id="pairing-code-panel"
+        tabindex="-1"
         class="mt-5 overflow-hidden rounded-[1.75rem] bg-white shadow-xl ring-1 ring-brand-500/25"
         aria-labelledby="pairing-code-title"
         aria-live="polite"
@@ -160,6 +170,8 @@
 
     @if (deviceSessionsChild(); as selectedChild) {
       <section
+        id="device-sessions-panel"
+        tabindex="-1"
         class="mt-5 overflow-hidden rounded-[1.75rem] bg-white shadow-xl ring-1 ring-line"
         aria-labelledby="device-sessions-title"
       >
@@ -186,8 +198,9 @@
 
         <div class="p-5 sm:p-6">
           @if (deviceSessionsLoading()) {
-            <div class="grid gap-3" aria-label="Hämtar kopplade enheter">
+            <div class="grid gap-3" role="status">
               <div class="h-32 animate-pulse rounded-2xl bg-canvas"></div>
+              <span class="sr-only">Hämtar kopplade enheter…</span>
               <div class="h-32 animate-pulse rounded-2xl bg-canvas"></div>
             </div>
           } @else if (deviceSessionsError()) {
@@ -287,12 +300,20 @@
 
                   @if (!session.revokedAt && !isSessionExpired(session)) {
                     @if (confirmingRevocation() === session.sessionId) {
-                      <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4">
-                        <p class="text-sm font-bold text-red-900">
+                      <div
+                        class="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4"
+                        role="group"
+                        [attr.aria-labelledby]="'revocation-question-' + session.sessionId"
+                      >
+                        <p
+                          [id]="'revocation-question-' + session.sessionId"
+                          class="text-sm font-bold text-red-900"
+                        >
                           Barnet loggas ut direkt på den här enheten. Fortsätta?
                         </p>
                         <div class="mt-3 grid grid-cols-2 gap-2">
                           <button
+                            [id]="'cancel-revocation-' + session.sessionId"
                             type="button"
                             (click)="cancelRevocation()"
                             [disabled]="revokingSession() === session.sessionId"
@@ -316,6 +337,7 @@
                       </div>
                     } @else {
                       <button
+                        [id]="'request-revocation-' + session.sessionId"
                         type="button"
                         (click)="requestRevocation(session.sessionId)"
                         class="mt-4 min-h-11 w-full rounded-xl bg-white px-4 text-sm font-extrabold text-red-700 ring-1 ring-red-200 transition hover:bg-red-50"
@@ -339,6 +361,8 @@
 
     @if (editingChild(); as selectedChild) {
       <section
+        id="edit-child-panel"
+        tabindex="-1"
         class="mt-5 overflow-hidden rounded-[1.75rem] bg-white shadow-xl ring-1 ring-line"
         aria-labelledby="edit-child-title"
       >
@@ -388,13 +412,18 @@
 
             <label class="mt-5 block font-bold"
               >Visningsnamn<input
+                id="edit-child-name"
                 formControlName="name"
                 type="text"
                 autocomplete="off"
+                [attr.aria-invalid]="
+                  editChildForm.controls.name.touched && editChildForm.controls.name.invalid
+                "
+                aria-describedby="edit-child-name-error"
                 class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
               />
               @if (editChildForm.controls.name.touched && editChildForm.controls.name.invalid) {
-                <span class="mt-2 block text-sm text-red-700"
+                <span id="edit-child-name-error" class="mt-2 block text-sm text-red-700"
                   >Skriv ett namn med högst 100 tecken.</span
                 >
               }
@@ -426,12 +455,17 @@
             }
 
             @if (confirmingDeactivation()) {
-              <div class="mt-5 rounded-2xl bg-white p-4 ring-1 ring-red-200">
-                <p class="text-sm font-black text-red-950">
+              <div
+                class="mt-5 rounded-2xl bg-white p-4 ring-1 ring-red-200"
+                role="group"
+                aria-labelledby="child-deactivation-question"
+              >
+                <p id="child-deactivation-question" class="text-sm font-black text-red-950">
                   Är du säker på att {{ selectedChild.name }} ska avaktiveras?
                 </p>
                 <div class="mt-3 grid grid-cols-2 gap-2">
                   <button
+                    id="cancel-child-deactivation"
                     type="button"
                     (click)="cancelDeactivation()"
                     [disabled]="isDeactivatingChild()"
@@ -451,6 +485,7 @@
               </div>
             } @else {
               <button
+                id="request-child-deactivation"
                 type="button"
                 (click)="requestDeactivation()"
                 class="mt-5 min-h-11 w-full rounded-xl bg-white px-4 text-sm font-extrabold text-red-700 ring-1 ring-red-300 hover:bg-red-100"
@@ -465,6 +500,8 @@
 
     @if (showForm()) {
       <section
+        id="create-child-panel"
+        tabindex="-1"
         class="mt-5 rounded-[1.75rem] bg-white p-5 shadow-lg ring-1 ring-line sm:p-7"
         aria-labelledby="create-child-title"
       >
@@ -503,59 +540,97 @@
         >
           <label class="block font-bold"
             >Barnets namn<input
+              id="create-child-name"
               formControlName="name"
               type="text"
               autocomplete="off"
               placeholder="Till exempel Maja"
+              [attr.aria-invalid]="
+                childForm.controls.name.touched && childForm.controls.name.invalid
+              "
+              aria-describedby="create-child-name-error"
               class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
             />
             @if (childForm.controls.name.touched && childForm.controls.name.invalid) {
-              <span class="mt-2 block text-sm text-red-700">Skriv barnets namn.</span>
+              <span id="create-child-name-error" class="mt-2 block text-sm text-red-700"
+                >Skriv barnets namn.</span
+              >
             }
           </label>
           <label class="block font-bold"
             >Användarnamn<input
+              id="create-child-username"
               formControlName="userName"
               type="text"
               autocomplete="off"
               autocapitalize="none"
               placeholder="Till exempel maja"
+              [attr.aria-invalid]="
+                childForm.controls.userName.touched && childForm.controls.userName.invalid
+              "
+              aria-describedby="create-child-username-help create-child-username-error"
               class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
             />
-            <span class="mt-2 block text-xs leading-5 text-muted"
+            <span id="create-child-username-help" class="mt-2 block text-xs leading-5 text-muted"
               >Barnvänligt och unikt inom familjen.</span
             >
             @if (childForm.controls.userName.touched && childForm.controls.userName.invalid) {
-              <span class="mt-1 block text-sm text-red-700">Skriv ett användarnamn.</span>
+              <span id="create-child-username-error" class="mt-1 block text-sm text-red-700"
+                >Skriv ett användarnamn.</span
+              >
             }
           </label>
           <label class="block font-bold"
             >Lösenord<input
+              id="create-child-password"
               formControlName="password"
               type="password"
               autocomplete="new-password"
               placeholder="Minst 8 tecken"
+              [attr.aria-invalid]="
+                childForm.controls.password.touched && childForm.controls.password.invalid
+              "
+              aria-describedby="create-child-password-help create-child-password-error"
               class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
             />
-            <span class="mt-2 block text-xs leading-5 text-muted"
+            <span id="create-child-password-help" class="mt-2 block text-xs leading-5 text-muted"
               >Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.</span
             >
             @if (childForm.controls.password.touched && childForm.controls.password.invalid) {
-              <span class="mt-1 block text-sm text-red-700">Lösenordet uppfyller inte kraven.</span>
+              <span id="create-child-password-error" class="mt-1 block text-sm text-red-700"
+                >Lösenordet uppfyller inte kraven.</span
+              >
             }
           </label>
           <label class="block font-bold"
             >Upprepa lösenordet<input
+              id="create-child-confirm-password"
               formControlName="confirmPassword"
               type="password"
               autocomplete="new-password"
               placeholder="Skriv lösenordet igen"
+              [attr.aria-invalid]="
+                childForm.controls.confirmPassword.touched &&
+                (childForm.controls.confirmPassword.invalid ||
+                  childForm.hasError('passwordMismatch'))
+              "
+              aria-describedby="create-child-confirm-password-error"
               class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
             />
             @if (
-              childForm.controls.confirmPassword.touched && childForm.hasError('passwordMismatch')
+              childForm.controls.confirmPassword.touched &&
+              (childForm.controls.confirmPassword.invalid || childForm.hasError('passwordMismatch'))
             ) {
-              <span class="mt-2 block text-sm text-red-700">Lösenorden är inte lika.</span>
+              <span
+                id="create-child-confirm-password-error"
+                class="mt-2 block text-sm text-red-700"
+              >
+                {{
+                  childForm.controls.confirmPassword.invalid
+                    ? 'Upprepa lösenordet.'
+                    : 'Lösenorden är inte lika.'
+                }}
+              </span>
             }
           </label>
           <div class="flex flex-col-reverse gap-3 sm:col-span-2 sm:flex-row sm:justify-end">
@@ -592,12 +667,13 @@
       </div>
 
       @if (isLoading()) {
-        <div class="grid gap-3 sm:grid-cols-2">
+        <div class="grid gap-3 sm:grid-cols-2" role="status">
           <div class="h-28 animate-pulse rounded-3xl bg-white"></div>
+          <span class="sr-only">Hämtar familjens barn…</span>
           <div class="h-28 animate-pulse rounded-3xl bg-white"></div>
         </div>
       } @else if (loadError()) {
-        <div class="rounded-3xl border border-red-200 bg-red-50 p-5">
+        <div class="rounded-3xl border border-red-200 bg-red-50 p-5" role="alert">
           <p class="font-bold text-red-800">{{ loadError() }}</p>
           <button
             type="button"
@@ -622,6 +698,7 @@
             Skapa familjens första barnkonto för att senare kunna tilldela sysslor.
           </p>
           <button
+            id="create-child-empty-trigger"
             type="button"
             (click)="openForm()"
             class="mt-5 min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white"
@@ -650,24 +727,37 @@
               </div>
               <div class="mt-4 grid grid-cols-2 gap-2">
                 <button
+                  [id]="'pair-child-' + child.id"
                   type="button"
                   (click)="generatePairingCode(child)"
+                  [attr.aria-controls]="
+                    pairingCode()?.childId === child.id ? 'pairing-code-panel' : null
+                  "
+                  [attr.aria-expanded]="pairingCode()?.childId === child.id"
                   [disabled]="generatingCodeFor() === child.id"
                   class="min-h-11 rounded-xl bg-brand-50 px-3 text-sm font-extrabold text-brand-600 transition hover:bg-brand-100 disabled:cursor-wait disabled:opacity-60"
                 >
                   {{ generatingCodeFor() === child.id ? 'Skapar kod…' : 'Koppla enhet' }}
                 </button>
                 <button
+                  [id]="'sessions-child-' + child.id"
                   type="button"
                   (click)="openDeviceSessions(child)"
+                  [attr.aria-controls]="
+                    deviceSessionsChild()?.id === child.id ? 'device-sessions-panel' : null
+                  "
+                  [attr.aria-expanded]="deviceSessionsChild()?.id === child.id"
                   class="min-h-11 rounded-xl bg-white px-3 text-sm font-extrabold text-muted ring-1 ring-line transition hover:text-ink"
                 >
                   Visa enheter
                 </button>
               </div>
               <button
+                [id]="'edit-child-' + child.id"
                 type="button"
                 (click)="openEditChild(child)"
+                [attr.aria-controls]="editingChild()?.id === child.id ? 'edit-child-panel' : null"
+                [attr.aria-expanded]="editingChild()?.id === child.id"
                 class="mt-2 min-h-11 w-full rounded-xl bg-white px-4 text-sm font-extrabold text-muted ring-1 ring-line transition hover:text-ink"
               >
                 Hantera barnprofil
