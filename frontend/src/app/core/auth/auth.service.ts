@@ -6,7 +6,10 @@ import {
   ChildLoginRequest,
   ChildPairingRequest,
   CurrentUser,
+  HouseholdInvitation,
   RegisterAdultRequest,
+  RegisterInvitedAdultRequest,
+  RegisterInvitedAdultResponse,
   RegisterAdultResponse,
   UserRole,
 } from './auth.models';
@@ -48,6 +51,14 @@ export class AuthService {
 
   registerAdult(request: RegisterAdultRequest): Observable<RegisterAdultResponse> {
     return this.http.post<RegisterAdultResponse>('/api/auth/register', request);
+  }
+
+  createHouseholdInvitation(): Observable<HouseholdInvitation> {
+    return this.http.post<HouseholdInvitation>('/api/household/invitations', {});
+  }
+
+  registerInvitedAdult(request: RegisterInvitedAdultRequest): Observable<RegisterInvitedAdultResponse> {
+    return this.http.post<RegisterInvitedAdultResponse>('/api/auth/register/invited', request);
   }
 
   loginChild(request: ChildLoginRequest): Observable<CurrentUser> {

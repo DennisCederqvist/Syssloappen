@@ -1,0 +1,19 @@
+<main class="page-enter mx-auto flex min-h-dvh w-full max-w-md items-center px-5 py-8 sm:px-8">
+  <section class="w-full rounded-3xl bg-white p-6 shadow-lg ring-1 ring-line sm:p-8">
+    <p class="text-sm font-extrabold uppercase tracking-wider text-brand-600">Syssloappen</p>
+    <h1 class="mt-2 text-3xl font-black">Gå med i familjen</h1>
+    @if (success()) {
+      <div class="mt-6 rounded-2xl bg-green-50 p-4 font-bold text-green-900" role="status">Kontot är skapat. Du kan nu logga in som vuxen.</div>
+      <button type="button" (click)="goToLogin()" class="mt-6 min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white">Gå till login</button>
+    } @else {
+      <p class="mt-2 leading-7 text-muted">Skriv in koden du fått och välj dina egna inloggningsuppgifter.</p>
+      @if (errorMessage()) { <p class="mt-4 rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-800" role="alert">{{ errorMessage() }}</p> }
+      <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 space-y-5" novalidate>
+        <label class="block font-bold">Inbjudningskod<input formControlName="invitationCode" maxlength="9" placeholder="ABCD-EFGH" class="mt-2 min-h-14 w-full rounded-2xl border border-line px-4 text-lg uppercase" /></label>
+        <label class="block font-bold">E-post<input formControlName="email" type="email" autocomplete="email" class="mt-2 min-h-14 w-full rounded-2xl border border-line px-4" /></label>
+        <label class="block font-bold">Lösenord<input formControlName="password" type="password" autocomplete="new-password" class="mt-2 min-h-14 w-full rounded-2xl border border-line px-4" /></label>
+        <button type="submit" [disabled]="isSubmitting()" class="min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white">{{ isSubmitting() ? 'Skapar konto…' : 'Skapa vuxenkonto' }}</button>
+      </form>
+    }
+  </section>
+</main>

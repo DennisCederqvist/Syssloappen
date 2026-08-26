@@ -445,7 +445,19 @@ Adult-flödet för sysslor och tilldelningar är användartestat och mergat till
 
 Produktbeslutet är att en `Chore` är en återanvändbar mall i Householdets uppgiftsbank, inte en engångsuppgift. En Adult skapar exempelvis `Bädda sängen` en gång och kan sedan skapa flera separata `ChoreAssignment`-rader för samma eller olika barn. Efter ny skapning får UI:t gärna leda direkt till en valfri tilldelning, men mallen finns kvar för framtida användning. Varje tilldelning fryser poängvärdet som gällde vid tilldelningstillfället.
 
-US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041, Adult-granskningen för US-050/US-051, det browserbaserade E2E-testet samt responsivitets- och tillgänglighetsgenomgången är implementerade, verifierade, användargodkända och mergade. Nästa planerade funktion är ytterligare Adult enligt US-011.
+US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041, Adult-granskningen för US-050/US-051, det browserbaserade E2E-testet samt responsivitets- och tillgänglighetsgenomgången är implementerade, verifierade, användargodkända och mergade. US-011 är implementerad, automatiskt verifierad och redo för användartest på `feature/adult-household-invitation`.
+
+## US-011 - Adult-inbjudan
+
+- `POST /api/household/invitations` kräver en autentiserad Adult och skapar en 24 timmar giltig, kryptografiskt slumpmässig engångskod.
+- Endast kodens SHA-256-hash sparas. Household och skapande Adult hämtas från den autentiserade användaren.
+- `POST /api/auth/register/invited` tar endast invitation code, e-post och lösenord. Backend sätter Household från inbjudan och rollen till `Adult`.
+- Nytt konto och förbrukad inbjudan skapas atomärt i samma databastransaktion. Utgångna och använda koder nekas.
+- Angular-flödet finns på `/vuxen/bjud-in` för skaparen och `/acceptera-inbjudan` för den nya vuxna.
+- Fyra nya backendtester och två frontendtester täcker behörighet, Household-isolering, engångsanvändning, utgång och manipulerade klientfält.
+- Hela backendsviten är grön med 110 tester. Frontendsviten är grön med 57 tester och Angular-produktionsbygget är godkänt.
+- Manuell testväg: logga in som Adult, öppna `/vuxen/bjud-in`, skapa och kopiera kod, öppna `/acceptera-inbjudan` i privat fönster, registrera den andra vuxna och logga in med det nya kontot. Kontrollera därefter att båda vuxna ser samma barn och kan skapa, tilldela och granska sysslor.
+- US-011 ska inte markeras som klar eller mergas till `main` före användarens manuella godkännande.
 
 ## Kända kvarvarande saker
 

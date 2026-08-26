@@ -79,6 +79,56 @@ public sealed class AuthController(
     }
 
     [AllowAnonymous]
+    [HttpPost("register/invited")]
+    [ProducesResponseType<RegisterInvitedAdultResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<RegisterInvitedAdultResponse>> RegisterInvitedAdult(
+        RegisterInvitedAdultRequest request)
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var invitation = await dbContext.HouseholdInvitations
+            .SingleOrDefaultAsync(candidate =>
+                candidate.CodeHash == HouseholdInvitationService.Hash(request.InvitationCode));
+
+        if (invitation is null || invitation.UsedAt is not null || invitation.ExpiresAt <= now)
+        {
+            return InvalidInvitation();
+        }
+
+        var email = request.Email.Trim();
+        var user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            HouseholdId = invitation.HouseholdId
+        };
+        var createUserResult = await userManager.CreateAsync(user, request.Password);
+
+        if (!createUserResult.Succeeded)
+        {
+            await transaction.RollbackAsync();
+            return ValidationProblem(ToValidationProblem(createUserResult));
+        }
+
+        var addRoleResult = await userManager.AddToRoleAsync(user, RoleNames.Adult);
+        if (!addRoleResult.Succeeded)
+        {
+            await transaction.RollbackAsync();
+            return ValidationProblem(ToValidationProblem(addRoleResult));
+        }
+
+        invitation.UsedAt = now;
+        await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        return StatusCode(
+            StatusCodes.Status201Created,
+            new RegisterInvitedAdultResponse(email, RoleNames.Adult, invitation.HouseholdId));
+    }
+
+    [AllowAnonymous]
     [HttpPost("login")]
     [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
@@ -176,6 +226,14 @@ public sealed class AuthController(
         {
             Title = "Invalid credentials",
             Detail = "The email or password is incorrect.",
+            Status = StatusCodes.Status401Unauthorized
+        });
+
+    private UnauthorizedObjectResult InvalidInvitation() => Unauthorized(
+        new ProblemDetails
+        {
+            Title = "Invalid invitation",
+            Detail = "The invitation code is invalid or expired.",
             Status = StatusCodes.Status401Unauthorized
         });
 }

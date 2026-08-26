@@ -48,6 +48,32 @@ describe('AuthService', () => {
     });
   });
 
+  it('creates a household invitation without client-owned household fields', () => {
+    auth.createHouseholdInvitation().subscribe((result) => expect(result.code).toBe('ABCD-EFGH'));
+    const request = http.expectOne('/api/household/invitations');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({});
+    request.flush({ code: 'ABCD-EFGH', expiresAt: '2026-08-27T12:00:00Z' });
+  });
+
+  it('registers an invited adult with only code and credentials', () => {
+    auth
+      .registerInvitedAdult({
+        invitationCode: 'ABCD-EFGH',
+        email: 'invited@example.se',
+        password: 'Secret12',
+      })
+      .subscribe((result) => expect(result.role).toBe('Adult'));
+    const request = http.expectOne('/api/auth/register/invited');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      invitationCode: 'ABCD-EFGH',
+      email: 'invited@example.se',
+      password: 'Secret12',
+    });
+    request.flush({ email: 'invited@example.se', role: 'Adult', householdId: 12 });
+  });
+
   it('treats a rejected session as signed out', () => {
     auth.restoreSession().subscribe((user) => expect(user).toBeNull());
     http.expectOne('/api/auth/me').flush({}, { status: 401, statusText: 'Unauthorized' });

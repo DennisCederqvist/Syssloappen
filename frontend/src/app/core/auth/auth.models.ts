@@ -19,6 +19,20 @@ export interface RegisterAdultRequest {
   email: string;
   password: string;
 }
+export interface RegisterInvitedAdultRequest {
+  invitationCode: string;
+  email: string;
+  password: string;
+}
+export interface RegisterInvitedAdultResponse {
+  email: string;
+  role: 'Adult';
+  householdId: number;
+}
+export interface HouseholdInvitation {
+  code: string;
+  expiresAt: string;
+}
 export interface RegisterAdultResponse {
   householdId: number;
   email: string;

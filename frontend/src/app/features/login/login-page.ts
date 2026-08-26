@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
 import { CurrentUser, RegisterAdultResponse } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
@@ -25,7 +26,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login-page.html',
 })
 export class LoginPage {
