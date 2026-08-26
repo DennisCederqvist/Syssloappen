@@ -218,7 +218,7 @@ Adult-granskningen implementerades och verifierades på `feature/adult-chore-rev
 - Ett riktigt smoke-test mot API:t och PostgreSQL verifierade `PendingApproval` med rätt barn, syssla, rapporteringstid och 10 snapshot-poäng, `NeedsRedo` med synlig Child-kommentar och noll poäng, omrapportering, `Approved`, sparad granskningsinformation och exakt 10 utdelade Child-poäng. Ett tydligt Adult-review-smoke-märkt Household skapades; testlösenordet fanns endast i processminnet och sparades inte.
 - Den serverade Angular-devbundlen verifierades innehålla routen och den nya Adult-review-komponenten. Svenska tecken representeras som escape-sekvenser i devbundlen men visas normalt i webbläsaren.
 
-Adult-granskningen användartestades 2026-08-26 med en riktig rapporterad Child-tilldelning. Både `NeedsRedo` med kommentar och ett senare godkännande fungerade. Godkännandet delade ut poängen; en redan öppen Child-vy uppdateras inte i realtid utan hämtar det aktuella saldot vid sidladdning. Användaren godkände därefter merge till `main`.
+Adult-granskningen användartestades 2026-08-26 med en riktig rapporterad Child-tilldelning. Både `NeedsRedo` med kommentar och ett senare godkännande fungerade. Godkännandet delade ut poängen; en redan öppen Child-vy uppdateras inte i realtid utan hämtar det aktuella saldot vid sidladdning. Användaren godkände därefter merge till `main`, som genomfördes och pushades i merge-commit `df0ead7`.
 
 ## Teknik och versioner
 
@@ -402,7 +402,7 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-Adult-frontenden för US-050/US-051 är implementerad, automatiskt verifierad, manuellt användartestad och godkänd för merge till `main`.
+Adult-frontenden för US-050/US-051 är implementerad, automatiskt verifierad, manuellt användartestad och mergad till `main` i `df0ead7`.
 
 Child-frontenden för US-040/US-041 är implementerad, automatiskt verifierad, manuellt användartestad och mergad till `main` i `7a0fec8`. Adult-granskning enligt US-050/US-051 är den aktuella separata frontenddelen.
 

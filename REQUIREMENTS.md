@@ -1103,4 +1103,4 @@ Adult-frontenden för US-050 och US-051 är implementerad och automatiskt verifi
 - Loading-, fel-, retry- och tomlägen samt stora, tillgängligt namngivna tryckytor ingår.
 - Angular-tester, formatteringskontroll, produktionsbygge, hela backendsviten och ett riktigt PostgreSQL/API-smoke-test är godkända.
 
-Adult-granskningen användartestades 2026-08-26 med en riktig rapporterad Child-tilldelning. `NeedsRedo` med kommentar visades korrekt för barnet, och ett senare godkännande delade ut poängen. Barnets redan öppna vy hämtar inte förändringar i realtid utan visar det aktuella saldot efter en siduppdatering. Användaren godkände därefter merge till `main`.
+Adult-granskningen användartestades 2026-08-26 med en riktig rapporterad Child-tilldelning. `NeedsRedo` med kommentar visades korrekt för barnet, och ett senare godkännande delade ut poängen. Barnets redan öppna vy hämtar inte förändringar i realtid utan visar det aktuella saldot efter en siduppdatering. Användaren godkände därefter merge till `main`, som genomfördes och pushades i merge-commit `df0ead7`.
