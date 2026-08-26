@@ -557,17 +557,17 @@ så att familjen själv kan bestämma vad poängen betyder.
 
 ### Acceptance Criteria
 
-- [ ] Endast en autentiserad Adult får skapa och administrera belöningar.
-- [ ] En belöning ska ha ett namn, exempelvis `Litet gosedjur` eller `Lite godis`.
-- [ ] En belöning ska ha ett positivt poängpris i heltal.
-- [ ] En belöning ska kunna ha en valfri beskrivning.
+- [x] Endast en autentiserad Adult får skapa och administrera belöningar.
+- [x] En belöning ska ha ett namn, exempelvis `Litet gosedjur` eller `Lite godis`.
+- [x] En belöning ska ha ett positivt poängpris i heltal.
+- [x] En belöning ska kunna ha en valfri beskrivning.
 - [ ] En Adult ska valfritt kunna lägga till en bild till belöningen.
-- [ ] Belöningsflödet ska fungera även utan bild.
+- [x] Belöningsflödet ska fungera även utan bild.
 - [ ] Bildformat, filstorlek och lagring ska valideras och beslutas innan bilduppladdning implementeras.
-- [ ] Belöningen ska automatiskt kopplas till den autentiserade Adult-användarens Household.
-- [ ] Klienten får inte styra Household, skapare, ID eller tidsuppgifter.
-- [ ] En Adult får endast se och administrera belöningar i sitt eget Household.
-- [ ] En belöning ska kunna avaktiveras utan att historiska köp eller förfrågningar raderas.
+- [x] Belöningen ska automatiskt kopplas till den autentiserade Adult-användarens Household.
+- [x] Klienten får inte styra Household, skapare, ID eller tidsuppgifter.
+- [x] En Adult får endast se och administrera belöningar i sitt eget Household.
+- [x] En belöning ska kunna avaktiveras utan att historiska köp eller förfrågningar raderas.
 
 ---
 

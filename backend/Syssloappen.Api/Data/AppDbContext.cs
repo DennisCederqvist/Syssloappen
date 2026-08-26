@@ -25,6 +25,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<HouseholdInvitation> HouseholdInvitations => Set<HouseholdInvitation>();
 
+    public DbSet<Reward> Rewards => Set<Reward>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -206,6 +208,38 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasOne(chore => chore.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(chore => chore.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Reward>(entity =>
+        {
+            entity.Property(reward => reward.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(reward => reward.Description)
+                .HasMaxLength(500);
+
+            entity.Property(reward => reward.CreatedByUserId)
+                .IsRequired();
+
+            entity.Property(reward => reward.IsActive)
+                .HasDefaultValue(true);
+
+            entity.ToTable(table => table.HasCheckConstraint(
+                "CK_Rewards_PointsCost_Positive",
+                "\"PointsCost\" > 0"));
+
+            entity.HasIndex(reward => reward.HouseholdId);
+
+            entity.HasOne(reward => reward.Household)
+                .WithMany()
+                .HasForeignKey(reward => reward.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(reward => reward.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(reward => reward.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 

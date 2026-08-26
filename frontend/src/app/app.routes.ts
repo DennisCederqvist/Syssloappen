@@ -15,7 +15,8 @@ export const routes: Routes = [
   {
     path: 'acceptera-inbjudan',
     canActivate: [guestGuard],
-    loadComponent: () => import('./features/login/accept-invitation-page').then((c) => c.AcceptInvitationPage),
+    loadComponent: () =>
+      import('./features/login/accept-invitation-page').then((c) => c.AcceptInvitationPage),
   },
   {
     path: 'vuxen',
@@ -25,7 +26,10 @@ export const routes: Routes = [
   {
     path: 'vuxen/bjud-in',
     canActivate: [adultGuard],
-    loadComponent: () => import('./features/adult/invitation/adult-invitation-page').then((c) => c.AdultInvitationPage),
+    loadComponent: () =>
+      import('./features/adult/invitation/adult-invitation-page').then(
+        (c) => c.AdultInvitationPage,
+      ),
   },
   {
     path: 'vuxen/barn',
@@ -38,6 +42,12 @@ export const routes: Routes = [
     canActivate: [adultGuard],
     loadComponent: () =>
       import('./features/adult/chores/adult-chores-page').then((c) => c.AdultChoresPage),
+  },
+  {
+    path: 'vuxen/belöningar',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/rewards/adult-rewards-page').then((c) => c.AdultRewardsPage),
   },
   {
     path: 'vuxen/granska',
