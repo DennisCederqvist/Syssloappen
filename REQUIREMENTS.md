@@ -1135,4 +1135,6 @@ En bred genomgång av kärnflödena är implementerad och automatiskt verifierad
 - `prefers-reduced-motion: reduce` kortar animationer och övergångar globalt. E2E-körningen verifierar reduced-motion-läget tillsammans med loading-, status- och kärnflödestillstånden.
 - Frontendsviten omfattar nu 55 godkända Angular-tester. Formatteringskontroll, Angular-produktionsbygge, Playwright-E2E mot riktigt API/PostgreSQL och 106/106 backendtester i Release är godkända.
 
-De breda checkboxarna i avsnitt 14 förblir enligt dokumentets statusregel okryssade tills den testade branchen har användargodkänts och mergats till `main`.
+Genomgången användartestades och godkändes 2026-08-26. Inga blockerande funktions-, responsivitets- eller tillgänglighetsproblem hittades. Visuell UI/UX-finslipning är avsiktligt uppskjuten till projektets slutskede om inget konkret användbarhetsproblem kräver en tidigare ändring.
+
+De breda checkboxarna i avsnitt 14 förblir enligt dokumentets statusregel okryssade på feature-branchen och ska markeras först när den godkända ändringen har mergats till `main`.
