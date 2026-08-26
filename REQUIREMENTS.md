@@ -1104,3 +1104,17 @@ Adult-frontenden för US-050 och US-051 är implementerad och automatiskt verifi
 - Angular-tester, formatteringskontroll, produktionsbygge, hela backendsviten och ett riktigt PostgreSQL/API-smoke-test är godkända.
 
 Adult-granskningen användartestades 2026-08-26 med en riktig rapporterad Child-tilldelning. `NeedsRedo` med kommentar visades korrekt för barnet, och ett senare godkännande delade ut poängen. Barnets redan öppna vy hämtar inte förändringar i realtid utan visar det aktuella saldot efter en siduppdatering. Användaren godkände därefter merge till `main`, som genomfördes och pushades i merge-commit `df0ead7`.
+
+---
+
+# 24. Browserbaserat end-to-end-test
+
+Det centrala syssleflödet har ett riktigt Playwright-test på branchen `feature/chore-flow-e2e`.
+
+- Testet kör Chromium med mobil viewport och separata browser-contexts för Adult och Child, vilket ger isolerade sessionscookies som på två enheter.
+- Hela flödet går genom Angular-gränssnittet och dess riktiga API-anrop: Adult-registrering och login, barnskapande, engångskod, syssla, tilldelning, Child-rapportering, `NeedsRedo` med kommentar, omrapportering, Adult-godkännande och uppdaterat Child-poängsaldo.
+- Testet verifierar att saldot är `0` före godkännande och `10` efter godkännande samt att Adult-kommentaren visas för barnet.
+- API och Angular startas automatiskt av Playwright-konfigurationen. PostgreSQL-databasen används på riktigt och testdata får unika E2E-märkta namn.
+- `npm run e2e` passerar tillsammans med 53/53 Angular-tester, Angular-produktionsbygge, formatteringskontroll och 106/106 backendtester i Release.
+
+Branchen ska lämnas omergad tills användaren har fått möjlighet att granska kontrollpunkten. Nästa planerade arbetsdel efter denna kontrollpunkt är en bredare responsivitets- och tillgänglighetsgenomgång av kärnflödena.
