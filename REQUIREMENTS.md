@@ -1091,7 +1091,7 @@ Child-vyn användartestades 2026-08-26 med en riktig Adult-tilldelning och Child
 
 ---
 
-# 23. Pågående verifierad Adult-granskning
+# 23. Verifierad Adult-granskning
 
 Adult-frontenden för US-050 och US-051 är implementerad och automatiskt verifierad på branchen `feature/adult-chore-review`.
 
@@ -1103,4 +1103,4 @@ Adult-frontenden för US-050 och US-051 är implementerad och automatiskt verifi
 - Loading-, fel-, retry- och tomlägen samt stora, tillgängligt namngivna tryckytor ingår.
 - Angular-tester, formatteringskontroll, produktionsbygge, hela backendsviten och ett riktigt PostgreSQL/API-smoke-test är godkända.
 
-Feature-branchen ska användartestas före merge. Checkboxar vars status kräver merge till `main` ändras därför inte i detta steg.
+Adult-granskningen användartestades 2026-08-26 med en riktig rapporterad Child-tilldelning. `NeedsRedo` med kommentar visades korrekt för barnet, och ett senare godkännande delade ut poängen. Barnets redan öppna vy hämtar inte förändringar i realtid utan visar det aktuella saldot efter en siduppdatering. Användaren godkände därefter merge till `main`.
