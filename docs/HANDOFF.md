@@ -332,12 +332,18 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 Backendens MVP-kärna är färdig, mergad, migrerad och verifierad med 95 integrationstester. Frontendens första mobile-first-del omfattar Adult-registrering och login, sessionsåterställning, logout, rollstyrd navigation, skapande, listning, redigering och avaktivering av barn samt Adult-styrd enhetskoppling med visning och återkallning av kopplade enheter. Barnets kodinlösen skapar den beständiga Child-sessionen; både enhetsåterkallning och avaktivering nekar sessionen omedelbart i backend.
 
-Nästa rekommenderade arbetsdel är Adult-frontend för att skapa sysslor med poängval och tilldela dem till aktiva barn. Därefter bör Adult-granskning och barnets riktiga uppgiftsvy kopplas in stegvis.
+På den pushade men ännu inte mergade branchen `feature/adult-chores-and-assignments` finns commit `13f1236` som backup. Den innehåller en ny mobile-first-route `/vuxen/sysslor`, listning av Householdets uppgiftsbank och tilldelningar, skapande av syssla med valfri beskrivning och `5`/`10`/`15`/`20` poäng samt tilldelning till ett aktivt barn. Frontenden har där 27 godkända tester och ett manuellt smoke-test verifierar en 15-poängssyssla, tilldelningens snapshot-poäng och status `Assigned`. Branchen ska inte mergas innan arbetsflödet nedan är färdigställt och granskat.
+
+Produktbeslutet är att en `Chore` är en återanvändbar mall i Householdets uppgiftsbank, inte en engångsuppgift. En Adult skapar exempelvis `Bädda sängen` en gång och kan sedan skapa flera separata `ChoreAssignment`-rader för samma eller olika barn. Efter ny skapning får UI:t gärna leda direkt till en valfri tilldelning, men mallen finns kvar för framtida användning. Varje tilldelning fryser poängvärdet som gällde vid tilldelningstillfället.
+
+Innan branchen är redo för merge ska US-033 implementeras. Sysslor i uppgiftsbanken måste kunna redigeras och ha ett litet, tillgängligt kryss i övre hörnet för bortplockning. Bortplockning ska kräva bekräftelse och implementeras som backendstyrd avaktivering, inte fysisk radering, så historiska tilldelningar, completions och poäng bevaras. Detta kräver backend-endpoints för uppdatering och avaktivering samt sannolikt `Chore.IsActive` och en ny EF Core-migration.
+
+Efter att uppgiftsbanken, redigering, avaktivering och tilldelningsflödet är färdigställda bör Adult-granskning och barnets riktiga uppgiftsvy kopplas in stegvis.
 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
-- Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Navigationen till sysslor och granskning är ännu endast ett visuellt skal.
+- Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. En första syssle- och tilldelningsvy finns på den pushade feature-branchen men saknar ännu redigering och avaktivering av mallar. Granskningsnavigationen är fortfarande endast ett visuellt skal.
 - Belöningskatalog, poängreservation och belöningsförfrågningar enligt US-070–US-072 är dokumenterade men ännu inte implementerade. De ska byggas efter de centrala frontendflödena; bilduppladdning kommer sist i det planerade belöningsarbetet.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.

@@ -326,6 +326,8 @@ så att den senare kan tilldelas ett barn.
 - [x] Sysslan ska kopplas till den vuxnas Household.
 - [x] En syssla från ett Household får inte vara synlig i ett annat Household.
 - [x] Systemet ska spara vem som skapade sysslan.
+- [ ] En sparad syssla ska fungera som en återanvändbar mall i Householdets uppgiftsbank och kunna tilldelas flera gånger utan att behöva skapas på nytt.
+- [ ] Efter att en syssla skapats ska den vuxna kunna tilldela den direkt, men tilldelning ska inte krävas för att spara mallen.
 
 ### Exempel
 
@@ -367,6 +369,27 @@ så att jag vet vem som ska göra vad.
 - [x] Adults ska kunna se Householdets barn.
 - [x] Adults ska kunna se vilka sysslor varje barn har.
 - [x] Information från andra Households får inte visas.
+
+---
+
+## US-033 – Vuxen kan administrera uppgiftsbanken
+
+**Som vuxen**
+vill jag kunna ändra och plocka bort sparade sysslor
+så att uppgiftsbanken förblir aktuell och enkel att använda.
+
+### Acceptance Criteria
+
+- [ ] Endast en autentiserad Adult får ändra eller avaktivera en syssla.
+- [ ] En Adult får endast administrera sysslor i sitt eget Household.
+- [ ] Titel, valfri beskrivning och poängvärde ska kunna ändras.
+- [ ] Endast poängvärdena `5`, `10`, `15` och `20` får sparas.
+- [ ] Ett ändrat poängvärde ska endast påverka framtida tilldelningar; redan skapade tilldelningar ska behålla sitt snapshot-värde.
+- [ ] Varje kort i uppgiftsbanken ska ha ett litet kryss i övre hörnet för att plocka bort sysslan.
+- [ ] Kryssknappen ska ha ett tydligt tillgängligt namn och avaktivering ska kräva bekräftelse för att undvika misstag.
+- [ ] En bortplockad syssla ska döljas från uppgiftsbanken och inte kunna användas för nya tilldelningar.
+- [ ] Borttagning ska implementeras som avaktivering i backend så att historiska tilldelningar, completions och poäng bevaras.
+- [ ] Manipulering av Chore-ID eller Household-fält får inte ändra eller avaktivera ett annat Households syssla.
 
 ---
 
@@ -642,6 +665,7 @@ CreatedByUserId
 Title
 Description
 Points
+IsActive
 CreatedAt
 ```
 
@@ -983,25 +1007,27 @@ En user story betraktas som färdig när:
 Backendens kärnflöde för autentisering, barn, sysslor, tilldelning, rapportering, Adult-granskning och intjänade poäng är färdigt. Angular-grunden, Adult-registrering och login, rollstyrd navigation samt Adult-hantering av barnkonton och kopplade enheter är också färdiga. Föreslagen fortsatt ordning är:
 
 ```text
-1. Adult-frontend för sysslor, poängval och tilldelning
+1. Slutför Adult-frontendens återanvändbara uppgiftsbank med redigering och avaktivering enligt US-033
    ↓
-2. Adult-frontend för PendingApproval, Approved och NeedsRedo
+2. Slutför och verifiera Adult-flödet för poängval och tilldelning
    ↓
-3. Child-frontend för egna sysslor, rapportering, kommentar och poängsaldo
+3. Adult-frontend för PendingApproval, Approved och NeedsRedo
    ↓
-4. Responsivitet, tillgänglighet och browserbaserade kärnflödestester
+4. Child-frontend för egna sysslor, rapportering, kommentar och poängsaldo
    ↓
-5. Ytterligare Adult enligt US-011
+5. Responsivitet, tillgänglighet och browserbaserade kärnflödestester
    ↓
-6. Belöningskatalogens backend enligt US-070
+6. Ytterligare Adult enligt US-011
    ↓
-7. Säker poängreservation och redemption enligt US-071–US-072
+7. Belöningskatalogens backend enligt US-070
    ↓
-8. Mobile-first belöningsbutik utan krav på bild
+8. Säker poängreservation och redemption enligt US-071–US-072
    ↓
-9. Säker bilduppladdning för belöningar
+9. Mobile-first belöningsbutik utan krav på bild
    ↓
-10. PWA
+10. Säker bilduppladdning för belöningar
+   ↓
+11. PWA
 ```
 
 ---
