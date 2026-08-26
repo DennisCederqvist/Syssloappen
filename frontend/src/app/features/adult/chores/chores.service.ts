@@ -37,4 +37,8 @@ export class ChoresService {
   createAssignment(request: CreateAssignmentRequest): Observable<CreatedAssignment> {
     return this.http.post<CreatedAssignment>('/api/chore-assignments', request);
   }
+
+  cancelAssignment(assignmentId: number): Observable<void> {
+    return this.http.delete<void>(`/api/chore-assignments/${assignmentId}`);
+  }
 }

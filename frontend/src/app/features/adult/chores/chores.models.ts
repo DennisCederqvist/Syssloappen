@@ -35,9 +35,11 @@ export interface AdultAssignment {
   childName: string;
   points: number;
   assignedAt: string;
-  status: 'Assigned' | 'PendingApproval' | 'NeedsRedo' | 'Approved';
+  status: 'Assigned' | 'PendingApproval' | 'NeedsRedo' | 'Approved' | 'Cancelled';
   submittedAt: string | null;
   reviewedByUserId: string | null;
   reviewedAt: string | null;
   reviewComment: string | null;
+  cancelledByUserId: string | null;
+  cancelledAt: string | null;
 }

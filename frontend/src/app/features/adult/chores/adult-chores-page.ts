@@ -33,10 +33,13 @@ export class AdultChoresPage implements OnInit {
   readonly deactivatingChoreId = signal<number | null>(null);
   readonly confirmingDeactivationId = signal<number | null>(null);
   readonly isAssigning = signal(false);
+  readonly confirmingAssignmentCancellationId = signal<number | null>(null);
+  readonly cancellingAssignmentId = signal<number | null>(null);
   readonly choreError = signal('');
   readonly editChoreError = signal('');
   readonly deactivationError = signal('');
   readonly assignmentError = signal('');
+  readonly assignmentCancellationError = signal('');
   readonly successMessage = signal('');
 
   readonly navItems: NavItem[] = [
@@ -280,6 +283,8 @@ export class AdultChoresPage implements OnInit {
               reviewedByUserId: null,
               reviewedAt: null,
               reviewComment: null,
+              cancelledByUserId: null,
+              cancelledAt: null,
             },
             ...assignments,
           ]);
@@ -291,6 +296,51 @@ export class AdultChoresPage implements OnInit {
             error.status === 404
               ? 'Sysslan eller barnet finns inte längre i din familj.'
               : 'Sysslan kunde inte tilldelas. Försök igen.',
+          ),
+      });
+  }
+
+  requestAssignmentCancellation(assignmentId: number): void {
+    this.confirmingAssignmentCancellationId.set(assignmentId);
+    this.assignmentCancellationError.set('');
+    this.successMessage.set('');
+  }
+
+  cancelAssignmentCancellation(): void {
+    this.confirmingAssignmentCancellationId.set(null);
+    this.assignmentCancellationError.set('');
+  }
+
+  cancelAssignment(assignment: AdultAssignment): void {
+    if (
+      this.confirmingAssignmentCancellationId() !== assignment.assignmentId ||
+      this.cancellingAssignmentId() !== null
+    ) {
+      return;
+    }
+
+    this.cancellingAssignmentId.set(assignment.assignmentId);
+    this.assignmentCancellationError.set('');
+    this.choresService
+      .cancelAssignment(assignment.assignmentId)
+      .pipe(finalize(() => this.cancellingAssignmentId.set(null)))
+      .subscribe({
+        next: () => {
+          this.assignments.update((assignments) =>
+            assignments.filter((item) => item.assignmentId !== assignment.assignmentId),
+          );
+          this.confirmingAssignmentCancellationId.set(null);
+          this.successMessage.set(
+            `${assignment.choreTitle} är borttagen från ${assignment.childName}.`,
+          );
+        },
+        error: (error: HttpErrorResponse) =>
+          this.assignmentCancellationError.set(
+            error.status === 404
+              ? 'Tilldelningen finns inte längre i din familj.'
+              : error.status === 409
+                ? 'Tilldelningen har redan godkänts eller ändrats och kan inte tas bort.'
+                : 'Tilldelningen kunde inte tas bort. Försök igen.',
           ),
       });
   }

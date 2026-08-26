@@ -56,4 +56,9 @@ describe('ChoresService', () => {
     expect(request.request.body).toEqual({ choreId: 3, childId: 7 });
     request.flush({ id: 9, choreId: 3, childId: 7, points: 10, assignedAt: '' });
   });
+
+  it('cancels an assignment through the backend', () => {
+    service.cancelAssignment(9).subscribe();
+    expect(http.expectOne('/api/chore-assignments/9').request.method).toBe('DELETE');
+  });
 });

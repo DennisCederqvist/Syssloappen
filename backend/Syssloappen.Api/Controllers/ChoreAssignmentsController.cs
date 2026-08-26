@@ -80,11 +80,81 @@ public sealed class ChoreAssignmentsController(
         return Created("/api/chore-assignments", response);
     }
 
+    [HttpDelete("{assignmentId:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Cancel(int assignmentId)
+    {
+        if (assignmentId <= 0)
+        {
+            ModelState.AddModelError(nameof(assignmentId), "Assignment ID must be positive.");
+            return ValidationProblem(ModelState);
+        }
+
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        // Combining the route ID with every Household relationship makes a forged
+        // assignment ID indistinguishable from a missing resource.
+        var assignment = await dbContext.ChoreAssignments.SingleOrDefaultAsync(item =>
+            item.Id == assignmentId
+            && item.HouseholdId == currentUser.HouseholdId
+            && item.Child.HouseholdId == currentUser.HouseholdId
+            && item.Chore.HouseholdId == currentUser.HouseholdId);
+
+        if (assignment is null)
+        {
+            return NotFound();
+        }
+
+        if (assignment.Status is ChoreAssignmentStatus.Approved
+            or ChoreAssignmentStatus.Cancelled)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Assignment cannot be cancelled",
+                Detail = assignment.Status == ChoreAssignmentStatus.Approved
+                    ? "An approved assignment and its awarded points must be preserved."
+                    : "The assignment has already been cancelled."
+            });
+        }
+
+        assignment.Status = ChoreAssignmentStatus.Cancelled;
+        assignment.CancelledByUserId = currentUser.Id;
+        assignment.CancelledAt = timeProvider.GetUtcNow().UtcDateTime;
+
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Assignment cannot be cancelled",
+                Detail = "The assignment was already changed by another request."
+            });
+        }
+
+        return NoContent();
+    }
+
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<AdultChoreAssignmentResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IReadOnlyList<AdultChoreAssignmentResponse>>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<AdultChoreAssignmentResponse>>> GetAll(
+        [FromQuery] bool includeCancelled = false)
     {
         var currentUser = await userManager.GetUserAsync(User);
 
@@ -98,7 +168,8 @@ public sealed class ChoreAssignmentsController(
             .Where(assignment =>
                 assignment.HouseholdId == currentUser.HouseholdId
                 && assignment.Child.HouseholdId == currentUser.HouseholdId
-                && assignment.Chore.HouseholdId == currentUser.HouseholdId)
+                && assignment.Chore.HouseholdId == currentUser.HouseholdId
+                && (includeCancelled || assignment.Status != ChoreAssignmentStatus.Cancelled))
             .OrderByDescending(assignment => assignment.SubmittedAt)
             .ThenByDescending(assignment => assignment.AssignedAt)
             .ThenByDescending(assignment => assignment.Id)
@@ -114,7 +185,9 @@ public sealed class ChoreAssignmentsController(
                 assignment.SubmittedAt,
                 assignment.ReviewedByUserId,
                 assignment.ReviewedAt,
-                assignment.ReviewComment))
+                assignment.ReviewComment,
+                assignment.CancelledByUserId,
+                assignment.CancelledAt))
             .ToListAsync();
 
         return Ok(assignments);

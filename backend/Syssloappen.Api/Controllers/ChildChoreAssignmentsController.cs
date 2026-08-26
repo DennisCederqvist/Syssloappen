@@ -54,7 +54,8 @@ public sealed class ChildChoreAssignmentsController(
                 && assignment.Child.HouseholdId == currentUser.HouseholdId
                 && assignment.Child.UserId == currentUser.Id
                 && assignment.Child.IsActive
-                && assignment.Chore.HouseholdId == currentUser.HouseholdId)
+                && assignment.Chore.HouseholdId == currentUser.HouseholdId
+                && assignment.Status != ChoreAssignmentStatus.Cancelled)
             .OrderByDescending(assignment => assignment.AssignedAt)
             .ThenByDescending(assignment => assignment.Id)
             .Select(assignment => new ChildChoreAssignmentResponse(
@@ -118,7 +119,8 @@ public sealed class ChildChoreAssignmentsController(
                 && item.Child.HouseholdId == currentUser.HouseholdId
                 && item.Child.UserId == currentUser.Id
                 && item.Child.IsActive
-                && item.Chore.HouseholdId == currentUser.HouseholdId);
+                && item.Chore.HouseholdId == currentUser.HouseholdId
+                && item.Status != ChoreAssignmentStatus.Cancelled);
 
         if (assignment is null)
         {

@@ -235,6 +235,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(assignment => assignment.ReviewedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(assignment => assignment.CancelledByUser)
+                .WithMany()
+                .HasForeignKey(assignment => assignment.CancelledByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ChoreCompletion>(entity =>

@@ -11,6 +11,7 @@ class FakeChoresService {
   updateCalls: { choreId: number; request: UpdateChoreRequest }[] = [];
   deactivateCalls: number[] = [];
   assignmentCalls: CreateAssignmentRequest[] = [];
+  cancelAssignmentCalls: number[] = [];
   getChores() {
     return of([{ id: 1, title: 'Mata katten', description: null, points: 10, createdAt: '' }]);
   }
@@ -38,6 +39,10 @@ class FakeChoresService {
     this.deactivateCalls.push(choreId);
     return of(undefined);
   }
+  cancelAssignment(assignmentId: number) {
+    this.cancelAssignmentCalls.push(assignmentId);
+    return of(undefined);
+  }
 }
 
 class FakeChildrenService {
@@ -63,7 +68,7 @@ describe('AdultChoresPage', () => {
     fixture = TestBed.createComponent(AdultChoresPage);
     component = fixture.componentInstance;
     service = TestBed.inject(ChoresService) as unknown as FakeChoresService;
-    component.ngOnInit();
+    fixture.detectChanges();
   });
 
   it('creates a trimmed chore with the selected points', () => {
@@ -119,5 +124,32 @@ describe('AdultChoresPage', () => {
       'button[aria-label="Plocka bort Mata katten"]',
     ) as HTMLButtonElement | null;
     expect(cross).not.toBeNull();
+  });
+
+  it('requires confirmation and removes a cancelled assignment immediately', () => {
+    component.openAssignmentForm(1);
+    component.assignmentForm.setValue({ choreId: 1, childId: 7 });
+    component.createAssignment();
+    const assignment = component.assignments()[0];
+
+    component.cancelAssignment(assignment);
+    expect(service.cancelAssignmentCalls).toEqual([]);
+    component.requestAssignmentCancellation(assignment.assignmentId);
+    component.cancelAssignment(assignment);
+
+    expect(service.cancelAssignmentCalls).toEqual([8]);
+    expect(component.assignments()).toEqual([]);
+  });
+
+  it('gives the assignment cancellation button an accessible name', () => {
+    component.openAssignmentForm(1);
+    component.assignmentForm.setValue({ choreId: 1, childId: 7 });
+    component.createAssignment();
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector(
+      'button[aria-label="Ta bort tilldelningen Mata katten från Maja"]',
+    ) as HTMLButtonElement | null;
+    expect(button).not.toBeNull();
   });
 });

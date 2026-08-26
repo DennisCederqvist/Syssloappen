@@ -12,4 +12,6 @@ public sealed record AdultChoreAssignmentResponse(
     DateTime? SubmittedAt,
     string? ReviewedByUserId,
     DateTime? ReviewedAt,
-    string? ReviewComment);
+    string? ReviewComment,
+    string? CancelledByUserId,
+    DateTime? CancelledAt);

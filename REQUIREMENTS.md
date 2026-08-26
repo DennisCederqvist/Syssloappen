@@ -397,6 +397,32 @@ granskats av användaren och mergats till `main`, enligt dokumentets statusdefin
 
 ---
 
+## US-034 – Vuxen kan avbryta en felaktig tilldelning
+
+**Som vuxen**
+vill jag kunna avbryta en syssla som tilldelats fel
+så att fel barn inte behöver se eller utföra uppgiften.
+
+### Acceptance Criteria
+
+- [ ] Endast en autentiserad Adult får avbryta en tilldelning.
+- [ ] En Adult får endast avbryta tilldelningar i sitt eget Household.
+- [ ] Tilldelningar med status `Assigned`, `PendingApproval` eller `NeedsRedo` ska kunna avbrytas.
+- [ ] En `Approved` tilldelning får inte avbrytas eftersom completion och poäng redan har skapats.
+- [ ] Avbrytning ska sätta status `Cancelled`, spara vilken Adult som avbröt och aktuell backendtid.
+- [ ] Tilldelningen får inte raderas fysiskt; historik och eventuella tidigare rapporterings- eller granskningsuppgifter ska bevaras.
+- [ ] En avbruten tilldelning ska döljas från barnets aktiva sysslelista och får inte kunna rapporteras som utförd.
+- [ ] Adult ska kunna begära historik som även innehåller avbrutna tilldelningar.
+- [ ] Adult-frontendens aktuella lista ska ta bort tilldelningen direkt efter lyckad avbrytning.
+- [ ] Avbrytning i frontend ska kräva bekräftelse och knappen ska ha ett tydligt tillgängligt namn.
+- [ ] Manipulering av Assignment-ID, Child-ID, Household-, status-, Adult- eller tidsfält får inte avbryta en annan familjs tilldelning eller styra auditinformationen.
+
+US-034 är implementerad och verifierad på den ännu inte mergade branchen
+`feature/adult-chores-and-assignments`. Kriterierna lämnas därför okryssade tills branchen har
+granskats av användaren och mergats till `main`, enligt dokumentets statusdefinition.
+
+---
+
 # 8. User Stories – Barnets vy
 
 ## US-040 – Barn kan se sina sysslor

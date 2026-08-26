@@ -124,6 +124,17 @@ US-033 är implementerad och verifierad på den ännu inte mergade feature-branc
 - Lyckad ändring ersätter kortet direkt i den sorterade lokala listan. Lyckad avaktivering tar direkt bort kortet och stänger eventuell redigerings- eller tilldelningspanel som använde mallen.
 - Fem nya integrationstester verifierar Adult-roll, Household-isolering, manipulerade och ogiltiga ID:n/fält, validering, redigering, gamla och nya poängsnapshots, aktiv filtrering, blockerad nytilldelning samt bevarad assignment-, completion- och poänghistorik. Hela backendsviten omfattar nu 100 godkända tester i Release.
 
+US-034 är implementerad och verifierad på samma feature-branch:
+
+- `DELETE /api/chore-assignments/{assignmentId}` låter endast en autentiserad Adult avbryta en tilldelning i sitt eget Household.
+- Tilldelningar i `Assigned`, `PendingApproval` och `NeedsRedo` får status `Cancelled`; databasraden, rapporteringstid och eventuell tidigare granskningsinformation bevaras.
+- `CancelledByUserId` och `CancelledAt` sätts alltid från den autentiserade Adult-användaren och backendens `TimeProvider`. Requestens oväntade Child-, Household-, status-, Adult- och tidsfält kan inte styra auditinformationen.
+- `Approved` kan inte avbrytas, så completion och utdelade poäng förblir orörda. Statusens befintliga concurrency token skyddar även samtidiga cancel-/review-anrop.
+- Standardanropet `GET /api/chore-assignments` visar aktuella tilldelningar. En Adult kan hämta bevarad historik inklusive `Cancelled` genom `?includeCancelled=true`.
+- Child-listningen filtrerar bort `Cancelled`, och ett barn får neutralt HTTP 404 om det försöker rapportera en avbruten tilldelning.
+- Adult-frontendens aktuella lista har en tillgängligt namngiven `Ta bort`-knapp, inline-bekräftelse och direkt lokal borttagning efter HTTP 204.
+- Sex nya integrationstester verifierar roll, Household-isolering, manipulerade fält, backendstyrd audit, alla tillåtna statuslägen, skydd av `Approved`, bevarad historik/poäng, Child-filtrering och säker hantering av ogiltiga, saknade och upprepade anrop. Hela backendsviten omfattar nu 106 godkända tester i Release.
+
 Den avgränsade backenddelen av US-031 är implementerad, committad och testad:
 
 - `POST /api/chore-assignments` låter endast en autentiserad Adult tilldela en befintlig syssla till ett aktivt barn.
@@ -243,6 +254,7 @@ Aktuella migrationer:
 - `AddChoreAssignmentSubmission` lägger till textstatus med standardvärdet `Assigned` och nullable `SubmittedAt` på `ChoreAssignments`. Migrationen är applicerad i `syssloappen_dev`.
 - `AddAdultReviewAndChorePoints` lägger till poäng på sysslor och tilldelningar, granskningsfält på tilldelningar samt `ChoreCompletions` med unikt Assignment-ID och utdelade poäng. Migrationen är applicerad i `syssloappen_dev`.
 - `AddChoreSoftDelete` lägger till `Chores.IsActive` med standardvärdet `true`. Migrationen är applicerad i `syssloappen_dev`.
+- `AddChoreAssignmentCancellation` lägger till nullable `ChoreAssignments.CancelledByUserId` och `CancelledAt`, index samt en restriktiv Adult-FK. Migrationen är applicerad i `syssloappen_dev`.
 
 Vanliga kommandon från repots rot:
 
@@ -324,6 +336,12 @@ Migrationen `AddChoreSoftDelete` har verifierats med `has-pending-model-changes`
 
 Ett riktigt US-033-smoke-test mot API:t och PostgreSQL verifierade HTTP 404 när ett Adult-konto försökte redigera eller avaktivera ett annat Households syssla, trimning av redigerad titel och beskrivning, poängändring från 10 till 20, gamla och nya assignment-snapshots på 10 respektive 20, HTTP 204 vid avaktivering, tom aktiv sysslelista, HTTP 404 vid ny tilldelning och två bevarade historiska assignments. Ett separat komplett godkännandeflöde verifierade status `Approved`, bevarad completion och 10 bevarade barnpoäng efter att mallen avaktiverats. Några inledande smoke-försök skapade tydligt US-033-märkta test-Households innan ett PowerShell 5-problem med JSON-teckenkodning och arrayräkning isolerades; inga klartextlösenord dokumenterades eller sparades i repot.
 
+Sex integrationstester för US-034 verifierar anonym och Child-nekning, Adult-behörighet, Household-isolering, manipulerade Assignment-/Child-/Household-/status-/Adult-/tidsfält, backendstyrd audit, `Assigned`, `PendingApproval`, `NeedsRedo` och `Approved`, soft-cancellation, explicit historik, Child-filtrering, blockerad Child-submit samt bevarad completion och poäng. Hela sviten med 106 integrationstester är godkänd i Release-konfiguration.
+
+Migrationen `AddChoreAssignmentCancellation` har verifierats med `has-pending-model-changes` och ett granskat idempotent PostgreSQL-script. Scriptet lägger endast till nullable `CancelledAt`, nullable `CancelledByUserId`, indexet, den restriktiva FK:n till `AspNetUsers` och migrationshistorikraden i en transaktion. Migrationen applicerades därefter via EF Core i `syssloappen_dev`.
+
+Ett riktigt US-034-smoke-test mot API:t och PostgreSQL verifierade en synlig Child-tilldelning före cancellation, HTTP 404 från ett annat Household, HTTP 204 vid giltig cancellation trots manipulerade bodyfält, tom aktuell Adult-lista, `Cancelled` med sparad Adult och tid i explicit historik, tom Child-lista, HTTP 404 vid Child-submit, HTTP 409 vid upprepad cancellation samt HTTP 409 för en `Approved` tilldelning med 10 bevarade poäng. Testet skapade två isolerade US-034-märkta Households; lösenordet fanns endast i processminnet och dokumenterades inte.
+
 Ett idempotent PostgreSQL-script från `AddChoreAssignmentSubmission` till `AddAdultReviewAndChorePoints` har genererats och granskats utan att köras. Det använder en transaktion, ger befintliga sysslor och tilldelningar 5 poäng, lägger till granskningsfält och check constraints, skapar `ChoreCompletions` med främmande nycklar och ett unikt Assignment-index samt skriver migrationshistorikraden. Migrationen applicerades därefter via EF Core i `syssloappen_dev`.
 
 Ett manuellt PostgreSQL-smoke-test av Adult-granskning och poäng verifierade standardvärdet 5, HTTP 400 för värdet 6, snapshotvärdena 10 och 20, Adult-listning av `PendingApproval`, HTTP 404 för granskning från annat Household, `NeedsRedo` med kommentar och noll poäng, omrapportering, backendstyrda godkännanden med 10 och 20 poäng, totalsumman 30 samt HTTP 409 vid upprepat godkännande. Flera avbrutna smoke-försök skapade ytterligare tydligt smoke-märkta Households innan ett PowerShell 5-specifikt listproblem i testskriptet rättades; inga klartextlösenord sparades.
@@ -350,18 +368,18 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 Backendens MVP-kärna är färdig, mergad, migrerad och verifierad med 95 integrationstester. Frontendens första mobile-first-del omfattar Adult-registrering och login, sessionsåterställning, logout, rollstyrd navigation, skapande, listning, redigering och avaktivering av barn samt Adult-styrd enhetskoppling med visning och återkallning av kopplade enheter. Barnets kodinlösen skapar den beständiga Child-sessionen; både enhetsåterkallning och avaktivering nekar sessionen omedelbart i backend.
 
-På den pushade men ännu inte mergade branchen `feature/adult-chores-and-assignments` finns commit `13f1236` som tidigare backup. Den innehåller grunden för route `/vuxen/sysslor`, listning av Householdets uppgiftsbank och tilldelningar, skapande av syssla med valfri beskrivning och `5`/`10`/`15`/`20` poäng samt tilldelning till ett aktivt barn. Den aktuella arbetskopian innehåller dessutom US-033:s backend, migration, redigering och bekräftade avaktivering. Frontenden har 32 godkända tester och ett godkänt produktionsbygge; backenden har 100 godkända integrationstester i Release. Branchen ska låta användaren testa innan merge.
+På den pushade men ännu inte mergade branchen `feature/adult-chores-and-assignments` finns commit `b142576` som tidigare backup. Den aktuella arbetskopian innehåller route `/vuxen/sysslor`, den återanvändbara uppgiftsbanken, poängsnapshots, tilldelning, US-033:s redigering/avaktivering samt US-034:s bekräftade soft-cancellation av feltilldelningar. Frontenden har 35 godkända tester och ett godkänt produktionsbygge; backenden har 106 godkända integrationstester i Release. Branchen ska låta användaren testa innan merge.
 
 Produktbeslutet är att en `Chore` är en återanvändbar mall i Householdets uppgiftsbank, inte en engångsuppgift. En Adult skapar exempelvis `Bädda sängen` en gång och kan sedan skapa flera separata `ChoreAssignment`-rader för samma eller olika barn. Efter ny skapning får UI:t gärna leda direkt till en valfri tilldelning, men mallen finns kvar för framtida användning. Varje tilldelning fryser poängvärdet som gällde vid tilldelningstillfället.
 
-US-033 är nu implementerad och automatiskt samt manuellt verifierad på feature-branchen. Kriterierna i `REQUIREMENTS.md` är fortfarande okryssade eftersom dokumentets statusdefinition kräver merge till `main`. Nästa steg är användarens manuella UI-test; merga inte innan uttrycklig instruktion.
+US-033 och US-034 är nu implementerade och automatiskt samt manuellt API-verifierade på feature-branchen. Kriterierna i `REQUIREMENTS.md` är fortfarande okryssade eftersom dokumentets statusdefinition kräver merge till `main`. Nästa steg är användarens manuella UI-test av cancellation; merga inte innan uttrycklig instruktion.
 
 Efter att uppgiftsbanken, redigering, avaktivering och tilldelningsflödet är färdigställda bör Adult-granskning och barnets riktiga uppgiftsvy kopplas in stegvis.
 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
-- Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Syssle- och tilldelningsvyn har nu även redigering och bekräftad avaktivering av mallar på feature-branchen. Granskningsnavigationen är fortfarande endast ett visuellt skal.
+- Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Syssle- och tilldelningsvyn har nu redigering, bekräftad avaktivering av mallar och bekräftad cancellation av feltilldelningar på feature-branchen. Granskningsnavigationen är fortfarande endast ett visuellt skal.
 - Belöningskatalog, poängreservation och belöningsförfrågningar enligt US-070–US-072 är dokumenterade men ännu inte implementerade. De ska byggas efter de centrala frontendflödena; bilduppladdning kommer sist i det planerade belöningsarbetet.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
