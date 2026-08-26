@@ -1117,4 +1117,4 @@ Det centrala syssleflödet har ett riktigt Playwright-test på branchen `feature
 - API och Angular startas automatiskt av Playwright-konfigurationen. PostgreSQL-databasen används på riktigt och testdata får unika E2E-märkta namn.
 - `npm run e2e` passerar tillsammans med 53/53 Angular-tester, Angular-produktionsbygge, formatteringskontroll och 106/106 backendtester i Release.
 
-Branchen ska lämnas omergad tills användaren har fått möjlighet att granska kontrollpunkten. Nästa planerade arbetsdel efter denna kontrollpunkt är en bredare responsivitets- och tillgänglighetsgenomgång av kärnflödena.
+Kontrollpunkten godkändes av användaren och mergades till `main` i merge-commit `1cba8f3`. Nästa planerade arbetsdel är en bredare responsivitets- och tillgänglighetsgenomgång av kärnflödena.

@@ -411,7 +411,7 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-Det browserbaserade end-to-end-testet av det centrala syssleflödet är implementerat och verifierat på branchen `feature/chore-flow-e2e`. Branchen ska lämnas omergad för användarens kontrollpunkt.
+Det browserbaserade end-to-end-testet av det centrala syssleflödet är implementerat, verifierat och mergat till `main` i merge-commit `1cba8f3`.
 
 - Playwright kör Chromium i mobil viewport.
 - Adult och Child använder två separata browser-contexts och därmed isolerade cookies.
@@ -427,7 +427,7 @@ Adult-flödet för sysslor och tilldelningar är användartestat och mergat till
 
 Produktbeslutet är att en `Chore` är en återanvändbar mall i Householdets uppgiftsbank, inte en engångsuppgift. En Adult skapar exempelvis `Bädda sängen` en gång och kan sedan skapa flera separata `ChoreAssignment`-rader för samma eller olika barn. Efter ny skapning får UI:t gärna leda direkt till en valfri tilldelning, men mallen finns kvar för framtida användning. Varje tilldelning fryser poängvärdet som gällde vid tilldelningstillfället.
 
-US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041 och Adult-granskningen för US-050/US-051 är implementerade, automatiskt verifierade, manuellt användartestade och mergade. Nästa planerade del efter E2E-kontrollpunkten är en bredare responsivitets- och tillgänglighetsgenomgång av kärnflödena, därefter ytterligare Adult-funktion enligt US-011.
+US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041, Adult-granskningen för US-050/US-051 och det browserbaserade E2E-testet är implementerade, verifierade och mergade. Aktuell arbetsdel är en bredare responsivitets- och tillgänglighetsgenomgång av kärnflödena, därefter ytterligare Adult-funktion enligt US-011.
 
 ## Kända kvarvarande saker
 
