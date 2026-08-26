@@ -65,7 +65,7 @@ export class AdultChildrenPage implements OnInit {
     { label: 'Hem', icon: '⌂', route: '/vuxen' },
     { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
     { label: 'Barn', icon: '♧', active: true, route: '/vuxen/barn' },
-    { label: 'Granska', icon: '✓' },
+    { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
   ];
 
   readonly childForm = this.formBuilder.nonNullable.group(

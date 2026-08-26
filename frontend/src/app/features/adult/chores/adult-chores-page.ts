@@ -46,7 +46,7 @@ export class AdultChoresPage implements OnInit {
     { label: 'Hem', icon: '⌂', route: '/vuxen' },
     { label: 'Sysslor', icon: '☷', active: true, route: '/vuxen/sysslor' },
     { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
-    { label: 'Granska', icon: '✓' },
+    { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
   ];
 
   readonly choreForm = this.formBuilder.nonNullable.group({

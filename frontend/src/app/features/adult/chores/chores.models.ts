@@ -43,3 +43,15 @@ export interface AdultAssignment {
   cancelledByUserId: string | null;
   cancelledAt: string | null;
 }
+
+export interface ReviewAssignmentRequest {
+  comment: string | null;
+}
+
+export interface ReviewedAssignment {
+  assignmentId: number;
+  status: 'Approved' | 'NeedsRedo';
+  reviewedAt: string;
+  reviewComment: string | null;
+  pointsAwarded: number | null;
+}

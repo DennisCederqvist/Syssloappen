@@ -1,0 +1,125 @@
+import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { finalize } from 'rxjs';
+import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
+import { UserHeader } from '../../../shared/user-header';
+import { AdultAssignment, ReviewedAssignment } from '../chores/chores.models';
+import { ChoresService } from '../chores/chores.service';
+
+type ReviewDecision = 'approve' | 'reject';
+
+@Component({
+  selector: 'app-adult-review-page',
+  imports: [AppBottomNav, DatePipe, UserHeader],
+  templateUrl: './adult-review-page.html',
+})
+export class AdultReviewPage implements OnInit {
+  private readonly choresService = inject(ChoresService);
+
+  readonly assignments = signal<AdultAssignment[]>([]);
+  readonly isLoading = signal(true);
+  readonly loadError = signal('');
+  readonly reviewingAssignmentId = signal<number | null>(null);
+  readonly reviewComments = signal<Readonly<Record<number, string>>>({});
+  readonly reviewErrors = signal<Readonly<Record<number, string>>>({});
+  readonly successMessage = signal('');
+
+  readonly pendingAssignments = computed(() =>
+    this.assignments().filter((assignment) => assignment.status === 'PendingApproval'),
+  );
+  readonly reviewedAssignments = computed(() =>
+    this.assignments().filter(
+      (assignment) => assignment.status === 'Approved' || assignment.status === 'NeedsRedo',
+    ),
+  );
+
+  readonly navItems: NavItem[] = [
+    { label: 'Hem', icon: '⌂', route: '/vuxen' },
+    { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
+    { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
+    { label: 'Granska', icon: '✓', active: true, route: '/vuxen/granska' },
+  ];
+
+  ngOnInit(): void {
+    this.loadAssignments();
+  }
+
+  loadAssignments(): void {
+    this.isLoading.set(true);
+    this.loadError.set('');
+    this.choresService
+      .getAssignments()
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: (assignments) => this.assignments.set(assignments),
+        error: () =>
+          this.loadError.set('Familjens rapporterade sysslor kunde inte hämtas. Försök igen.'),
+      });
+  }
+
+  setComment(assignmentId: number, comment: string): void {
+    this.reviewComments.update((comments) => ({ ...comments, [assignmentId]: comment }));
+  }
+
+  reviewAssignment(assignment: AdultAssignment, decision: ReviewDecision): void {
+    if (assignment.status !== 'PendingApproval' || this.reviewingAssignmentId() !== null) return;
+
+    const rawComment = this.reviewComments()[assignment.assignmentId] ?? '';
+    const comment = rawComment.trim() || null;
+    if (rawComment.length > 500) {
+      this.setReviewError(assignment.assignmentId, 'Kommentaren får innehålla högst 500 tecken.');
+      return;
+    }
+
+    this.reviewingAssignmentId.set(assignment.assignmentId);
+    this.reviewErrors.update(({ [assignment.assignmentId]: _, ...errors }) => errors);
+    this.successMessage.set('');
+
+    const request = { comment };
+    const reviewRequest =
+      decision === 'approve'
+        ? this.choresService.approveAssignment(assignment.assignmentId, request)
+        : this.choresService.rejectAssignment(assignment.assignmentId, request);
+
+    reviewRequest.pipe(finalize(() => this.reviewingAssignmentId.set(null))).subscribe({
+      next: (reviewed) => this.applyReview(assignment, reviewed),
+      error: (error: HttpErrorResponse) => {
+        const message =
+          error.status === 404
+            ? 'Tilldelningen finns inte längre i din familj.'
+            : error.status === 409
+              ? 'Tilldelningen har redan granskats eller ändrats. Uppdatera listan.'
+              : error.status === 400
+                ? 'Kommentaren är för lång eller innehåller ogiltiga uppgifter.'
+                : 'Granskningen kunde inte sparas. Försök igen.';
+        this.setReviewError(assignment.assignmentId, message);
+      },
+    });
+  }
+
+  private applyReview(assignment: AdultAssignment, reviewed: ReviewedAssignment): void {
+    this.assignments.update((assignments) =>
+      assignments.map((item) =>
+        item.assignmentId === reviewed.assignmentId
+          ? {
+              ...item,
+              status: reviewed.status,
+              reviewedAt: reviewed.reviewedAt,
+              reviewComment: reviewed.reviewComment,
+            }
+          : item,
+      ),
+    );
+    this.reviewComments.update(({ [assignment.assignmentId]: _, ...comments }) => comments);
+    this.successMessage.set(
+      reviewed.status === 'Approved'
+        ? `${assignment.choreTitle} är godkänd och ${assignment.points} poäng har delats ut till ${assignment.childName}.`
+        : `${assignment.childName} har fått veta att ${assignment.choreTitle} behöver göras om.`,
+    );
+  }
+
+  private setReviewError(assignmentId: number, message: string): void {
+    this.reviewErrors.update((errors) => ({ ...errors, [assignmentId]: message }));
+  }
+}

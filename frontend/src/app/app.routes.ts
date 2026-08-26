@@ -30,6 +30,12 @@ export const routes: Routes = [
       import('./features/adult/chores/adult-chores-page').then((c) => c.AdultChoresPage),
   },
   {
+    path: 'vuxen/granska',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/review/adult-review-page').then((c) => c.AdultReviewPage),
+  },
+  {
     path: 'barn',
     canActivate: [childGuard],
     loadComponent: () => import('./features/child/child-home-page').then((c) => c.ChildHomePage),
