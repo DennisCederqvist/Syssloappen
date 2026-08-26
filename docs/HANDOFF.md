@@ -21,7 +21,7 @@ Följande är implementerat och mergat till `main`:
 - `POST /api/auth/login` loggar in med ASP.NET Core Identity och en sessionscookie.
 - `GET /api/auth/me` kräver inloggning och hämtar användar-ID, roll och `HouseholdId` från den autentiserade användaren.
 - `POST /api/auth/logout` tar bort autentiseringscookien.
-- Integrationstestprojektet använder en tillfällig SQLite-databas. Hela sviten omfattar nu 106 godkända backendtester för autentisering, Household-isolering, barn, Child-sessioner, sysslor, tilldelningar, cancellation, rapportering, Adult-granskning och poäng.
+- Integrationstestprojektet använder en tillfällig SQLite-databas. Hela sviten omfattar nu 118 godkända backendtester för autentisering, Household-isolering, barn, Child-sessioner, sysslor, tilldelningar, cancellation, rapportering, Adult-granskning, poäng och belöningar.
 
 Adult authentication för US-002 och US-003 är mergad och pushad till `main`.
 
@@ -309,6 +309,7 @@ Aktuella migrationer:
 - `AddAdultReviewAndChorePoints` lägger till poäng på sysslor och tilldelningar, granskningsfält på tilldelningar samt `ChoreCompletions` med unikt Assignment-ID och utdelade poäng. Migrationen är applicerad i `syssloappen_dev`.
 - `AddChoreSoftDelete` lägger till `Chores.IsActive` med standardvärdet `true`. Migrationen är applicerad i `syssloappen_dev`.
 - `AddChoreAssignmentCancellation` lägger till nullable `ChoreAssignments.CancelledByUserId` och `CancelledAt`, index samt en restriktiv Adult-FK. Migrationen är applicerad i `syssloappen_dev`.
+- `AddRewardsCatalog` skapar `Rewards` med Household-, skaparkonto-, namn-, beskrivnings-, poängpris-, aktiv- och tidsfält, positiv-pris-constraint, index och restriktiv skapare-FK. Migrationen är applicerad i `syssloappen_dev`.
 
 Vanliga kommandon från repots rot:
 
@@ -429,6 +430,15 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
+US-070:s bildfria belöningskatalog är implementerad, automatiskt verifierad, användartestad och godkänd för merge:
+
+- `GET/POST /api/rewards` samt `PUT/DELETE /api/rewards/{id}` kräver rollen `Adult`.
+- Backend härleder alltid Household och skapande konto från den autentiserade Adult-användaren. Request-DTO:erna innehåller bara namn, valfri beskrivning och positivt heltalspris; manipulerade ID-, Household-, ägar-, aktivitets- och tidsfält kan inte styra lagrad data.
+- Lista, redigering och avaktivering kombinerar resurs-ID med det autentiserade Householdet i databasfrågan. Avaktivering är soft delete, så Reward-raden finns kvar för US-071/US-072:s framtida redemption-historik.
+- Angular-routen `/vuxen/belöningar` har mobile-first-katalog med skapa-, redigerings- och bekräftat avaktiveringsflöde samt loading-, fel-, tom- och bekräftelselägen. Den skickar inga ägar- eller Household-fält.
+- Åtta nya integrationstester täcker anonym och Child-nekning, Adult-behörighet, Household-isolering, backendstyrt ägarskap, manipulerade fält och ID:n, validering, redigering och bevarad soft-delete-historik. Hela backendsviten är grön med 118 tester. Frontendsviten är grön med 59 tester och Angular-produktionsbygget är godkänt.
+- Bilduppladdning är avsiktligt inte implementerad. Bildformat, storleksgränser och lagringsstrategi ska beslutas innan den delen byggs.
+
 Det browserbaserade end-to-end-testet av det centrala syssleflödet är implementerat, verifierat och mergat till `main` i merge-commit `1cba8f3`. Responsivitets- och tillgänglighetsutökningen är verifierad, användargodkänd och mergad till `main` i merge-commit `8efa7f7`.
 
 - Playwright kör Chromium i mobil viewport.
@@ -463,7 +473,7 @@ US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-0
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
 - Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Adult-vyn för sysslor och tilldelningar, barnets riktiga startsida och Adult-granskningen är färdiga och användartestade.
-- Belöningskatalog, poängreservation och belöningsförfrågningar enligt US-070–US-072 är dokumenterade men ännu inte implementerade. De ska byggas efter de centrala frontendflödena; bilduppladdning kommer sist i det planerade belöningsarbetet.
+- US-070:s bildfria belöningskatalog är implementerad. Poängreservation och belöningsförfrågningar enligt US-071–US-072 återstår; bilduppladdning kommer sist när format, storleksgränser och lagring har beslutats.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
 - PostgreSQL-smoke-körningarna, inklusive transportfelsökningen inför den godkända Child-vy-körningen, skapade flera isolerade test-Households i `syssloappen_dev`. Alla namn och konton är smoke-märkta; testlösenorden genererades endast i minnet och är inte dokumenterade.
