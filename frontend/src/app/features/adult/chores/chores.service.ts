@@ -7,6 +7,8 @@ import {
   CreateAssignmentRequest,
   CreateChoreRequest,
   CreatedAssignment,
+  ReviewAssignmentRequest,
+  ReviewedAssignment,
   UpdateChoreRequest,
 } from './chores.models';
 
@@ -40,5 +42,25 @@ export class ChoresService {
 
   cancelAssignment(assignmentId: number): Observable<void> {
     return this.http.delete<void>(`/api/chore-assignments/${assignmentId}`);
+  }
+
+  approveAssignment(
+    assignmentId: number,
+    request: ReviewAssignmentRequest,
+  ): Observable<ReviewedAssignment> {
+    return this.http.post<ReviewedAssignment>(
+      `/api/chore-assignments/${assignmentId}/approve`,
+      request,
+    );
+  }
+
+  rejectAssignment(
+    assignmentId: number,
+    request: ReviewAssignmentRequest,
+  ): Observable<ReviewedAssignment> {
+    return this.http.post<ReviewedAssignment>(
+      `/api/chore-assignments/${assignmentId}/reject`,
+      request,
+    );
   }
 }

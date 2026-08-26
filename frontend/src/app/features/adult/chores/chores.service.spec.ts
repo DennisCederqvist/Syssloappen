@@ -61,4 +61,18 @@ describe('ChoresService', () => {
     service.cancelAssignment(9).subscribe();
     expect(http.expectOne('/api/chore-assignments/9').request.method).toBe('DELETE');
   });
+
+  it('approves with only the optional review comment', () => {
+    service.approveAssignment(9, { comment: 'Bra jobbat!' }).subscribe();
+    const request = http.expectOne('/api/chore-assignments/9/approve');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ comment: 'Bra jobbat!' });
+  });
+
+  it('rejects with only a nullable review comment', () => {
+    service.rejectAssignment(9, { comment: null }).subscribe();
+    const request = http.expectOne('/api/chore-assignments/9/reject');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ comment: null });
+  });
 });
