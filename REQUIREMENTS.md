@@ -326,6 +326,8 @@ så att den senare kan tilldelas ett barn.
 - [x] Sysslan ska kopplas till den vuxnas Household.
 - [x] En syssla från ett Household får inte vara synlig i ett annat Household.
 - [x] Systemet ska spara vem som skapade sysslan.
+- [x] En sparad syssla ska fungera som en återanvändbar mall i Householdets uppgiftsbank och kunna tilldelas flera gånger utan att behöva skapas på nytt.
+- [x] Efter att en syssla skapats ska den vuxna kunna tilldela den direkt, men tilldelning ska inte krävas för att spara mallen.
 
 ### Exempel
 
@@ -367,6 +369,49 @@ så att jag vet vem som ska göra vad.
 - [x] Adults ska kunna se Householdets barn.
 - [x] Adults ska kunna se vilka sysslor varje barn har.
 - [x] Information från andra Households får inte visas.
+
+---
+
+## US-033 – Vuxen kan administrera uppgiftsbanken
+
+**Som vuxen**
+vill jag kunna ändra och plocka bort sparade sysslor
+så att uppgiftsbanken förblir aktuell och enkel att använda.
+
+### Acceptance Criteria
+
+- [x] Endast en autentiserad Adult får ändra eller avaktivera en syssla.
+- [x] En Adult får endast administrera sysslor i sitt eget Household.
+- [x] Titel, valfri beskrivning och poängvärde ska kunna ändras.
+- [x] Endast poängvärdena `5`, `10`, `15` och `20` får sparas.
+- [x] Ett ändrat poängvärde ska endast påverka framtida tilldelningar; redan skapade tilldelningar ska behålla sitt snapshot-värde.
+- [x] Varje kort i uppgiftsbanken ska ha ett litet kryss i övre hörnet för att plocka bort sysslan.
+- [x] Kryssknappen ska ha ett tydligt tillgängligt namn och avaktivering ska kräva bekräftelse för att undvika misstag.
+- [x] En bortplockad syssla ska döljas från uppgiftsbanken och inte kunna användas för nya tilldelningar.
+- [x] Borttagning ska implementeras som avaktivering i backend så att historiska tilldelningar, completions och poäng bevaras.
+- [x] Manipulering av Chore-ID eller Household-fält får inte ändra eller avaktivera ett annat Households syssla.
+
+---
+
+## US-034 – Vuxen kan avbryta en felaktig tilldelning
+
+**Som vuxen**
+vill jag kunna avbryta en syssla som tilldelats fel
+så att fel barn inte behöver se eller utföra uppgiften.
+
+### Acceptance Criteria
+
+- [x] Endast en autentiserad Adult får avbryta en tilldelning.
+- [x] En Adult får endast avbryta tilldelningar i sitt eget Household.
+- [x] Tilldelningar med status `Assigned`, `PendingApproval` eller `NeedsRedo` ska kunna avbrytas.
+- [x] En `Approved` tilldelning får inte avbrytas eftersom completion och poäng redan har skapats.
+- [x] Avbrytning ska sätta status `Cancelled`, spara vilken Adult som avbröt och aktuell backendtid.
+- [x] Tilldelningen får inte raderas fysiskt; historik och eventuella tidigare rapporterings- eller granskningsuppgifter ska bevaras.
+- [x] En avbruten tilldelning ska döljas från barnets aktiva sysslelista och får inte kunna rapporteras som utförd.
+- [x] Adult ska kunna begära historik som även innehåller avbrutna tilldelningar.
+- [x] Adult-frontendens aktuella lista ska ta bort tilldelningen direkt efter lyckad avbrytning.
+- [x] Avbrytning i frontend ska kräva bekräftelse och knappen ska ha ett tydligt tillgängligt namn.
+- [x] Manipulering av Assignment-ID, Child-ID, Household-, status-, Adult- eller tidsfält får inte avbryta en annan familjs tilldelning eller styra auditinformationen.
 
 ---
 
@@ -642,6 +687,7 @@ CreatedByUserId
 Title
 Description
 Points
+IsActive
 CreatedAt
 ```
 
@@ -760,7 +806,7 @@ Den första frontendversionen får vara visuellt enkel. Målet är först att g�
 - [x] Adult- och Child-vyer ska vara separerade och anpassade efter respektive roll.
 - [x] Desktoplayout får förbättras responsivt men ska inte prioriteras före mobilflödena.
 - [x] Den första designen ska vara enkel och komponentbaserad så att utseendet kan ändras senare.
-- [ ] Skapa-syssla-formuläret ska ha en titelruta och en poängrullista med `5`, `10`, `15` och `20`, där `5` är förvalt.
+- [x] Skapa-syssla-formuläret ska ha en titelruta och en poängrullista med `5`, `10`, `15` och `20`, där `5` är förvalt.
 - [x] Frontend får aldrig ersätta backendens kontroller av identitet, roll, Household, status, poäng eller ägarskap.
 - [ ] Grundläggande tillgänglighet ska beaktas, inklusive formuläretiketter, tangentbordsnavigering, fokusmarkering och tillräckliga kontraster.
 
@@ -983,25 +1029,27 @@ En user story betraktas som färdig när:
 Backendens kärnflöde för autentisering, barn, sysslor, tilldelning, rapportering, Adult-granskning och intjänade poäng är färdigt. Angular-grunden, Adult-registrering och login, rollstyrd navigation samt Adult-hantering av barnkonton och kopplade enheter är också färdiga. Föreslagen fortsatt ordning är:
 
 ```text
-1. Adult-frontend för sysslor, poängval och tilldelning
+1. Child-frontend för egna sysslor och status enligt US-040
    ↓
-2. Adult-frontend för PendingApproval, Approved och NeedsRedo
+2. Child-frontend för rapportering, kommentar och poängsaldo enligt US-041 och US-060
    ↓
-3. Child-frontend för egna sysslor, rapportering, kommentar och poängsaldo
+3. Adult-frontend för PendingApproval, Approved och NeedsRedo enligt US-050 och US-051
    ↓
-4. Responsivitet, tillgänglighet och browserbaserade kärnflödestester
+4. Browserbaserade end-to-end-tester av hela syssleflödet
    ↓
-5. Ytterligare Adult enligt US-011
+5. Responsivitet, tillgänglighet och browserbaserade kärnflödestester
    ↓
-6. Belöningskatalogens backend enligt US-070
+6. Ytterligare Adult enligt US-011
    ↓
-7. Säker poängreservation och redemption enligt US-071–US-072
+7. Belöningskatalogens backend enligt US-070
    ↓
-8. Mobile-first belöningsbutik utan krav på bild
+8. Säker poängreservation och redemption enligt US-071–US-072
    ↓
-9. Säker bilduppladdning för belöningar
+9. Mobile-first belöningsbutik utan krav på bild
    ↓
-10. PWA
+10. Säker bilduppladdning för belöningar
+   ↓
+11. PWA
 ```
 
 ---

@@ -5,5 +5,6 @@ public enum ChoreAssignmentStatus
     Assigned,
     PendingApproval,
     NeedsRedo,
-    Approved
+    Approved,
+    Cancelled
 }

@@ -24,6 +24,12 @@ export const routes: Routes = [
       import('./features/adult/children/adult-children-page').then((c) => c.AdultChildrenPage),
   },
   {
+    path: 'vuxen/sysslor',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/chores/adult-chores-page').then((c) => c.AdultChoresPage),
+  },
+  {
     path: 'barn',
     canActivate: [childGuard],
     loadComponent: () => import('./features/child/child-home-page').then((c) => c.ChildHomePage),

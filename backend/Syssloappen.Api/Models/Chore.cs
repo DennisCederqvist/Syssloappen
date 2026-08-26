@@ -20,5 +20,7 @@ public sealed class Chore
 
     public int Points { get; set; } = 5;
 
+    public bool IsActive { get; set; } = true;
+
     public DateTime CreatedAt { get; set; }
 }

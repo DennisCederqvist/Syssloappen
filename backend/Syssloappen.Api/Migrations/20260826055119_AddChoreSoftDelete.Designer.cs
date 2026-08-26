@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Syssloappen.Api.Data;
@@ -11,9 +12,11 @@ using Syssloappen.Api.Data;
 namespace Syssloappen.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260826055119_AddChoreSoftDelete")]
+    partial class AddChoreSoftDelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -426,12 +429,6 @@ namespace Syssloappen.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("CancelledAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CancelledByUserId")
-                        .HasColumnType("text");
-
                     b.Property<int>("ChildId")
                         .HasColumnType("integer");
 
@@ -470,8 +467,6 @@ namespace Syssloappen.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AssignedByUserId");
-
-                    b.HasIndex("CancelledByUserId");
 
                     b.HasIndex("ChildId");
 
@@ -733,11 +728,6 @@ namespace Syssloappen.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Syssloappen.Api.Authentication.ApplicationUser", "CancelledByUser")
-                        .WithMany()
-                        .HasForeignKey("CancelledByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Syssloappen.Api.Models.ChildProfile", "Child")
                         .WithMany()
                         .HasForeignKey("ChildId")
@@ -762,8 +752,6 @@ namespace Syssloappen.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("AssignedByUser");
-
-                    b.Navigation("CancelledByUser");
 
                     b.Navigation("Child");
 

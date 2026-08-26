@@ -37,4 +37,10 @@ public sealed class ChoreAssignment
     public DateTime? ReviewedAt { get; set; }
 
     public string? ReviewComment { get; set; }
+
+    public string? CancelledByUserId { get; set; }
+
+    public ApplicationUser? CancelledByUser { get; set; }
+
+    public DateTime? CancelledAt { get; set; }
 }

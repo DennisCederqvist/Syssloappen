@@ -14,7 +14,7 @@ export class AdultHomePage {
   readonly displayName = computed(() => this.auth.user()?.email?.split('@')[0] || 'familj');
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: '⌂', active: true, route: '/vuxen' },
-    { label: 'Sysslor', icon: '☷' },
+    { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
     { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
     { label: 'Granska', icon: '✓' },
   ];
