@@ -21,7 +21,7 @@ Följande är implementerat och mergat till `main`:
 - `POST /api/auth/login` loggar in med ASP.NET Core Identity och en sessionscookie.
 - `GET /api/auth/me` kräver inloggning och hämtar användar-ID, roll och `HouseholdId` från den autentiserade användaren.
 - `POST /api/auth/logout` tar bort autentiseringscookien.
-- Integrationstestprojektet använder en tillfällig SQLite-databas. Hela sviten omfattar nu 95 godkända backendtester för autentisering, Household-isolering, barn, Child-sessioner, sysslor, tilldelningar, rapportering, Adult-granskning och poäng.
+- Integrationstestprojektet använder en tillfällig SQLite-databas. Hela sviten omfattar nu 106 godkända backendtester för autentisering, Household-isolering, barn, Child-sessioner, sysslor, tilldelningar, cancellation, rapportering, Adult-granskning och poäng.
 
 Adult authentication för US-002 och US-003 är mergad och pushad till `main`.
 
@@ -113,7 +113,7 @@ US-030 är implementerad, committad och testad:
 - `GET /api/chores` returnerar endast sysslor vars `HouseholdId` matchar den autentiserade Adult-användaren. Alla Adults i samma Household ser samma lista, medan andra Households förblir isolerade.
 - `Chore.CreatedByUserId` sparar vilket Identity-konto som skapade sysslan.
 
-US-033 är implementerad och verifierad på den ännu inte mergade feature-branchen:
+US-033 är implementerad, användartestad och mergad till `main`:
 
 - `Chore.IsActive` har lagts till med standardvärdet `true` genom migrationen `AddChoreSoftDelete`.
 - `GET /api/chores` returnerar endast aktiva mallar i den autentiserade Adult-användarens Household.
@@ -124,7 +124,7 @@ US-033 är implementerad och verifierad på den ännu inte mergade feature-branc
 - Lyckad ändring ersätter kortet direkt i den sorterade lokala listan. Lyckad avaktivering tar direkt bort kortet och stänger eventuell redigerings- eller tilldelningspanel som använde mallen.
 - Fem nya integrationstester verifierar Adult-roll, Household-isolering, manipulerade och ogiltiga ID:n/fält, validering, redigering, gamla och nya poängsnapshots, aktiv filtrering, blockerad nytilldelning samt bevarad assignment-, completion- och poänghistorik. Hela backendsviten omfattar nu 100 godkända tester i Release.
 
-US-034 är implementerad och verifierad på samma feature-branch:
+US-034 är implementerad, användartestad och mergad till `main`:
 
 - `DELETE /api/chore-assignments/{assignmentId}` låter endast en autentiserad Adult avbryta en tilldelning i sitt eget Household.
 - Tilldelningar i `Assigned`, `PendingApproval` och `NeedsRedo` får status `Cancelled`; databasraden, rapporteringstid och eventuell tidigare granskningsinformation bevaras.
@@ -366,20 +366,20 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-Backendens MVP-kärna är färdig, mergad, migrerad och verifierad med 95 integrationstester. Frontendens första mobile-first-del omfattar Adult-registrering och login, sessionsåterställning, logout, rollstyrd navigation, skapande, listning, redigering och avaktivering av barn samt Adult-styrd enhetskoppling med visning och återkallning av kopplade enheter. Barnets kodinlösen skapar den beständiga Child-sessionen; både enhetsåterkallning och avaktivering nekar sessionen omedelbart i backend.
+Backendens MVP-kärna är färdig, mergad, migrerad och verifierad med 106 integrationstester. Frontendens första mobile-first-del omfattar Adult-registrering och login, sessionsåterställning, logout, rollstyrd navigation, barnkonton, kopplade enheter samt den återanvändbara uppgiftsbanken med tilldelning och cancellation. Barnets kodinlösen skapar den beständiga Child-sessionen; både enhetsåterkallning och avaktivering nekar sessionen omedelbart i backend.
 
-På den pushade men ännu inte mergade branchen `feature/adult-chores-and-assignments` finns commit `b142576` som tidigare backup. Den aktuella arbetskopian innehåller route `/vuxen/sysslor`, den återanvändbara uppgiftsbanken, poängsnapshots, tilldelning, US-033:s redigering/avaktivering samt US-034:s bekräftade soft-cancellation av feltilldelningar. Frontenden har 35 godkända tester och ett godkänt produktionsbygge; backenden har 106 godkända integrationstester i Release. Branchen ska låta användaren testa innan merge.
+Adult-flödet för sysslor och tilldelningar är användartestat och mergat till `main`. Det innehåller route `/vuxen/sysslor`, den återanvändbara uppgiftsbanken, poängsnapshots, tilldelning, US-033:s redigering/avaktivering samt US-034:s bekräftade soft-cancellation av feltilldelningar. Frontenden har 35 godkända tester och ett godkänt produktionsbygge; backenden har 106 godkända integrationstester i Release.
 
 Produktbeslutet är att en `Chore` är en återanvändbar mall i Householdets uppgiftsbank, inte en engångsuppgift. En Adult skapar exempelvis `Bädda sängen` en gång och kan sedan skapa flera separata `ChoreAssignment`-rader för samma eller olika barn. Efter ny skapning får UI:t gärna leda direkt till en valfri tilldelning, men mallen finns kvar för framtida användning. Varje tilldelning fryser poängvärdet som gällde vid tilldelningstillfället.
 
-US-033 och US-034 är nu implementerade och automatiskt samt manuellt API-verifierade på feature-branchen. Kriterierna i `REQUIREMENTS.md` är fortfarande okryssade eftersom dokumentets statusdefinition kräver merge till `main`. Nästa steg är användarens manuella UI-test av cancellation; merga inte innan uttrycklig instruktion.
+US-030:s återanvändbara mallflöde, US-033 och US-034 är implementerade, automatiskt verifierade, manuellt användartestade och mergade. Kriterierna är markerade färdiga i `REQUIREMENTS.md`. Nästa arbetsdel är Child-frontend för US-040/US-041 på en separat feature-branch.
 
 Efter att uppgiftsbanken, redigering, avaktivering och tilldelningsflödet är färdigställda bör Adult-granskning och barnets riktiga uppgiftsvy kopplas in stegvis.
 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
-- Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Syssle- och tilldelningsvyn har nu redigering, bekräftad avaktivering av mallar och bekräftad cancellation av feltilldelningar på feature-branchen. Granskningsnavigationen är fortfarande endast ett visuellt skal.
+- Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Adult-vyn för sysslor och tilldelningar finns på `main`. Barnets startsida och granskningsnavigationen är fortfarande visuella skal; nästa branch kopplar in barnets riktiga uppgifter.
 - Belöningskatalog, poängreservation och belöningsförfrågningar enligt US-070–US-072 är dokumenterade men ännu inte implementerade. De ska byggas efter de centrala frontendflödena; bilduppladdning kommer sist i det planerade belöningsarbetet.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
