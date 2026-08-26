@@ -4,6 +4,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { finalize } from 'rxjs';
 import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
 import { UserHeader } from '../../../shared/user-header';
+import { focusAfterRender } from '../../../shared/focus';
 import { AdultAssignment, ReviewedAssignment } from '../chores/chores.models';
 import { ChoresService } from '../chores/chores.service';
 
@@ -117,6 +118,7 @@ export class AdultReviewPage implements OnInit {
         ? `${assignment.choreTitle} är godkänd och ${assignment.points} poäng har delats ut till ${assignment.childName}.`
         : `${assignment.childName} har fått veta att ${assignment.choreTitle} behöver göras om.`,
     );
+    focusAfterRender('review-success-message');
   }
 
   private setReviewError(assignmentId: number, message: string): void {

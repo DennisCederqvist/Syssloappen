@@ -3,6 +3,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
 import { AppBottomNav, NavItem } from '../../shared/app-bottom-nav';
 import { UserHeader } from '../../shared/user-header';
+import { focusAfterRender } from '../../shared/focus';
 import { ChildChoreAssignment, ChildChoreStatus } from './child-chores.models';
 import { ChildChoresService } from './child-chores.service';
 
@@ -66,7 +67,7 @@ export class ChildHomePage implements OnInit {
         ),
       )
       .subscribe({
-        next: (submitted) =>
+        next: (submitted) => {
           this.assignments.update((assignments) =>
             assignments.map((item) =>
               item.assignmentId === submitted.assignmentId
@@ -78,7 +79,9 @@ export class ChildHomePage implements OnInit {
                   }
                 : item,
             ),
-          ),
+          );
+          focusAfterRender(`child-assignment-${assignment.assignmentId}`);
+        },
         error: (error: HttpErrorResponse) => {
           const message =
             error.status === 404

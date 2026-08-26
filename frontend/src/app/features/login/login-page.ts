@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
 import { CurrentUser, RegisterAdultResponse } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
+import { focusAfterRender } from '../../shared/focus';
 
 type LoginMode = 'adult' | 'child';
 type AdultView = 'login' | 'register';
@@ -85,6 +86,7 @@ export class LoginPage {
   submitAdult(): void {
     if (this.adultForm.invalid) {
       this.adultForm.markAllAsTouched();
+      focusAfterRender(this.adultForm.controls.email.invalid ? 'adult-email' : 'adult-password');
       return;
     }
     this.signIn(this.auth.loginAdult(this.adultForm.getRawValue()));
@@ -92,6 +94,14 @@ export class LoginPage {
   submitRegistration(): void {
     if (this.registrationForm.invalid) {
       this.registrationForm.markAllAsTouched();
+      const firstInvalidId = this.registrationForm.controls.householdName.invalid
+        ? 'household-name'
+        : this.registrationForm.controls.email.invalid
+          ? 'registration-email'
+          : this.registrationForm.controls.password.invalid
+            ? 'registration-password'
+            : 'confirm-registration-password';
+      focusAfterRender(firstInvalidId);
       return;
     }
 
@@ -136,6 +146,13 @@ export class LoginPage {
   submitChild(): void {
     if (this.childForm.invalid) {
       this.childForm.markAllAsTouched();
+      focusAfterRender(
+        this.childForm.controls.familyCode.invalid
+          ? 'family-code'
+          : this.childForm.controls.userName.invalid
+            ? 'child-username'
+            : 'child-password',
+      );
       return;
     }
     this.signIn(this.auth.loginChild(this.childForm.getRawValue()));
@@ -143,6 +160,7 @@ export class LoginPage {
   submitPairingCode(): void {
     if (this.pairingForm.invalid) {
       this.pairingForm.markAllAsTouched();
+      focusAfterRender('pairing-code-input');
       return;
     }
     this.signIn(this.auth.pairChildDevice(this.pairingForm.getRawValue()));

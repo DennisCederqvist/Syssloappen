@@ -23,7 +23,7 @@ export interface NavItem {
           <a
             [routerLink]="item.route"
             [attr.aria-current]="item.active ? 'page' : null"
-            class="flex min-h-14 min-w-16 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-[.68rem] font-bold transition hover:bg-brand-50 md:min-h-16"
+            class="flex min-h-14 min-w-16 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-xs font-bold transition hover:bg-brand-50 md:min-h-16"
             [class.bg-brand-50]="item.active"
             [class.text-brand-600]="item.active"
             [class.text-muted]="!item.active"
@@ -35,7 +35,7 @@ export interface NavItem {
           <button
             type="button"
             disabled
-            class="flex min-h-14 min-w-16 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-[.68rem] font-bold text-muted opacity-60 md:min-h-16"
+            class="flex min-h-14 min-w-16 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-xs font-bold text-muted opacity-60 md:min-h-16"
           >
             <span class="text-xl leading-none" aria-hidden="true">{{ item.icon }}</span
             >{{ item.label }}

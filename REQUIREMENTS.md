@@ -1118,3 +1118,21 @@ Det centrala syssleflödet har ett riktigt Playwright-test på branchen `feature
 - `npm run e2e` passerar tillsammans med 53/53 Angular-tester, Angular-produktionsbygge, formatteringskontroll och 106/106 backendtester i Release.
 
 Kontrollpunkten godkändes av användaren och mergades till `main` i merge-commit `1cba8f3`. Nästa planerade arbetsdel är en bredare responsivitets- och tillgänglighetsgenomgång av kärnflödena.
+
+---
+
+# 25. Verifierad responsivitets- och tillgänglighetsgenomgång
+
+En bred genomgång av kärnflödena är implementerad och automatiskt verifierad på branchen `feature/responsive-accessibility-audit`.
+
+- Login, registrering, Adult-startsidan, barn och konton, sysslor och tilldelningar, Adult-granskning samt Child-startsidan och sysslekorten ingår i browsergranskningen.
+- Playwright verifierar vyerna vid `390 × 844`, `768 × 1024` och `1280 × 900` utan oavsiktlig horisontell scroll och med minst 44 × 44 px stora synliga knapp- och länkytor.
+- Axe kör WCAG 2 A/AA och WCAG 2.1 A/AA i centrala tillstånd genom det riktiga Adult-/Child-flödet. Färgpalettens brand-, lilac- och muted-toner har justerats efter uppmätta kontrastfel.
+- Varje sida har ett `main`-landmark och en primär `h1`. Långa sidrubriker får radbrytas i stället för att klippas, och Adult-tilldelningar visar begripliga svenska statusar även på mobil.
+- Formulärens valideringsmeddelanden är kopplade till relevanta fält med `aria-invalid` och `aria-describedby`. Ogiltig submit flyttar fokus till det första fält som behöver rättas.
+- Dialogliknande inline-paneler och bekräftelseflöden har namngivna regioner/grupper, fokus flyttas till nytt innehåll och återställs eller flyttas till resultatmeddelandet när innehåll stängs eller tas bort.
+- Fokusmarkeringen har hög kontrast, uppgiftsbankens tidigare 32 px stora kryss är nu 48 px och dynamiska resultat behåller ett rimligt fokus efter statusövergångar.
+- `prefers-reduced-motion: reduce` kortar animationer och övergångar globalt. E2E-körningen verifierar reduced-motion-läget tillsammans med loading-, status- och kärnflödestillstånden.
+- Frontendsviten omfattar nu 55 godkända Angular-tester. Formatteringskontroll, Angular-produktionsbygge, Playwright-E2E mot riktigt API/PostgreSQL och 106/106 backendtester i Release är godkända.
+
+De breda checkboxarna i avsnitt 14 förblir enligt dokumentets statusregel okryssade tills den testade branchen har användargodkänts och mergats till `main`.

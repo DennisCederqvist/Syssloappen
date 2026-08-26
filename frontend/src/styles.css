@@ -3,14 +3,14 @@
 @theme {
   --font-sans: 'Nunito', 'Avenir Next', 'Segoe UI', sans-serif;
   --color-ink: #18312f;
-  --color-muted: #667774;
+  --color-muted: #405653;
   --color-canvas: #f4f7f5;
   --color-line: #dfe8e4;
   --color-brand-50: #e9f8f5;
   --color-brand-100: #d5f1eb;
-  --color-brand-500: #14a38f;
-  --color-brand-600: #087f72;
-  --color-lilac: #8e74cc;
+  --color-brand-500: #087f72;
+  --color-brand-600: #06685f;
+  --color-lilac: #6d55ad;
   --color-coral: #ed7e68;
 }
 
@@ -31,11 +31,14 @@ html {
 body {
   min-height: 100dvh;
   margin: 0;
+  overflow-wrap: break-word;
   background:
     radial-gradient(circle at 5% 0%, rgb(213 241 235 / 55%), transparent 32rem), var(--color-canvas);
 }
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 button,
@@ -43,8 +46,19 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 :focus-visible {
-  outline: 3px solid rgb(20 163 143 / 35%);
+  outline: 3px solid var(--color-brand-500);
   outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {

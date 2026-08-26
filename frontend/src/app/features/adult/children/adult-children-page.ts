@@ -11,6 +11,7 @@ import {
 import { finalize } from 'rxjs';
 import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
 import { UserHeader } from '../../../shared/user-header';
+import { focusAfterRender } from '../../../shared/focus';
 import {
   ChildDeviceSession,
   ChildPairingCode,
@@ -41,7 +42,9 @@ export class AdultChildrenPage implements OnInit {
   readonly loadError = signal('');
   readonly formError = signal('');
   readonly createdChild = signal<CreatedChild | null>(null);
-  readonly pairingCode = signal<(ChildPairingCode & { childName: string }) | null>(null);
+  readonly pairingCode = signal<(ChildPairingCode & { childId: number; childName: string }) | null>(
+    null,
+  );
   readonly generatingCodeFor = signal<number | null>(null);
   readonly pairingError = signal('');
   readonly pairingCodeCopied = signal(false);
@@ -60,6 +63,9 @@ export class AdultChildrenPage implements OnInit {
   readonly isDeactivatingChild = signal(false);
   readonly deactivationError = signal('');
   readonly deactivationSuccess = signal('');
+  private pairingReturnFocusId = '';
+  private deviceSessionsReturnFocusId = '';
+  private editChildReturnFocusId = '';
 
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: '⌂', route: '/vuxen' },
@@ -109,17 +115,27 @@ export class AdultChildrenPage implements OnInit {
     this.createdChild.set(null);
     this.formError.set('');
     this.showForm.set(true);
+    focusAfterRender('create-child-panel');
   }
 
   closeForm(): void {
     this.showForm.set(false);
     this.formError.set('');
     this.childForm.reset();
+    focusAfterRender('create-child-trigger');
   }
 
   submitChild(): void {
     if (this.childForm.invalid) {
       this.childForm.markAllAsTouched();
+      const firstInvalidId = this.childForm.controls.name.invalid
+        ? 'create-child-name'
+        : this.childForm.controls.userName.invalid
+          ? 'create-child-username'
+          : this.childForm.controls.password.invalid
+            ? 'create-child-password'
+            : 'create-child-confirm-password';
+      focusAfterRender(firstInvalidId);
       return;
     }
 
@@ -139,6 +155,7 @@ export class AdultChildrenPage implements OnInit {
           this.createdChild.set(child);
           this.showForm.set(false);
           this.childForm.reset();
+          focusAfterRender('created-child-message');
         },
         error: (error: HttpErrorResponse) => {
           if (error.status === 409) {
@@ -152,7 +169,8 @@ export class AdultChildrenPage implements OnInit {
       });
   }
 
-  generatePairingCode(child: ChildSummary): void {
+  generatePairingCode(child: ChildSummary, returnFocusId = `pair-child-${child.id}`): void {
+    this.pairingReturnFocusId = returnFocusId;
     this.generatingCodeFor.set(child.id);
     this.pairingError.set('');
     this.pairingCode.set(null);
@@ -161,7 +179,10 @@ export class AdultChildrenPage implements OnInit {
       .createPairingCode(child.id)
       .pipe(finalize(() => this.generatingCodeFor.set(null)))
       .subscribe({
-        next: (result) => this.pairingCode.set({ ...result, childName: child.name }),
+        next: (result) => {
+          this.pairingCode.set({ ...result, childId: child.id, childName: child.name });
+          focusAfterRender('pairing-code-panel');
+        },
         error: (error: HttpErrorResponse) =>
           this.pairingError.set(
             error.status === 404
@@ -174,6 +195,7 @@ export class AdultChildrenPage implements OnInit {
   closePairingCode(): void {
     this.pairingCode.set(null);
     this.pairingCodeCopied.set(false);
+    if (this.pairingReturnFocusId) focusAfterRender(this.pairingReturnFocusId);
   }
 
   async copyPairingCode(): Promise<void> {
@@ -188,10 +210,12 @@ export class AdultChildrenPage implements OnInit {
   }
 
   openDeviceSessions(child: ChildSummary): void {
+    this.deviceSessionsReturnFocusId = `sessions-child-${child.id}`;
     this.deviceSessionsChild.set(child);
     this.confirmingRevocation.set(null);
     this.revocationError.set('');
     this.loadDeviceSessions(child);
+    focusAfterRender('device-sessions-panel');
   }
 
   closeDeviceSessions(): void {
@@ -200,6 +224,7 @@ export class AdultChildrenPage implements OnInit {
     this.deviceSessionsError.set('');
     this.confirmingRevocation.set(null);
     this.revocationError.set('');
+    if (this.deviceSessionsReturnFocusId) focusAfterRender(this.deviceSessionsReturnFocusId);
   }
 
   retryDeviceSessions(): void {
@@ -210,10 +235,13 @@ export class AdultChildrenPage implements OnInit {
   requestRevocation(sessionId: string): void {
     this.confirmingRevocation.set(sessionId);
     this.revocationError.set('');
+    focusAfterRender(`cancel-revocation-${sessionId}`);
   }
 
   cancelRevocation(): void {
+    const sessionId = this.confirmingRevocation();
     this.confirmingRevocation.set(null);
+    if (sessionId) focusAfterRender(`request-revocation-${sessionId}`);
   }
 
   revokeDeviceSession(session: ChildDeviceSession): void {
@@ -250,12 +278,14 @@ export class AdultChildrenPage implements OnInit {
   }
 
   openEditChild(child: ChildSummary): void {
+    this.editChildReturnFocusId = `edit-child-${child.id}`;
     this.editingChild.set(child);
     this.editChildForm.setValue({ name: child.name });
     this.editChildError.set('');
     this.editChildSuccess.set('');
     this.confirmingDeactivation.set(false);
     this.deactivationError.set('');
+    focusAfterRender('edit-child-panel');
   }
 
   closeEditChild(): void {
@@ -265,6 +295,7 @@ export class AdultChildrenPage implements OnInit {
     this.editChildSuccess.set('');
     this.confirmingDeactivation.set(false);
     this.deactivationError.set('');
+    if (this.editChildReturnFocusId) focusAfterRender(this.editChildReturnFocusId);
   }
 
   updateChild(): void {
@@ -272,6 +303,7 @@ export class AdultChildrenPage implements OnInit {
     if (!child) return;
     if (this.editChildForm.invalid) {
       this.editChildForm.markAllAsTouched();
+      focusAfterRender('edit-child-name');
       return;
     }
 
@@ -313,11 +345,13 @@ export class AdultChildrenPage implements OnInit {
   requestDeactivation(): void {
     this.confirmingDeactivation.set(true);
     this.deactivationError.set('');
+    focusAfterRender('cancel-child-deactivation');
   }
 
   cancelDeactivation(): void {
     this.confirmingDeactivation.set(false);
     this.deactivationError.set('');
+    focusAfterRender('request-child-deactivation');
   }
 
   deactivateChild(): void {
@@ -339,6 +373,7 @@ export class AdultChildrenPage implements OnInit {
           this.editChildForm.reset();
           this.confirmingDeactivation.set(false);
           this.deactivationSuccess.set(`${child.name} är avaktiverad och visas inte längre.`);
+          focusAfterRender('child-deactivation-success');
         },
         error: (error: HttpErrorResponse) =>
           this.deactivationError.set(
