@@ -800,7 +800,7 @@ Den första frontendversionen får vara visuellt enkel. Målet är först att g�
 - [x] Frontend ska byggas i Angular.
 - [x] Frontend ska utformas mobile first eftersom både Adults och Children främst väntas använda mobil eller surfplatta.
 - [ ] Adult-flödena ska vara fullt användbara på en vanlig mobilskärm utan horisontell scrollning.
-- [ ] Child-flödena ska vara fullt användbara på både mobil och surfplatta utan horisontell scrollning.
+- [x] Child-flödena ska vara fullt användbara på både mobil och surfplatta utan horisontell scrollning.
 - [ ] Primära knappar och val ska ha tydliga texter och vara lätta att trycka på med fingret.
 - [ ] Text, status, felmeddelanden och poäng ska vara tydligt läsbara på små skärmar.
 - [x] Adult- och Child-vyer ska vara separerade och anpassade efter respektive roll.
@@ -1073,3 +1073,18 @@ Authorization
         ↓
 Allowed data
 ```
+
+---
+
+# 22. Verifierad Child-frontend
+
+Child-frontenden för US-040, US-041 och poängpresentationen i US-060 är implementerad och automatiskt verifierad på branchen `feature/child-chores-and-submission`.
+
+- Barnets startsida hämtar privata tilldelningar och poängsaldo från backend.
+- `Assigned`, `PendingApproval`, `NeedsRedo` och `Approved` visas med begripliga svenska texter.
+- Adult-kommentaren visas för `NeedsRedo`, som kan rapporteras igen.
+- Rapportering skickar endast tilldelnings-ID i URL:en och ingen ägar-, status-, poäng- eller tidsdata.
+- Loading-, fel- och tomlägen samt stora, tillgängligt namngivna tryckytor ingår.
+- Frontendtester, formatteringskontroll, Angular-produktionsbygge, hela backendsviten och ett riktigt PostgreSQL/API-smoke-test är godkända.
+
+Child-vyn användartestades 2026-08-26 med en riktig Adult-tilldelning och Child-session. Tilldelningen visades och kunde rapporteras till `PendingApproval`. Den tillfälligt gamla vyn visade sig komma från en stale Angular-devserver; efter kontrollerad omstart serverades och verifierades den nya Child-chunken. Användaren godkände därefter merge till `main`.
