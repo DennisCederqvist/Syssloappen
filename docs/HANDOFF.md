@@ -186,7 +186,7 @@ Adult-granskning och poäng är implementerade, testade och mergade till `main`:
 
 ## Child-frontend för US-040 och US-041
 
-Child-frontenden är implementerad och verifierad på `feature/child-chores-and-submission`, men ännu inte mergad till `main`:
+Child-frontenden implementerades och verifierades på `feature/child-chores-and-submission`:
 
 - Barnets route `/barn` hämtar tilldelningar från `GET /api/child/chore-assignments` och poängsaldo från `GET /api/child/points`.
 - Den tidigare visuella platshållaren är ersatt av mobile-first-kort med titel, valfri beskrivning, snapshot-poäng och svenska statusnamn för `Assigned`, `PendingApproval`, `NeedsRedo` och `Approved`.
@@ -200,7 +200,7 @@ Child-frontenden är implementerad och verifierad på `feature/child-chores-and-
 - Ett riktigt smoke-test mot det lokala API:t och PostgreSQL verifierade Child-listning med titel, beskrivning och 10 snapshot-poäng, noll initiala poäng samt hela flödet `Assigned` → `PendingApproval` → `NeedsRedo` med Adult-kommentar → omrapportering till `PendingApproval` → `Approved` och exakt 10 poäng. Inga testlösenord sparades eller dokumenterades.
 - Två inledande smoke-försök skapade separata, tydligt Child-UI-smoke-märkta Households innan PowerShell 5:s kända problem med icke-ASCII JSON och arrayräkning undveks i den godkända körningen.
 
-Nästa steg är användarens manuella test av Child-vyn. Branchen får inte mergas utan uttrycklig instruktion. Adult-frontenden för granskning enligt US-050/US-051 är en separat efterföljande arbetsdel.
+Child-vyn användartestades 2026-08-26 med en riktig Adult-tilldelning och Child-session. Tilldelningen visades och kunde rapporteras till `PendingApproval`. En stale Angular-devserver gjorde först att den gamla platshållaren visades trots aktuell källkod; frontend och API startades om kontrollerat och den serverade lazy-chunken verifierades innehålla den nya vyn. Användaren godkände därefter merge till `main`. Adult-frontenden för granskning enligt US-050/US-051 är nästa separata arbetsdel.
 
 ## Teknik och versioner
 
@@ -384,7 +384,7 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-Child-frontenden för US-040/US-041 är implementerad och verifierad på `feature/child-chores-and-submission`. Den inväntar användarens manuella test och ska inte mergas utan uttrycklig instruktion. Adult-granskning enligt US-050/US-051 är nästa separata steg efter barnvyn.
+Child-frontenden för US-040/US-041 är implementerad, automatiskt verifierad och manuellt användartestad. Användaren har godkänt merge till `main`. Adult-granskning enligt US-050/US-051 är nästa separata steg efter barnvyn.
 
 Backendens MVP-kärna är färdig, mergad, migrerad och verifierad med 106 integrationstester. Frontendens första mobile-first-del omfattar Adult-registrering och login, sessionsåterställning, logout, rollstyrd navigation, barnkonton, kopplade enheter samt den återanvändbara uppgiftsbanken med tilldelning och cancellation. Barnets kodinlösen skapar den beständiga Child-sessionen; både enhetsåterkallning och avaktivering nekar sessionen omedelbart i backend.
 
@@ -392,14 +392,14 @@ Adult-flödet för sysslor och tilldelningar är användartestat och mergat till
 
 Produktbeslutet är att en `Chore` är en återanvändbar mall i Householdets uppgiftsbank, inte en engångsuppgift. En Adult skapar exempelvis `Bädda sängen` en gång och kan sedan skapa flera separata `ChoreAssignment`-rader för samma eller olika barn. Efter ny skapning får UI:t gärna leda direkt till en valfri tilldelning, men mallen finns kvar för framtida användning. Varje tilldelning fryser poängvärdet som gällde vid tilldelningstillfället.
 
-US-030:s återanvändbara mallflöde, US-033 och US-034 är implementerade, automatiskt verifierade, manuellt användartestade och mergade. Kriterierna är markerade färdiga i `REQUIREMENTS.md`. Child-frontenden för US-040/US-041 är färdig på sin feature-branch och inväntar användartest.
+US-030:s återanvändbara mallflöde, US-033 och US-034 är implementerade, automatiskt verifierade, manuellt användartestade och mergade. Kriterierna är markerade färdiga i `REQUIREMENTS.md`. Child-frontenden för US-040/US-041 är också automatiskt verifierad, manuellt användartestad och godkänd för merge.
 
 Efter användartest och ett separat beslut om merge är Adult-granskning enligt US-050/US-051 nästa avgränsade frontenddel.
 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
-- Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Adult-vyn för sysslor och tilldelningar finns på `main`. Barnets riktiga startsida finns på `feature/child-chores-and-submission` och inväntar användartest; Adult-vyn för granskning är fortfarande ett visuellt skal.
+- Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Adult-vyn för sysslor och tilldelningar samt barnets riktiga startsida är färdiga och användartestade. Adult-vyn för granskning är fortfarande ett visuellt skal.
 - Belöningskatalog, poängreservation och belöningsförfrågningar enligt US-070–US-072 är dokumenterade men ännu inte implementerade. De ska byggas efter de centrala frontendflödena; bilduppladdning kommer sist i det planerade belöningsarbetet.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.

@@ -800,7 +800,7 @@ Den första frontendversionen får vara visuellt enkel. Målet är först att g�
 - [x] Frontend ska byggas i Angular.
 - [x] Frontend ska utformas mobile first eftersom både Adults och Children främst väntas använda mobil eller surfplatta.
 - [ ] Adult-flödena ska vara fullt användbara på en vanlig mobilskärm utan horisontell scrollning.
-- [ ] Child-flödena ska vara fullt användbara på både mobil och surfplatta utan horisontell scrollning.
+- [x] Child-flödena ska vara fullt användbara på både mobil och surfplatta utan horisontell scrollning.
 - [ ] Primära knappar och val ska ha tydliga texter och vara lätta att trycka på med fingret.
 - [ ] Text, status, felmeddelanden och poäng ska vara tydligt läsbara på små skärmar.
 - [x] Adult- och Child-vyer ska vara separerade och anpassade efter respektive roll.
@@ -1076,7 +1076,7 @@ Allowed data
 
 ---
 
-# 22. Pågående verifierad feature
+# 22. Verifierad Child-frontend
 
 Child-frontenden för US-040, US-041 och poängpresentationen i US-060 är implementerad och automatiskt verifierad på branchen `feature/child-chores-and-submission`.
 
@@ -1087,4 +1087,4 @@ Child-frontenden för US-040, US-041 och poängpresentationen i US-060 är imple
 - Loading-, fel- och tomlägen samt stora, tillgängligt namngivna tryckytor ingår.
 - Frontendtester, formatteringskontroll, Angular-produktionsbygge, hela backendsviten och ett riktigt PostgreSQL/API-smoke-test är godkända.
 
-Feature-branchen ska användartestas före merge. Checkboxar vars status kräver merge till `main` ändras därför inte i detta steg.
+Child-vyn användartestades 2026-08-26 med en riktig Adult-tilldelning och Child-session. Tilldelningen visades och kunde rapporteras till `PendingApproval`. Den tillfälligt gamla vyn visade sig komma från en stale Angular-devserver; efter kontrollerad omstart serverades och verifierades den nya Child-chunken. Användaren godkände därefter merge till `main`.
