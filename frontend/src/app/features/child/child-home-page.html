@@ -3,58 +3,160 @@
 >
   <app-bottom-nav [items]="navItems" />
   <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-5 sm:px-7 md:py-8">
-    <app-user-header eyebrow="Min dag" title="Hej kompis! 👋" variant="child" />
-    <section class="mt-7 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line sm:p-7">
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <p class="font-black">Dagens framsteg</p>
-          <p class="mt-1 text-sm text-muted">Snart kan du se allt du gjort här.</p>
-        </div>
-        <div
-          class="grid size-14 shrink-0 place-items-center rounded-2xl bg-amber-50 text-2xl font-black text-amber-700"
-          aria-label="Poäng kommer snart"
-        >
-          ⭐
-        </div>
+    <app-user-header eyebrow="Min dag" title="Mina sysslor" variant="child" />
+
+    <section
+      class="mt-7 flex items-center justify-between gap-4 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line sm:p-7"
+      aria-labelledby="points-title"
+    >
+      <div>
+        <p id="points-title" class="text-sm font-extrabold text-brand-600">Mina poäng</p>
+        @if (isLoading()) {
+          <p class="mt-1 text-sm text-muted">Hämtar ditt saldo…</p>
+        } @else if (loadError()) {
+          <p class="mt-1 text-sm text-muted">Saldot visas när sidan har laddats.</p>
+        } @else {
+          <p class="mt-1 text-sm text-muted">Poäng från godkända sysslor</p>
+        }
       </div>
-      <div class="mt-5 h-3 overflow-hidden rounded-full bg-slate-100">
-        <div class="h-full w-1/4 rounded-full bg-brand-500"></div>
+      <div
+        class="flex min-h-16 min-w-24 shrink-0 items-center justify-center gap-2 rounded-2xl bg-amber-50 px-4 text-amber-800"
+        [attr.aria-label]="isLoading() || loadError() ? null : totalPoints() + ' poäng'"
+      >
+        <span class="text-2xl" aria-hidden="true">⭐</span>
+        <strong class="text-2xl font-black">{{
+          isLoading() || loadError() ? '–' : totalPoints()
+        }}</strong>
       </div>
     </section>
-    <section class="mt-7" aria-labelledby="today-title">
+
+    <section class="mt-7" aria-labelledby="chores-title" aria-live="polite">
       <p class="text-sm font-extrabold text-brand-600">Idag</p>
-      <h2 id="today-title" class="mt-1 text-2xl font-black">Det här händer idag</h2>
-      <div class="mt-4 grid gap-4 sm:grid-cols-2">
-        <article
-          class="flex min-h-48 flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-brand-500/30 bg-white p-6 text-center shadow-sm sm:col-span-2"
+      <h2 id="chores-title" class="mt-1 text-2xl font-black">Det här kan du göra</h2>
+
+      @if (isLoading()) {
+        <div
+          class="mt-4 flex min-h-40 items-center justify-center rounded-[2rem] bg-white p-6 text-center shadow-sm ring-1 ring-line"
+          role="status"
+        >
+          <div>
+            <div
+              class="mx-auto size-10 animate-pulse rounded-full bg-brand-100"
+              aria-hidden="true"
+            ></div>
+            <p class="mt-4 font-bold text-muted">Hämtar dina sysslor…</p>
+          </div>
+        </div>
+      } @else if (loadError()) {
+        <div
+          class="mt-4 rounded-[2rem] border border-red-200 bg-white p-6 text-center shadow-sm"
+          role="alert"
+        >
+          <span class="text-3xl" aria-hidden="true">🌧️</span>
+          <p class="mt-3 font-bold text-red-800">{{ loadError() }}</p>
+          <button
+            type="button"
+            (click)="loadPage()"
+            class="mt-5 min-h-12 w-full rounded-2xl bg-brand-600 px-5 py-3 font-black text-white shadow-sm hover:bg-brand-500 sm:w-auto"
+          >
+            Försök igen
+          </button>
+        </div>
+      } @else if (assignments().length === 0) {
+        <div
+          class="mt-4 flex min-h-48 flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-brand-500/30 bg-white p-6 text-center shadow-sm"
         >
           <div
             class="grid size-20 place-items-center rounded-[1.75rem] bg-brand-50 text-4xl"
             aria-hidden="true"
           >
-            🧸
+            🎉
           </div>
-          <h3 class="mt-5 text-xl font-black">Dina sysslor flyttar snart in</h3>
-          <p class="mt-2 max-w-md leading-7 text-muted">
-            Inloggningen och din egen trygga sida fungerar nu. I nästa steg kopplas dagens riktiga
-            uppgifter hit.
-          </p>
-        </article>
-        <article class="rounded-[2rem] bg-lilac p-5 text-white shadow-lg shadow-lilac/15">
-          <span class="text-3xl" aria-hidden="true">🎯</span>
-          <h3 class="mt-8 text-lg font-black">En sak i taget</h3>
-          <p class="mt-1 text-sm leading-6 text-violet-100">
-            Stora knappar och tydliga steg gör sidan lätt att använda.
-          </p>
-        </article>
-        <article class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line">
-          <span class="text-3xl" aria-hidden="true">🔐</span>
-          <h3 class="mt-8 text-lg font-black">Bara din sida</h3>
-          <p class="mt-1 text-sm leading-6 text-muted">
-            Din roll och familj kontrolleras säkert av appen.
-          </p>
-        </article>
-      </div>
+          <h3 class="mt-5 text-xl font-black">Inga sysslor just nu</h3>
+          <p class="mt-2 max-w-md leading-7 text-muted">Du är klar tills du får en ny uppgift.</p>
+        </div>
+      } @else {
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          @for (assignment of assignments(); track assignment.assignmentId) {
+            <article
+              class="flex flex-col rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line sm:p-6"
+              [class.ring-2]="assignment.status === 'NeedsRedo'"
+              [class.ring-coral]="assignment.status === 'NeedsRedo'"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <span
+                  class="rounded-full px-3 py-1.5 text-xs font-black"
+                  [class.bg-brand-50]="assignment.status === 'Assigned'"
+                  [class.text-brand-600]="assignment.status === 'Assigned'"
+                  [class.bg-amber-50]="assignment.status === 'PendingApproval'"
+                  [class.text-amber-800]="assignment.status === 'PendingApproval'"
+                  [class.bg-red-50]="assignment.status === 'NeedsRedo'"
+                  [class.text-red-800]="assignment.status === 'NeedsRedo'"
+                  [class.bg-emerald-50]="assignment.status === 'Approved'"
+                  [class.text-emerald-800]="assignment.status === 'Approved'"
+                >
+                  {{ statusLabel(assignment.status) }}
+                </span>
+                <span
+                  class="shrink-0 rounded-xl bg-amber-50 px-3 py-1.5 text-sm font-black text-amber-800"
+                  [attr.aria-label]="assignment.points + ' poäng'"
+                >
+                  ⭐ {{ assignment.points }}
+                </span>
+              </div>
+
+              <h3 class="mt-4 text-xl font-black">{{ assignment.title }}</h3>
+              @if (assignment.description) {
+                <p class="mt-2 whitespace-pre-line leading-7 text-muted">
+                  {{ assignment.description }}
+                </p>
+              }
+
+              @if (assignment.status === 'PendingApproval') {
+                <p
+                  class="mt-5 rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-900"
+                >
+                  Bra jobbat! En vuxen tittar på uppgiften innan poängen delas ut.
+                </p>
+              } @else if (assignment.status === 'NeedsRedo') {
+                <div class="mt-5 rounded-2xl bg-red-50 p-4 text-red-950">
+                  <p class="text-sm font-black">Kommentar från en vuxen</p>
+                  <p class="mt-1 leading-6">
+                    {{
+                      assignment.reviewComment ||
+                        'Försök en gång till och rapportera när du är klar.'
+                    }}
+                  </p>
+                </div>
+              } @else if (assignment.status === 'Approved') {
+                <p
+                  class="mt-5 rounded-2xl bg-emerald-50 p-4 text-sm font-bold leading-6 text-emerald-900"
+                >
+                  Godkänt! Poängen är tillagda i ditt saldo.
+                </p>
+              }
+
+              @if (submissionErrors()[assignment.assignmentId]; as submissionError) {
+                <p class="mt-4 text-sm font-bold text-red-700" role="alert">
+                  {{ submissionError }}
+                </p>
+              }
+
+              @if (canSubmit(assignment)) {
+                <button
+                  type="button"
+                  (click)="submitAssignment(assignment)"
+                  [disabled]="isSubmitting(assignment.assignmentId)"
+                  [attr.aria-label]="'Rapportera ' + assignment.title + ' som klar'"
+                  class="mt-5 min-h-14 w-full rounded-2xl bg-brand-600 px-5 py-3.5 text-base font-black text-white shadow-sm transition hover:bg-brand-500 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {{ isSubmitting(assignment.assignmentId) ? 'Rapporterar…' : 'Jag är klar' }}
+                </button>
+              }
+            </article>
+          }
+        </div>
+      }
     </section>
   </main>
 </div>

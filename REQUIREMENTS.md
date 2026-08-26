@@ -1073,3 +1073,18 @@ Authorization
         ↓
 Allowed data
 ```
+
+---
+
+# 22. Pågående verifierad feature
+
+Child-frontenden för US-040, US-041 och poängpresentationen i US-060 är implementerad och automatiskt verifierad på branchen `feature/child-chores-and-submission`.
+
+- Barnets startsida hämtar privata tilldelningar och poängsaldo från backend.
+- `Assigned`, `PendingApproval`, `NeedsRedo` och `Approved` visas med begripliga svenska texter.
+- Adult-kommentaren visas för `NeedsRedo`, som kan rapporteras igen.
+- Rapportering skickar endast tilldelnings-ID i URL:en och ingen ägar-, status-, poäng- eller tidsdata.
+- Loading-, fel- och tomlägen samt stora, tillgängligt namngivna tryckytor ingår.
+- Frontendtester, formatteringskontroll, Angular-produktionsbygge, hela backendsviten och ett riktigt PostgreSQL/API-smoke-test är godkända.
+
+Feature-branchen ska användartestas före merge. Checkboxar vars status kräver merge till `main` ändras därför inte i detta steg.
