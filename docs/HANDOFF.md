@@ -200,7 +200,25 @@ Child-frontenden implementerades och verifierades på `feature/child-chores-and-
 - Ett riktigt smoke-test mot det lokala API:t och PostgreSQL verifierade Child-listning med titel, beskrivning och 10 snapshot-poäng, noll initiala poäng samt hela flödet `Assigned` → `PendingApproval` → `NeedsRedo` med Adult-kommentar → omrapportering till `PendingApproval` → `Approved` och exakt 10 poäng. Inga testlösenord sparades eller dokumenterades.
 - Två inledande smoke-försök skapade separata, tydligt Child-UI-smoke-märkta Households innan PowerShell 5:s kända problem med icke-ASCII JSON och arrayräkning undveks i den godkända körningen.
 
-Child-vyn användartestades 2026-08-26 med en riktig Adult-tilldelning och Child-session. Tilldelningen visades och kunde rapporteras till `PendingApproval`. En stale Angular-devserver gjorde först att den gamla platshållaren visades trots aktuell källkod; frontend och API startades om kontrollerat och den serverade lazy-chunken verifierades innehålla den nya vyn. Användaren godkände därefter merge till `main`. Adult-frontenden för granskning enligt US-050/US-051 är nästa separata arbetsdel.
+Child-vyn användartestades 2026-08-26 med en riktig Adult-tilldelning och Child-session. Tilldelningen visades och kunde rapporteras till `PendingApproval`. En stale Angular-devserver gjorde först att den gamla platshållaren visades trots aktuell källkod; frontend och API startades om kontrollerat och den serverade lazy-chunken verifierades innehålla den nya vyn. Användaren godkände därefter merge till `main`, som genomfördes och pushades i merge-commit `7a0fec8`. Feature-branchen raderades lokalt och på GitHub.
+
+## Adult-frontend för US-050 och US-051
+
+Adult-granskningen är implementerad och verifierad på `feature/adult-chore-review`, men ännu inte mergad till `main`:
+
+- Den nya Adult-skyddade routen `/vuxen/granska` kan öppnas från bottom navigation på samtliga Adult-sidor och från snabbvalet på Adult-startsidan.
+- `GET /api/chore-assignments` fyller en separat kö med `PendingApproval` och en historik med `Approved` och `NeedsRedo`. `Assigned` visas fortsatt på syssle-/tilldelningssidan och `Cancelled` filtreras av standardendpointen.
+- Varje väntande kort visar barn, syssla, snapshot-poäng och rapporteringstid samt en valfri kommentar med högst 500 tecken.
+- Godkännande anropar `POST /api/chore-assignments/{assignmentId}/approve`; omarbete anropar motsvarande `/reject`. Requesten innehåller endast `{ comment }` och kan inte styra Household, Child, Adult, status, poäng eller tidsfält.
+- Pågående review-ID blockerar dubbla och samtidiga klick. Ett lyckat svar uppdaterar kortet direkt till `Approved` eller `NeedsRedo`, flyttar det till historiken och visar ett tydligt resultatmeddelande.
+- HTTP 400, HTTP 404, HTTP 409 och övriga fel visas på rätt kort. Sidan har dessutom loading-, retry- och tomläge.
+- Knapparna har stora tryckytor och dynamiska tillgängliga namn som innehåller både barnets och sysslans namn.
+- Åtta nya Angular-tester verifierar servicekontrakten, vydata, separerad kö/historik, godkännande, omarbete, trimmad eller nullable kommentar, omedelbar lokal uppdatering, dubbelklicksskydd, tillgängliga namn, konflikt och tomläge. Hela frontendsviten omfattar nu 53 godkända tester.
+- Prettier-kontroll och Angular-produktionsbygge är godkända. Hela den oförändrade backendsviten är fortsatt grön med 106/106 tester.
+- Ett riktigt smoke-test mot API:t och PostgreSQL verifierade `PendingApproval` med rätt barn, syssla, rapporteringstid och 10 snapshot-poäng, `NeedsRedo` med synlig Child-kommentar och noll poäng, omrapportering, `Approved`, sparad granskningsinformation och exakt 10 utdelade Child-poäng. Ett tydligt Adult-review-smoke-märkt Household skapades; testlösenordet fanns endast i processminnet och sparades inte.
+- Den serverade Angular-devbundlen verifierades innehålla routen och den nya Adult-review-komponenten. Svenska tecken representeras som escape-sekvenser i devbundlen men visas normalt i webbläsaren.
+
+Nästa steg är användarens manuella test av Adult-granskningen. Branchen får inte mergas utan uttrycklig instruktion.
 
 ## Teknik och versioner
 
@@ -384,7 +402,9 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-Child-frontenden för US-040/US-041 är implementerad, automatiskt verifierad och manuellt användartestad. Användaren har godkänt merge till `main`. Adult-granskning enligt US-050/US-051 är nästa separata steg efter barnvyn.
+Adult-frontenden för US-050/US-051 är implementerad och verifierad på `feature/adult-chore-review`. Den inväntar användarens manuella test och ska inte mergas utan uttrycklig instruktion.
+
+Child-frontenden för US-040/US-041 är implementerad, automatiskt verifierad, manuellt användartestad och mergad till `main` i `7a0fec8`. Adult-granskning enligt US-050/US-051 är den aktuella separata frontenddelen.
 
 Backendens MVP-kärna är färdig, mergad, migrerad och verifierad med 106 integrationstester. Frontendens första mobile-first-del omfattar Adult-registrering och login, sessionsåterställning, logout, rollstyrd navigation, barnkonton, kopplade enheter samt den återanvändbara uppgiftsbanken med tilldelning och cancellation. Barnets kodinlösen skapar den beständiga Child-sessionen; både enhetsåterkallning och avaktivering nekar sessionen omedelbart i backend.
 
@@ -399,7 +419,7 @@ Efter användartest och ett separat beslut om merge är Adult-granskning enligt 
 ## Kända kvarvarande saker
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
-- Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Adult-vyn för sysslor och tilldelningar samt barnets riktiga startsida är färdiga och användartestade. Adult-vyn för granskning är fortfarande ett visuellt skal.
+- Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Adult-vyn för sysslor och tilldelningar samt barnets riktiga startsida är färdiga och användartestade. Adult-vyn för granskning finns på `feature/adult-chore-review` och inväntar användartest.
 - Belöningskatalog, poängreservation och belöningsförfrågningar enligt US-070–US-072 är dokumenterade men ännu inte implementerade. De ska byggas efter de centrala frontendflödena; bilduppladdning kommer sist i det planerade belöningsarbetet.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.

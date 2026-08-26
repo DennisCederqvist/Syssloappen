@@ -1087,4 +1087,20 @@ Child-frontenden för US-040, US-041 och poängpresentationen i US-060 är imple
 - Loading-, fel- och tomlägen samt stora, tillgängligt namngivna tryckytor ingår.
 - Frontendtester, formatteringskontroll, Angular-produktionsbygge, hela backendsviten och ett riktigt PostgreSQL/API-smoke-test är godkända.
 
-Child-vyn användartestades 2026-08-26 med en riktig Adult-tilldelning och Child-session. Tilldelningen visades och kunde rapporteras till `PendingApproval`. Den tillfälligt gamla vyn visade sig komma från en stale Angular-devserver; efter kontrollerad omstart serverades och verifierades den nya Child-chunken. Användaren godkände därefter merge till `main`.
+Child-vyn användartestades 2026-08-26 med en riktig Adult-tilldelning och Child-session. Tilldelningen visades och kunde rapporteras till `PendingApproval`. Den tillfälligt gamla vyn visade sig komma från en stale Angular-devserver; efter kontrollerad omstart serverades och verifierades den nya Child-chunken. Användaren godkände därefter merge till `main`, som genomfördes och pushades i merge-commit `7a0fec8`. Feature-branchen raderades lokalt och på GitHub.
+
+---
+
+# 23. Pågående verifierad Adult-granskning
+
+Adult-frontenden för US-050 och US-051 är implementerad och automatiskt verifierad på branchen `feature/adult-chore-review`.
+
+- Routens `/vuxen/granska` privata kö visar endast rapporterade tilldelningar med status `PendingApproval`.
+- Varje kort visar barn, syssla, snapshot-poäng och rapporteringstid.
+- En Adult kan godkänna och dela ut poäng eller välja `NeedsRedo` med en valfri kommentar.
+- Frontenden skickar endast den valfria kommentaren; backend bestämmer Household, Adult, status, granskningstid och poäng.
+- Dubbelklick och samtidiga review-anrop blockeras, och lyckade svar flyttar kortet direkt till granskningshistoriken.
+- Loading-, fel-, retry- och tomlägen samt stora, tillgängligt namngivna tryckytor ingår.
+- Angular-tester, formatteringskontroll, produktionsbygge, hela backendsviten och ett riktigt PostgreSQL/API-smoke-test är godkända.
+
+Feature-branchen ska användartestas före merge. Checkboxar vars status kräver merge till `main` ändras därför inte i detta steg.
