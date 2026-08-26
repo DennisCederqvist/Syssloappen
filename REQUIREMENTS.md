@@ -391,6 +391,10 @@ så att uppgiftsbanken förblir aktuell och enkel att använda.
 - [ ] Borttagning ska implementeras som avaktivering i backend så att historiska tilldelningar, completions och poäng bevaras.
 - [ ] Manipulering av Chore-ID eller Household-fält får inte ändra eller avaktivera ett annat Households syssla.
 
+US-033 är implementerad och verifierad på den ännu inte mergade branchen
+`feature/adult-chores-and-assignments`. Kriterierna lämnas därför okryssade tills branchen har
+granskats av användaren och mergats till `main`, enligt dokumentets statusdefinition.
+
 ---
 
 # 8. User Stories – Barnets vy

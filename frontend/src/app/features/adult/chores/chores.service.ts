@@ -7,6 +7,7 @@ import {
   CreateAssignmentRequest,
   CreateChoreRequest,
   CreatedAssignment,
+  UpdateChoreRequest,
 } from './chores.models';
 
 @Injectable({ providedIn: 'root' })
@@ -19,6 +20,14 @@ export class ChoresService {
 
   createChore(request: CreateChoreRequest): Observable<Chore> {
     return this.http.post<Chore>('/api/chores', request);
+  }
+
+  updateChore(choreId: number, request: UpdateChoreRequest): Observable<Chore> {
+    return this.http.put<Chore>(`/api/chores/${choreId}`, request);
+  }
+
+  deactivateChore(choreId: number): Observable<void> {
+    return this.http.delete<void>(`/api/chores/${choreId}`);
   }
 
   getAssignments(): Observable<AdultAssignment[]> {

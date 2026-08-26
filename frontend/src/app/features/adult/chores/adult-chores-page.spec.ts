@@ -1,12 +1,15 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { ChildrenService } from '../children/children.service';
 import { AdultChoresPage } from './adult-chores-page';
-import { CreateAssignmentRequest, CreateChoreRequest } from './chores.models';
+import { CreateAssignmentRequest, CreateChoreRequest, UpdateChoreRequest } from './chores.models';
 import { ChoresService } from './chores.service';
 
 class FakeChoresService {
   choreCalls: CreateChoreRequest[] = [];
+  updateCalls: { choreId: number; request: UpdateChoreRequest }[] = [];
+  deactivateCalls: number[] = [];
   assignmentCalls: CreateAssignmentRequest[] = [];
   getChores() {
     return of([{ id: 1, title: 'Mata katten', description: null, points: 10, createdAt: '' }]);
@@ -22,6 +25,19 @@ class FakeChoresService {
     this.assignmentCalls.push(request);
     return of({ id: 8, ...request, points: 10, assignedAt: '2026-08-25T10:00:00Z' });
   }
+  updateChore(choreId: number, request: UpdateChoreRequest) {
+    this.updateCalls.push({ choreId, request });
+    return of({
+      id: choreId,
+      ...request,
+      points: request.points as 5 | 10 | 15 | 20,
+      createdAt: '',
+    });
+  }
+  deactivateChore(choreId: number) {
+    this.deactivateCalls.push(choreId);
+    return of(undefined);
+  }
 }
 
 class FakeChildrenService {
@@ -32,17 +48,20 @@ class FakeChildrenService {
 
 describe('AdultChoresPage', () => {
   let component: AdultChoresPage;
+  let fixture: ComponentFixture<AdultChoresPage>;
   let service: FakeChoresService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AdultChoresPage],
       providers: [
+        provideRouter([]),
         { provide: ChoresService, useClass: FakeChoresService },
         { provide: ChildrenService, useClass: FakeChildrenService },
       ],
     }).compileComponents();
-    component = TestBed.createComponent(AdultChoresPage).componentInstance;
+    fixture = TestBed.createComponent(AdultChoresPage);
+    component = fixture.componentInstance;
     service = TestBed.inject(ChoresService) as unknown as FakeChoresService;
     component.ngOnInit();
   });
@@ -60,5 +79,45 @@ describe('AdultChoresPage', () => {
     component.createAssignment();
     expect(service.assignmentCalls).toEqual([{ choreId: 1, childId: 7 }]);
     expect(component.assignments()[0].childName).toBe('Maja');
+  });
+
+  it('updates editable fields and refreshes the chore immediately', () => {
+    const chore = component.chores()[0];
+    component.openEditChore(chore);
+    component.editChoreForm.setValue({
+      title: '  Mata katterna  ',
+      description: '  På morgonen  ',
+      points: 15,
+    });
+    component.updateChore();
+
+    expect(service.updateCalls).toEqual([
+      {
+        choreId: 1,
+        request: { title: 'Mata katterna', description: 'På morgonen', points: 15 },
+      },
+    ]);
+    expect(component.chores()[0].title).toBe('Mata katterna');
+    expect(component.editingChore()).toBeNull();
+  });
+
+  it('requires confirmation before deactivation and removes the active card after success', () => {
+    const chore = component.chores()[0];
+    component.deactivateChore(chore);
+    expect(service.deactivateCalls).toEqual([]);
+
+    component.requestDeactivation(chore.id);
+    component.deactivateChore(chore);
+
+    expect(service.deactivateCalls).toEqual([1]);
+    expect(component.chores()).toEqual([]);
+  });
+
+  it('gives the card cross an accessible name', () => {
+    fixture.detectChanges();
+    const cross = fixture.nativeElement.querySelector(
+      'button[aria-label="Plocka bort Mata katten"]',
+    ) as HTMLButtonElement | null;
+    expect(cross).not.toBeNull();
   });
 });

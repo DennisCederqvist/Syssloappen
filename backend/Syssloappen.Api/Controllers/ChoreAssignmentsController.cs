@@ -37,7 +37,8 @@ public sealed class ChoreAssignmentsController(
         // prevents either ID from reaching another household's data.
         var chore = await dbContext.Chores.SingleOrDefaultAsync(chore =>
             chore.Id == request.ChoreId
-            && chore.HouseholdId == currentUser.HouseholdId);
+            && chore.HouseholdId == currentUser.HouseholdId
+            && chore.IsActive);
 
         if (chore is null)
         {

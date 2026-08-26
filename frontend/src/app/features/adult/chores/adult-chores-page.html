@@ -187,6 +187,92 @@
       </section>
     }
 
+    @if (editingChore(); as selectedChore) {
+      <section
+        class="mt-5 rounded-[1.75rem] bg-white p-5 shadow-lg ring-1 ring-brand-500/25 sm:p-7"
+        aria-labelledby="edit-chore-title"
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-extrabold text-brand-600">Uppgiftsbanken</p>
+            <h2 id="edit-chore-title" class="mt-1 text-2xl font-black">Redigera syssla</h2>
+            <p class="mt-1 text-sm text-muted">
+              Nya poäng gäller framtida tilldelningar. Tidigare poäng ändras inte.
+            </p>
+          </div>
+          <button
+            type="button"
+            (click)="closeEditChore()"
+            class="grid size-11 shrink-0 place-items-center rounded-xl border border-line text-xl text-muted"
+            aria-label="Stäng redigeringen"
+          >
+            ×
+          </button>
+        </div>
+        @if (editChoreError()) {
+          <div
+            class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+            role="alert"
+          >
+            {{ editChoreError() }}
+          </div>
+        }
+        <form
+          [formGroup]="editChoreForm"
+          (ngSubmit)="updateChore()"
+          class="mt-5 grid gap-5 sm:grid-cols-2"
+          novalidate
+        >
+          <label class="block font-bold"
+            >Titel<input
+              formControlName="title"
+              type="text"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line px-4"
+            />
+            @if (editChoreForm.controls.title.touched && editChoreForm.controls.title.invalid) {
+              <span class="mt-2 block text-sm text-red-700"
+                >Skriv en titel med högst 100 tecken.</span
+              >
+            }
+          </label>
+          <label class="block font-bold"
+            >Poäng<select
+              formControlName="points"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4"
+            >
+              <option [ngValue]="5">5 poäng</option>
+              <option [ngValue]="10">10 poäng</option>
+              <option [ngValue]="15">15 poäng</option>
+              <option [ngValue]="20">20 poäng</option>
+            </select></label
+          >
+          <label class="block font-bold sm:col-span-2"
+            >Beskrivning <span class="font-normal text-muted">(valfri)</span
+            ><textarea
+              formControlName="description"
+              rows="3"
+              class="mt-2 w-full rounded-2xl border border-line p-4"
+            ></textarea>
+          </label>
+          <div class="flex flex-col-reverse gap-3 sm:col-span-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              (click)="closeEditChore()"
+              class="min-h-13 rounded-2xl border border-line px-5 font-bold text-muted"
+            >
+              Avbryt</button
+            ><button
+              type="submit"
+              [disabled]="isUpdatingChore()"
+              class="min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white disabled:opacity-60"
+            >
+              {{ isUpdatingChore() ? 'Sparar…' : 'Spara ändringar' }}
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+
     <section class="mt-7" aria-labelledby="chores-title">
       <div class="mb-4 flex items-end justify-between gap-3">
         <div>
@@ -231,12 +317,22 @@
       } @else {
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           @for (chore of chores(); track chore.id) {
-            <article class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-line">
+            <article class="relative rounded-3xl bg-white p-5 shadow-sm ring-1 ring-line">
+              <button
+                type="button"
+                (click)="requestDeactivation(chore.id)"
+                [disabled]="deactivatingChoreId() !== null"
+                class="absolute right-3 top-3 grid size-8 place-items-center rounded-full text-lg font-bold text-muted transition hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
+                [attr.aria-label]="'Plocka bort ' + chore.title"
+              >
+                ×
+              </button>
               <div class="flex items-start justify-between gap-3">
                 <div class="grid size-12 place-items-center rounded-2xl bg-amber-50 text-2xl">
                   🧹
                 </div>
-                <span class="rounded-full bg-amber-100 px-3 py-1 text-sm font-black text-amber-900"
+                <span
+                  class="mr-7 rounded-full bg-amber-100 px-3 py-1 text-sm font-black text-amber-900"
                   >★ {{ chore.points }}</span
                 >
               </div>
@@ -244,13 +340,53 @@
               <p class="mt-1 min-h-10 text-sm leading-5 text-muted">
                 {{ chore.description || 'Ingen extra beskrivning.' }}
               </p>
-              <button
-                type="button"
-                (click)="openAssignmentForm(chore.id)"
-                class="mt-4 min-h-11 w-full rounded-xl bg-brand-50 px-4 text-sm font-extrabold text-brand-600"
-              >
-                Tilldela sysslan
-              </button>
+              @if (confirmingDeactivationId() === chore.id) {
+                <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4">
+                  <p class="text-sm font-bold text-red-900">
+                    Plocka bort sysslan? Historiken sparas, men den kan inte tilldelas igen.
+                  </p>
+                  @if (deactivationError()) {
+                    <p class="mt-2 text-sm font-bold text-red-800" role="alert">
+                      {{ deactivationError() }}
+                    </p>
+                  }
+                  <div class="mt-3 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      (click)="cancelDeactivation()"
+                      [disabled]="deactivatingChoreId() === chore.id"
+                      class="min-h-11 rounded-xl bg-white px-3 text-sm font-extrabold text-muted ring-1 ring-line disabled:opacity-60"
+                    >
+                      Avbryt
+                    </button>
+                    <button
+                      type="button"
+                      (click)="deactivateChore(chore)"
+                      [disabled]="deactivatingChoreId() === chore.id"
+                      class="min-h-11 rounded-xl bg-red-600 px-3 text-sm font-extrabold text-white disabled:opacity-60"
+                    >
+                      {{ deactivatingChoreId() === chore.id ? 'Plockar bort…' : 'Ja, plocka bort' }}
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <div class="mt-4 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    (click)="openEditChore(chore)"
+                    class="min-h-11 rounded-xl bg-white px-3 text-sm font-extrabold text-brand-600 ring-1 ring-line"
+                  >
+                    Redigera
+                  </button>
+                  <button
+                    type="button"
+                    (click)="openAssignmentForm(chore.id)"
+                    class="min-h-11 rounded-xl bg-brand-50 px-3 text-sm font-extrabold text-brand-600"
+                  >
+                    Tilldela
+                  </button>
+                </div>
+              }
             </article>
           }
         </div>

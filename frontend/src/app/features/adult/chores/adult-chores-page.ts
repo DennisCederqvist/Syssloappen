@@ -27,9 +27,15 @@ export class AdultChoresPage implements OnInit {
   readonly loadError = signal('');
   readonly showChoreForm = signal(false);
   readonly showAssignmentForm = signal(false);
+  readonly editingChore = signal<Chore | null>(null);
   readonly isCreatingChore = signal(false);
+  readonly isUpdatingChore = signal(false);
+  readonly deactivatingChoreId = signal<number | null>(null);
+  readonly confirmingDeactivationId = signal<number | null>(null);
   readonly isAssigning = signal(false);
   readonly choreError = signal('');
+  readonly editChoreError = signal('');
+  readonly deactivationError = signal('');
   readonly assignmentError = signal('');
   readonly successMessage = signal('');
 
@@ -49,6 +55,12 @@ export class AdultChoresPage implements OnInit {
   readonly assignmentForm = this.formBuilder.nonNullable.group({
     choreId: [0, Validators.min(1)],
     childId: [0, Validators.min(1)],
+  });
+
+  readonly editChoreForm = this.formBuilder.nonNullable.group({
+    title: ['', [Validators.required, Validators.maxLength(100)]],
+    description: ['', Validators.maxLength(500)],
+    points: [5, [Validators.required, Validators.pattern(/^(5|10|15|20)$/)]],
   });
 
   ngOnInit(): void {
@@ -121,6 +133,104 @@ export class AdultChoresPage implements OnInit {
             error.status === 400
               ? 'Kontrollera titel, beskrivning och poäng.'
               : 'Sysslan kunde inte skapas. Försök igen.',
+          ),
+      });
+  }
+
+  openEditChore(chore: Chore): void {
+    this.editingChore.set(chore);
+    this.editChoreForm.setValue({
+      title: chore.title,
+      description: chore.description ?? '',
+      points: chore.points,
+    });
+    this.editChoreError.set('');
+    this.deactivationError.set('');
+    this.confirmingDeactivationId.set(null);
+  }
+
+  closeEditChore(): void {
+    this.editingChore.set(null);
+    this.editChoreForm.reset({ title: '', description: '', points: 5 });
+    this.editChoreError.set('');
+  }
+
+  updateChore(): void {
+    const chore = this.editingChore();
+    if (!chore || this.editChoreForm.invalid) {
+      this.editChoreForm.markAllAsTouched();
+      return;
+    }
+    const value = this.editChoreForm.getRawValue();
+    const title = value.title.trim();
+    if (!title) {
+      this.editChoreForm.controls.title.setErrors({ required: true });
+      this.editChoreForm.controls.title.markAsTouched();
+      return;
+    }
+    this.isUpdatingChore.set(true);
+    this.editChoreError.set('');
+    this.choresService
+      .updateChore(chore.id, {
+        title,
+        description: value.description.trim() || null,
+        points: value.points,
+      })
+      .pipe(finalize(() => this.isUpdatingChore.set(false)))
+      .subscribe({
+        next: (updated) => {
+          this.chores.update((chores) =>
+            chores
+              .map((item) => (item.id === updated.id ? updated : item))
+              .sort((a, b) => a.title.localeCompare(b.title, 'sv')),
+          );
+          this.closeEditChore();
+          this.successMessage.set(`${updated.title} är uppdaterad.`);
+        },
+        error: (error: HttpErrorResponse) =>
+          this.editChoreError.set(
+            error.status === 404
+              ? 'Sysslan är inte längre aktiv eller finns inte i din familj.'
+              : error.status === 400
+                ? 'Kontrollera titel, beskrivning och poäng.'
+                : 'Sysslan kunde inte uppdateras. Försök igen.',
+          ),
+      });
+  }
+
+  requestDeactivation(choreId: number): void {
+    this.confirmingDeactivationId.set(choreId);
+    this.deactivationError.set('');
+    this.successMessage.set('');
+  }
+
+  cancelDeactivation(): void {
+    this.confirmingDeactivationId.set(null);
+    this.deactivationError.set('');
+  }
+
+  deactivateChore(chore: Chore): void {
+    if (this.confirmingDeactivationId() !== chore.id || this.deactivatingChoreId() !== null) {
+      return;
+    }
+    this.deactivatingChoreId.set(chore.id);
+    this.deactivationError.set('');
+    this.choresService
+      .deactivateChore(chore.id)
+      .pipe(finalize(() => this.deactivatingChoreId.set(null)))
+      .subscribe({
+        next: () => {
+          this.chores.update((chores) => chores.filter((item) => item.id !== chore.id));
+          if (this.editingChore()?.id === chore.id) this.closeEditChore();
+          if (this.assignmentForm.controls.choreId.value === chore.id) this.closeAssignmentForm();
+          this.confirmingDeactivationId.set(null);
+          this.successMessage.set(`${chore.title} är bortplockad från uppgiftsbanken.`);
+        },
+        error: (error: HttpErrorResponse) =>
+          this.deactivationError.set(
+            error.status === 404
+              ? 'Sysslan är redan bortplockad eller finns inte i din familj.'
+              : 'Sysslan kunde inte plockas bort. Försök igen.',
           ),
       });
   }

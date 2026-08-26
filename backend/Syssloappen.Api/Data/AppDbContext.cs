@@ -162,6 +162,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(chore => chore.Points)
                 .HasDefaultValue(5);
 
+            entity.Property(chore => chore.IsActive)
+                .HasDefaultValue(true);
+
             entity.ToTable(table => table.HasCheckConstraint(
                 "CK_Chores_Points",
                 "\"Points\" IN (5, 10, 15, 20)"));

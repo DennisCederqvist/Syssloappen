@@ -12,6 +12,8 @@ export interface CreateChoreRequest {
   points: number;
 }
 
+export type UpdateChoreRequest = CreateChoreRequest;
+
 export interface CreateAssignmentRequest {
   choreId: number;
   childId: number;

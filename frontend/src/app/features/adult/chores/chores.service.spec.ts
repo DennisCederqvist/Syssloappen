@@ -35,6 +35,20 @@ describe('ChoresService', () => {
     expect(http.expectOne('/api/chore-assignments').request.method).toBe('GET');
   });
 
+  it('updates only editable chore fields', () => {
+    const body = { title: 'Mata katten nu', description: 'På morgonen', points: 15 };
+    service.updateChore(3, body).subscribe();
+    const request = http.expectOne('/api/chores/3');
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual(body);
+    request.flush({ id: 3, ...body, createdAt: '' });
+  });
+
+  it('deactivates a chore through the backend', () => {
+    service.deactivateChore(3).subscribe();
+    expect(http.expectOne('/api/chores/3').request.method).toBe('DELETE');
+  });
+
   it('assigns only a chore and child id', () => {
     service.createAssignment({ choreId: 3, childId: 7 }).subscribe();
     const request = http.expectOne('/api/chore-assignments');
