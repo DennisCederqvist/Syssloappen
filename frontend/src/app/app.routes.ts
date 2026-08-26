@@ -13,9 +13,19 @@ export const routes: Routes = [
     loadComponent: () => import('./features/login/login-page').then((c) => c.LoginPage),
   },
   {
+    path: 'acceptera-inbjudan',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/login/accept-invitation-page').then((c) => c.AcceptInvitationPage),
+  },
+  {
     path: 'vuxen',
     canActivate: [adultGuard],
     loadComponent: () => import('./features/adult/adult-home-page').then((c) => c.AdultHomePage),
+  },
+  {
+    path: 'vuxen/bjud-in',
+    canActivate: [adultGuard],
+    loadComponent: () => import('./features/adult/invitation/adult-invitation-page').then((c) => c.AdultInvitationPage),
   },
   {
     path: 'vuxen/barn',

@@ -1138,3 +1138,19 @@ En bred genomgång av kärnflödena är implementerad, automatiskt verifierad, a
 Genomgången användartestades och godkändes 2026-08-26. Inga blockerande funktions-, responsivitets- eller tillgänglighetsproblem hittades. Visuell UI/UX-finslipning är avsiktligt uppskjuten till projektets slutskede om inget konkret användbarhetsproblem kräver en tidigare ändring.
 
 De fyra breda kriterierna i avsnitt 14 är markerade som färdiga efter den godkända mergen till `main`.
+
+---
+
+# 26. Adult-inbjudan redo för användartest
+
+US-011 är implementerad och automatiskt verifierad på branchen `feature/adult-household-invitation`, men ännu inte användargodkänd eller mergad.
+
+- En autentiserad Adult skapar en 24 timmar giltig engångskod via `POST /api/household/invitations`.
+- Koden är kryptografiskt slumpmässig och endast SHA-256-hashen lagras i databasen.
+- Den inbjudna registrerar sig via `POST /api/auth/register/invited` med kod, e-post och lösenord.
+- Backend härleder Household från hashträffen och sätter själv rollen `Adult`; klienten kan inte styra Household, roll eller ägare.
+- Kontot och förbrukningen av inbjudan sker atomärt. En använd kod, utgången kod eller kod från ett annat flöde nekas.
+- Angular har en Adult-sida på `/vuxen/bjud-in` och en publik registreringssida på `/acceptera-inbjudan`.
+- Fyra nya integrationstester och två frontendtester verifierar behörighet, Household-koppling, engångsanvändning, utgång och manipulerade klientfält.
+- Hela backendsviten omfattar 110 godkända tester och frontendsviten 57 godkända tester. Angular-produktionsbygget är godkänt.
+- De sex kriterierna markeras först efter manuell användartestning och uttryckligt godkännande.

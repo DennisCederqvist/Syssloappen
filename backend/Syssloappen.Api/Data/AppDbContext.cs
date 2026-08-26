@@ -23,6 +23,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<ChoreCompletion> ChoreCompletions => Set<ChoreCompletion>();
 
+    public DbSet<HouseholdInvitation> HouseholdInvitations => Set<HouseholdInvitation>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -42,6 +44,31 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.HasIndex(household => household.FamilyCodeHash)
                 .IsUnique();
+        });
+
+        modelBuilder.Entity<HouseholdInvitation>(entity =>
+        {
+            entity.Property(invitation => invitation.CodeHash)
+                .HasMaxLength(64)
+                .IsRequired();
+
+            entity.Property(invitation => invitation.UsedAt)
+                .IsConcurrencyToken();
+
+            entity.HasIndex(invitation => invitation.CodeHash)
+                .IsUnique();
+
+            entity.HasIndex(invitation => new { invitation.HouseholdId, invitation.UsedAt });
+
+            entity.HasOne(invitation => invitation.Household)
+                .WithMany()
+                .HasForeignKey(invitation => invitation.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(invitation => invitation.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(invitation => invitation.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ApplicationUser>(entity =>
