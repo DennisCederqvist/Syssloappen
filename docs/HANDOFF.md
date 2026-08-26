@@ -323,6 +323,15 @@ npm start
 
 Frontendens lokala adress är `http://localhost:4200`. Använd ett privat webbläsarfönster eller en separat enhet för Child-flödet när en Adult-session redan är aktiv i den vanliga webbläsaren.
 
+Kör det browserbaserade kärnflödet från `frontend/` efter att API-projektets Release-version har byggts och migrationerna har applicerats i den lokala PostgreSQL-databasen:
+
+```bash
+npx playwright install chromium
+npm run e2e
+```
+
+Playwright startar API:t på port 5047 och Angular på port 4200 automatiskt om de inte redan körs. Den lokala körningen återanvänder annars befintliga servrar på dessa portar.
+
 ## Genomförda tester
 
 - API-projektet bygger med 0 fel och 0 varningar.
@@ -402,19 +411,23 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-Adult-frontenden för US-050/US-051 är implementerad, automatiskt verifierad, manuellt användartestad och mergad till `main` i `df0ead7`.
+Det browserbaserade end-to-end-testet av det centrala syssleflödet är implementerat och verifierat på branchen `feature/chore-flow-e2e`. Branchen ska lämnas omergad för användarens kontrollpunkt.
 
-Child-frontenden för US-040/US-041 är implementerad, automatiskt verifierad, manuellt användartestad och mergad till `main` i `7a0fec8`. Adult-granskning enligt US-050/US-051 är den aktuella separata frontenddelen.
+- Playwright kör Chromium i mobil viewport.
+- Adult och Child använder två separata browser-contexts och därmed isolerade cookies.
+- Testet skapar ett unikt E2E-märkt Household och går genom registrering, barnkonto, engångskod, syssla, tilldelning, rapportering, `NeedsRedo` med kommentar, omrapportering, godkännande och uppdaterat poängsaldo.
+- Körningen använder riktiga Angular-anrop via proxyn till API:t och den lokala PostgreSQL-databasen.
+- `npm run e2e` passerar. Även 53/53 Angular-tester, formatteringskontroll, Angular-produktionsbygge och 106/106 backendtester i Release passerar.
+
+Adult-frontenden för US-050/US-051 är implementerad, automatiskt verifierad, manuellt användartestad och mergad till `main` i `df0ead7`. Child-frontenden för US-040/US-041 är motsvarande mergad till `main` i `7a0fec8`.
 
 Backendens MVP-kärna är färdig, mergad, migrerad och verifierad med 106 integrationstester. Frontendens första mobile-first-del omfattar Adult-registrering och login, sessionsåterställning, logout, rollstyrd navigation, barnkonton, kopplade enheter samt den återanvändbara uppgiftsbanken med tilldelning och cancellation. Barnets kodinlösen skapar den beständiga Child-sessionen; både enhetsåterkallning och avaktivering nekar sessionen omedelbart i backend.
 
-Adult-flödet för sysslor och tilldelningar är användartestat och mergat till `main`. Det innehåller route `/vuxen/sysslor`, den återanvändbara uppgiftsbanken, poängsnapshots, tilldelning, US-033:s redigering/avaktivering samt US-034:s bekräftade soft-cancellation av feltilldelningar. Frontenden har 35 godkända tester och ett godkänt produktionsbygge; backenden har 106 godkända integrationstester i Release.
+Adult-flödet för sysslor och tilldelningar är användartestat och mergat till `main`. Det innehåller route `/vuxen/sysslor`, den återanvändbara uppgiftsbanken, poängsnapshots, tilldelning, US-033:s redigering/avaktivering samt US-034:s bekräftade soft-cancellation av feltilldelningar. Frontenden har nu 53 godkända tester och ett godkänt produktionsbygge; backenden har 106 godkända integrationstester i Release.
 
 Produktbeslutet är att en `Chore` är en återanvändbar mall i Householdets uppgiftsbank, inte en engångsuppgift. En Adult skapar exempelvis `Bädda sängen` en gång och kan sedan skapa flera separata `ChoreAssignment`-rader för samma eller olika barn. Efter ny skapning får UI:t gärna leda direkt till en valfri tilldelning, men mallen finns kvar för framtida användning. Varje tilldelning fryser poängvärdet som gällde vid tilldelningstillfället.
 
-US-030:s återanvändbara mallflöde, US-033 och US-034 är implementerade, automatiskt verifierade, manuellt användartestade och mergade. Kriterierna är markerade färdiga i `REQUIREMENTS.md`. Child-frontenden för US-040/US-041 är också automatiskt verifierad, manuellt användartestad och godkänd för merge.
-
-Efter användartest och ett separat beslut om merge är Adult-granskning enligt US-050/US-051 nästa avgränsade frontenddel.
+US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041 och Adult-granskningen för US-050/US-051 är implementerade, automatiskt verifierade, manuellt användartestade och mergade. Nästa planerade del efter E2E-kontrollpunkten är en bredare responsivitets- och tillgänglighetsgenomgång av kärnflödena, därefter ytterligare Adult-funktion enligt US-011.
 
 ## Kända kvarvarande saker
 
@@ -424,4 +437,4 @@ Efter användartest och ett separat beslut om merge är Adult-granskning enligt 
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
 - PostgreSQL-smoke-körningarna, inklusive transportfelsökningen inför den godkända Child-vy-körningen, skapade flera isolerade test-Households i `syssloappen_dev`. Alla namn och konton är smoke-märkta; testlösenorden genererades endast i minnet och är inte dokumenterade.
-- Household-isolering är automatiskt testad för barn, sysslor, Adult-tilldelning/listning/granskning, Child-listning/rapportering och Child-poäng. Adult-/poängflödet är också smoke-testat mot PostgreSQL; frontend återstår.
+- Household-isolering är automatiskt testad för barn, sysslor, Adult-tilldelning/listning/granskning, Child-listning/rapportering och Child-poäng. Hela frontendflödet från Adult-registrering till Child-poäng är nu också browsertestat mot det riktiga API:t och PostgreSQL.
