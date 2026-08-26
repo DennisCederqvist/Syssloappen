@@ -222,7 +222,7 @@ Adult-granskningen användartestades 2026-08-26 med en riktig rapporterad Child-
 
 ## Responsivitets- och tillgänglighetsgenomgång
 
-Kärnflödenas breda genomgång är implementerad och verifierad på `feature/responsive-accessibility-audit`, men ännu inte mergad:
+Kärnflödenas breda genomgång är implementerad, verifierad, användargodkänd och mergad till `main` i merge-commit `8efa7f7`:
 
 - Login/registrering, Adult-start, barn/konton, sysslor/tilldelningar, Adult-granskning och Child-vyn ingår.
 - Den befintliga Playwright-resan kör nu responsivitetskontroller vid 390, 768 och 1280 px, nekar horisontell dokument-scroll och kräver minst 44 × 44 px för synliga knappar och länkar.
@@ -236,7 +236,7 @@ Kärnflödenas breda genomgång är implementerad och verifierad på `feature/re
 
 Genomgången användartestades och godkändes 2026-08-26 utan upptäckta blockerande problem. Produktbeslutet är att ytterligare grafisk UI/UX-finslipning görs i projektets slutskede, såvida inte ett specifikt användbarhets- eller tillgänglighetsproblem motiverar en tidigare ändring.
 
-`REQUIREMENTS.md`:s fyra breda, öppna checkboxar i frontendavsnittet ska markeras efter merge till `main`, i enlighet med dokumentets statusregel.
+`REQUIREMENTS.md`:s fyra breda kriterier i frontendavsnittet är markerade som färdiga efter mergen till `main`.
 
 ## Teknik och versioner
 
@@ -429,7 +429,7 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-Det browserbaserade end-to-end-testet av det centrala syssleflödet är implementerat, verifierat och mergat till `main` i merge-commit `1cba8f3`. Responsivitets- och tillgänglighetsutökningen är verifierad och användargodkänd på `feature/responsive-accessibility-audit` samt redo för merge.
+Det browserbaserade end-to-end-testet av det centrala syssleflödet är implementerat, verifierat och mergat till `main` i merge-commit `1cba8f3`. Responsivitets- och tillgänglighetsutökningen är verifierad, användargodkänd och mergad till `main` i merge-commit `8efa7f7`.
 
 - Playwright kör Chromium i mobil viewport.
 - Adult och Child använder två separata browser-contexts och därmed isolerade cookies.
@@ -445,7 +445,7 @@ Adult-flödet för sysslor och tilldelningar är användartestat och mergat till
 
 Produktbeslutet är att en `Chore` är en återanvändbar mall i Householdets uppgiftsbank, inte en engångsuppgift. En Adult skapar exempelvis `Bädda sängen` en gång och kan sedan skapa flera separata `ChoreAssignment`-rader för samma eller olika barn. Efter ny skapning får UI:t gärna leda direkt till en valfri tilldelning, men mallen finns kvar för framtida användning. Varje tilldelning fryser poängvärdet som gällde vid tilldelningstillfället.
 
-US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041, Adult-granskningen för US-050/US-051 och det browserbaserade E2E-testet är implementerade, verifierade och mergade. Responsivitets- och tillgänglighetsgenomgången är färdigverifierad och användargodkänd på feature-branchen; efter merge är nästa planerade funktion ytterligare Adult enligt US-011.
+US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041, Adult-granskningen för US-050/US-051, det browserbaserade E2E-testet samt responsivitets- och tillgänglighetsgenomgången är implementerade, verifierade, användargodkända och mergade. Nästa planerade funktion är ytterligare Adult enligt US-011.
 
 ## Kända kvarvarande saker
 

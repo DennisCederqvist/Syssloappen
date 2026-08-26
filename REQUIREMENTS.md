@@ -799,16 +799,16 @@ Den första frontendversionen får vara visuellt enkel. Målet är först att g�
 
 - [x] Frontend ska byggas i Angular.
 - [x] Frontend ska utformas mobile first eftersom både Adults och Children främst väntas använda mobil eller surfplatta.
-- [ ] Adult-flödena ska vara fullt användbara på en vanlig mobilskärm utan horisontell scrollning.
+- [x] Adult-flödena ska vara fullt användbara på en vanlig mobilskärm utan horisontell scrollning.
 - [x] Child-flödena ska vara fullt användbara på både mobil och surfplatta utan horisontell scrollning.
-- [ ] Primära knappar och val ska ha tydliga texter och vara lätta att trycka på med fingret.
-- [ ] Text, status, felmeddelanden och poäng ska vara tydligt läsbara på små skärmar.
+- [x] Primära knappar och val ska ha tydliga texter och vara lätta att trycka på med fingret.
+- [x] Text, status, felmeddelanden och poäng ska vara tydligt läsbara på små skärmar.
 - [x] Adult- och Child-vyer ska vara separerade och anpassade efter respektive roll.
 - [x] Desktoplayout får förbättras responsivt men ska inte prioriteras före mobilflödena.
 - [x] Den första designen ska vara enkel och komponentbaserad så att utseendet kan ändras senare.
 - [x] Skapa-syssla-formuläret ska ha en titelruta och en poängrullista med `5`, `10`, `15` och `20`, där `5` är förvalt.
 - [x] Frontend får aldrig ersätta backendens kontroller av identitet, roll, Household, status, poäng eller ägarskap.
-- [ ] Grundläggande tillgänglighet ska beaktas, inklusive formuläretiketter, tangentbordsnavigering, fokusmarkering och tillräckliga kontraster.
+- [x] Grundläggande tillgänglighet ska beaktas, inklusive formuläretiketter, tangentbordsnavigering, fokusmarkering och tillräckliga kontraster.
 
 ---
 
@@ -1123,7 +1123,7 @@ Kontrollpunkten godkändes av användaren och mergades till `main` i merge-commi
 
 # 25. Verifierad responsivitets- och tillgänglighetsgenomgång
 
-En bred genomgång av kärnflödena är implementerad och automatiskt verifierad på branchen `feature/responsive-accessibility-audit`.
+En bred genomgång av kärnflödena är implementerad, automatiskt verifierad, användargodkänd och mergad till `main` i merge-commit `8efa7f7`.
 
 - Login, registrering, Adult-startsidan, barn och konton, sysslor och tilldelningar, Adult-granskning samt Child-startsidan och sysslekorten ingår i browsergranskningen.
 - Playwright verifierar vyerna vid `390 × 844`, `768 × 1024` och `1280 × 900` utan oavsiktlig horisontell scroll och med minst 44 × 44 px stora synliga knapp- och länkytor.
@@ -1137,4 +1137,4 @@ En bred genomgång av kärnflödena är implementerad och automatiskt verifierad
 
 Genomgången användartestades och godkändes 2026-08-26. Inga blockerande funktions-, responsivitets- eller tillgänglighetsproblem hittades. Visuell UI/UX-finslipning är avsiktligt uppskjuten till projektets slutskede om inget konkret användbarhetsproblem kräver en tidigare ändring.
 
-De breda checkboxarna i avsnitt 14 förblir enligt dokumentets statusregel okryssade på feature-branchen och ska markeras först när den godkända ändringen har mergats till `main`.
+De fyra breda kriterierna i avsnitt 14 är markerade som färdiga efter den godkända mergen till `main`.
