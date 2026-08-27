@@ -47,4 +47,8 @@ public sealed class ChoreAssignment
     public ApplicationUser? CancelledByUser { get; set; }
 
     public DateTime? CancelledAt { get; set; }
+
+    // A reversible Household-wide Adult view preference for completed history.
+    // It must never remove audit data, points or the child-visible assignment.
+    public DateTime? AdultArchivedAt { get; set; }
 }

@@ -638,6 +638,8 @@ så att familjens fysiska belöningar hanteras kontrollerat.
 - [x] Historiken ska bevaras även om barnet eller belöningen senare avaktiveras.
 - [x] Information och ändringar ska vara strikt isolerade per Household.
 - [x] Ett avslag ska lägga tillbaka en reserverad lagerenhet. En utlämnad enhet är förbrukad och visas igen först om belöningen har kvarvarande lager eller en Adult fyller på lagret.
+- [x] Avslutade Adult-historikkort för belöningar ska visa högst de tio senaste och kunna döljas reversibelt utan att auditdata raderas; aktiva `Requested`- och `Approved`-ärenden får aldrig döljas.
+- [x] Adult-historiken för godkända sysslor ska visa högst de tio senaste och kunna döljas reversibelt utan att påverka assignment-, completion- eller poängdata. Aktiva sysslor och sådana som behöver göras om får aldrig döljas.
 
 ---
 

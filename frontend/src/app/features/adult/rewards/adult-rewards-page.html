@@ -25,18 +25,23 @@
         id="rewards-success"
         tabindex="-1"
         role="status"
-        class="mt-5 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 font-bold text-green-900"
+        class="mt-5 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 font-bold text-green-900 transition-opacity duration-[2000ms]"
+        [class.opacity-0]="successFading()"
       >
         ✓ {{ successMessage() }}
       </div>
     }
+    @if (showForm()) {
     <section
       class="mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-line sm:p-7"
       aria-labelledby="reward-form-title"
     >
-      <h2 id="reward-form-title" class="text-xl font-black">
-        {{ editing() ? 'Redigera belöning' : 'Skapa belöning' }}
-      </h2>
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="reward-form-title" class="text-xl font-black">
+          {{ editing() ? 'Redigera belöning' : 'Skapa belöning' }}
+        </h2>
+        <button type="button" (click)="closeForm()" aria-label="Stäng formuläret" class="grid size-11 shrink-0 place-items-center rounded-full text-xl text-muted hover:bg-brand-50">×</button>
+      </div>
       <form class="mt-4 grid gap-4" [formGroup]="rewardForm" (ngSubmit)="save()">
         <label class="grid gap-1 font-bold" for="reward-name"
           >Namn<input
@@ -86,6 +91,7 @@
         </button>
       </form>
     </section>
+    }
     <section class="mt-8" aria-labelledby="rewards-title">
       <p class="text-sm font-bold text-brand-600">Aktiva belöningar</p>
       <h2 id="rewards-title" class="text-xl font-black">Familjens lista</h2>

@@ -12,14 +12,23 @@ import { AdultRewardRedemption, RewardRedemptionsService } from './reward-redemp
 })
 export class AdultRewardRedemptionsPage implements OnInit {
   private readonly service = inject(RewardRedemptionsService);
+  private archiveUndoTimer: number | null = null;
+  private archiveUndoClearTimer: number | null = null;
   readonly items = signal<AdultRewardRedemption[]>([]);
   readonly loading = signal(true);
   readonly error = signal('');
   readonly busyId = signal<number | null>(null);
   readonly comments = signal<Readonly<Record<number, string>>>({});
+  readonly lastArchivedId = signal<number | null>(null);
+  readonly archiveUndoFading = signal(false);
+  readonly showHiddenHistory = signal(false);
   readonly pending = computed(() => this.items().filter((item) => item.status === 'Requested'));
   readonly active = computed(() => this.items().filter((item) => item.status === 'Requested' || item.status === 'Approved'));
   readonly history = computed(() => this.items().filter((item) => !item.adultArchivedAt && (item.status === 'Cancelled' || item.status === 'Delivered')).slice(0, 10));
+  readonly historyItems = computed(() => this.items().filter((item) =>
+    (item.status === 'Cancelled' || item.status === 'Delivered') && (!item.adultArchivedAt || item.id === this.lastArchivedId()),
+  ).slice(0, 10));
+  readonly hiddenHistory = computed(() => this.items().filter((item) => item.adultArchivedAt && (item.status === 'Cancelled' || item.status === 'Delivered')));
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: 'H', route: '/vuxen' },
     { label: 'Beloningar', icon: '*', route: '/vuxen/beloningar' },
@@ -53,8 +62,38 @@ export class AdultRewardRedemptionsPage implements OnInit {
     if (this.busyId() !== null) return;
     this.busyId.set(item.id);
     this.service.archive(item.id).pipe(finalize(() => this.busyId.set(null))).subscribe({
-      next: () => this.items.update((items) => items.map((current) => current.id === item.id ? { ...current, adultArchivedAt: new Date().toISOString() } : current)),
+      next: () => {
+        this.items.update((items) => items.map((current) => current.id === item.id ? { ...current, adultArchivedAt: new Date().toISOString() } : current));
+        this.showArchiveUndo(item.id);
+      },
       error: () => this.error.set('Historiken kunde inte döljas.'),
     });
+  }
+  restore(item: AdultRewardRedemption): void {
+    if (this.busyId() !== null) return;
+    this.busyId.set(item.id);
+    this.service.restore(item.id).pipe(finalize(() => this.busyId.set(null))).subscribe({
+      next: () => {
+        this.items.update((items) => items.map((current) => current.id === item.id ? { ...current, adultArchivedAt: null } : current));
+        this.clearArchiveUndo();
+      },
+      error: () => this.error.set('Historiken kunde inte återställas.'),
+    });
+  }
+
+  private showArchiveUndo(id: number): void {
+    this.clearArchiveUndo();
+    this.lastArchivedId.set(id);
+    this.archiveUndoTimer = window.setTimeout(() => this.archiveUndoFading.set(true), 3000);
+    this.archiveUndoClearTimer = window.setTimeout(() => this.clearArchiveUndo(), 5000);
+  }
+
+  private clearArchiveUndo(): void {
+    if (this.archiveUndoTimer !== null) window.clearTimeout(this.archiveUndoTimer);
+    if (this.archiveUndoClearTimer !== null) window.clearTimeout(this.archiveUndoClearTimer);
+    this.archiveUndoTimer = null;
+    this.archiveUndoClearTimer = null;
+    this.archiveUndoFading.set(false);
+    this.lastArchivedId.set(null);
   }
 }

@@ -297,6 +297,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(assignment => assignment.ReviewComment)
                 .HasMaxLength(500);
 
+            entity.HasIndex(assignment => new { assignment.HouseholdId, assignment.AdultArchivedAt });
+
             entity.ToTable(table => table.HasCheckConstraint(
                 "CK_ChoreAssignments_Points",
                 "\"Points\" IN (5, 10, 15, 20)"));

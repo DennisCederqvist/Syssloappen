@@ -29,4 +29,5 @@ export class RewardRedemptionsService {
     return this.http.post<AdultRewardRedemption>(`/api/reward-redemptions/${id}/${action}`, { comment });
   }
   archive(id: number): Observable<void> { return this.http.post<void>(`/api/reward-redemptions/${id}/archive`, null); }
+  restore(id: number): Observable<void> { return this.http.post<void>(`/api/reward-redemptions/${id}/restore`, null); }
 }
