@@ -26,6 +26,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<HouseholdInvitation> HouseholdInvitations => Set<HouseholdInvitation>();
 
     public DbSet<Reward> Rewards => Set<Reward>();
+    public DbSet<RewardRedemption> RewardRedemptions => Set<RewardRedemption>();
+    public DbSet<ChildPointReservation> ChildPointReservations => Set<ChildPointReservation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -241,6 +243,32 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(reward => reward.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ChildPointReservation>(entity =>
+        {
+            entity.Property(reservation => reservation.ReservedPoints).HasDefaultValue(0);
+            entity.Property(reservation => reservation.Version).IsConcurrencyToken();
+            entity.HasIndex(reservation => reservation.ChildId).IsUnique();
+            entity.HasOne(reservation => reservation.Household).WithMany()
+                .HasForeignKey(reservation => reservation.HouseholdId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(reservation => reservation.Child).WithMany()
+                .HasForeignKey(reservation => reservation.ChildId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<RewardRedemption>(entity =>
+        {
+            entity.Property(redemption => redemption.Status).HasConversion<string>().HasMaxLength(30)
+                .HasDefaultValue(RewardRedemptionStatus.Requested);
+            entity.Property(redemption => redemption.IdempotencyKey).HasMaxLength(36).IsRequired();
+            entity.Property(redemption => redemption.Comment).HasMaxLength(500);
+            entity.ToTable(table => table.HasCheckConstraint("CK_RewardRedemptions_PointsCost_Positive", "\"PointsCost\" > 0"));
+            entity.HasIndex(redemption => new { redemption.ChildId, redemption.IdempotencyKey }).IsUnique();
+            entity.HasIndex(redemption => new { redemption.HouseholdId, redemption.ChildId });
+            entity.HasOne(redemption => redemption.Household).WithMany().HasForeignKey(redemption => redemption.HouseholdId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(redemption => redemption.Reward).WithMany().HasForeignKey(redemption => redemption.RewardId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(redemption => redemption.Child).WithMany().HasForeignKey(redemption => redemption.ChildId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(redemption => redemption.ReviewedByUserId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ChoreAssignment>(entity =>

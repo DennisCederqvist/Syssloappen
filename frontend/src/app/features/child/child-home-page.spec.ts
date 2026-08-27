@@ -21,6 +21,7 @@ const assignedChore: ChildChoreAssignment = {
 class FakeChildChoresService {
   assignments = [assignedChore];
   points = 25;
+  rewards = { availablePoints: 25, rewards: [] };
   submitCalls: number[] = [];
   submission = new Subject<SubmittedChildChoreAssignment>();
 
@@ -30,6 +31,10 @@ class FakeChildChoresService {
 
   getPoints() {
     return of({ totalPoints: this.points });
+  }
+
+  getRewards() {
+    return of(this.rewards);
   }
 
   submitAssignment(assignmentId: number) {

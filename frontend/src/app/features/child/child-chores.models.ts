@@ -21,3 +21,7 @@ export interface SubmittedChildChoreAssignment {
   status: 'PendingApproval';
   submittedAt: string;
 }
+
+export interface ChildReward { id: number; name: string; description: string | null; pointsCost: number; }
+export interface ChildRewards { availablePoints: number; rewards: ChildReward[]; }
+export interface RewardRedemption { id: number; rewardId: number; rewardName: string; pointsCost: number; status: 'Requested'; requestedAt: string; availablePoints: number; }

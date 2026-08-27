@@ -583,6 +583,7 @@ så att jag kan använda mina intjänade poäng.
 - [ ] Barnet ska endast se aktiva belöningar från sitt eget Household.
 - [ ] Barnet ska se belöningens namn, poängpris, valfria beskrivning och eventuell bild.
 - [ ] Tillgängliga poäng ska beräknas som intjänade poäng minus reserverade och slutligt använda poäng.
+- [ ] Barnets primära poängsaldo ska visa tillgängliga poäng, inte enbart historiskt intjänade poäng.
 - [ ] Backend ska kontrollera att barnet har tillräckligt många tillgängliga poäng.
 - [ ] En godkänd begäran ska reservera poängen direkt så att samma poäng inte kan användas flera gånger samtidigt.
 - [ ] Backend ska skapa en beständig redemption med status `Requested`.
@@ -591,6 +592,9 @@ så att jag kan använda mina intjänade poäng.
 - [ ] Klienten får inte styra Child, Household, poängpris, status eller tidsuppgifter.
 - [ ] Otillräckliga poäng, avaktiverade belöningar och upprepade eller manipulerade anrop ska hanteras atomärt och säkert.
 - [ ] Ett barn får inte se eller begära ett syskons eller ett annat Households belöningar.
+- [ ] Belöningsbutiken ska ligga i en egen Child-route eller meny, inte bland barnets dagliga sysslor på startsidan.
+- [ ] En belöning med barnets redan väntande förfrågan ska inte visas som valbar för samma barn förrän förfrågan har hanterats.
+- [ ] Barnet ska kunna se sina egna belöningsförfrågningar och om de väntar på vuxenhantering, är godkända, avbrutna eller utlämnade.
 
 ---
 
@@ -604,6 +608,7 @@ så att familjens fysiska belöningar hanteras kontrollerat.
 
 - [ ] Endast en autentiserad Adult i samma Household får hantera förfrågan.
 - [ ] En Adult ska kunna se Householdets förfrågningar med barn, belöning, poängpris och status.
+- [ ] Adult-vyn ska tydligt visa nya `Requested`-förfrågningar som väntar på hantering; separat pushnotis ingår inte i denna arbetsdel.
 - [ ] En `Requested`-förfrågan ska kunna ändras till `Approved` eller `Cancelled`.
 - [ ] En `Approved`-förfrågan ska kunna markeras som `Delivered` när belöningen lämnats ut.
 - [ ] En förfrågan som avbryts före utlämning ska frigöra de reserverade poängen.
@@ -614,6 +619,7 @@ så att familjens fysiska belöningar hanteras kontrollerat.
 - [ ] Samtidiga anrop får inte kunna skapa negativt saldo eller dubbel användning av poäng.
 - [ ] Historiken ska bevaras även om barnet eller belöningen senare avaktiveras.
 - [ ] Information och ändringar ska vara strikt isolerade per Household.
+- [ ] När en förfrågan är slutligt utlämnad eller avbruten ska belöningsmallen åter kunna visas som valbar, så länge den fortfarande är aktiv.
 
 ---
 

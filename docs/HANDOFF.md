@@ -430,6 +430,15 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
+US-071 är påbörjad på `feature/reward-redemptions` och är uttryckligen **inte redo för merge**:
+
+- Migrationen `AddRewardRedemptions` är applicerad i `syssloappen_dev`. Den skapar `RewardRedemptions` med Household-, Reward-, Child-, snapshotpris-, status-, idempotens- och auditfält samt `ChildPointReservations` med unik Child-koppling och EF-concurrency-token.
+- `GET /api/child/rewards` härleder aktivt Child och Household från sessionen, visar aktiva belöningar i rätt Household och beräknar tillgängligt saldo som intjänade completions minus reserverad poäng.
+- `POST /api/child/reward-redemptions` tar endast `RewardId` och en UUID i headern `Idempotency-Key`. Backend härleder Child, Household, snapshotpris och tid, reserverar poäng och skapar `Requested` atomärt. Samma Child och nyckel ger samma redemption i stället för dubbel reservation.
+- Fyra nya integrationstester täcker rollskydd, aktiv/privat belöningslista, snapshot, idempotens, otillräckligt saldo och Household-isolering. Hela backendsviten passerar med 122 tester. Frontendsviten passerar med 60 tester och Angular-produktionsbygget är godkänt.
+- En första Child-UI-koppling finns på `/barn`, men användartestning identifierade avsiktligt kvarvarande produktarbete: huvudkortet visar ännu historiskt `TotalPoints` i stället för tillgängliga poäng; belöningar ska flyttas till en egen Child-route/menu; en redan `Requested` belöning ska inte vara valbar för samma barn; barnet behöver en egen vy över sina önskningar och status. Adult-hanteringen av `Requested` hör till US-072 och är inte byggd.
+- Kraven i `REQUIREMENTS.md` har kompletterats med dessa beslut. Inga US-071- eller US-072-kriterier har markerats klara.
+
 US-070:s bildfria belöningskatalog är implementerad, automatiskt verifierad, användartestad och godkänd för merge:
 
 - `GET/POST /api/rewards` samt `PUT/DELETE /api/rewards/{id}` kräver rollen `Adult`.
