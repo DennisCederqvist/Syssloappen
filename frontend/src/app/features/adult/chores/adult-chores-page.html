@@ -500,12 +500,12 @@
       }
     </section>
 
-    @if (!isLoading() && assignments().length > 0) {
+    @if (!isLoading() && activeAssignments().length > 0) {
       <section class="mt-8" aria-labelledby="assigned-title">
         <p class="text-sm font-bold text-brand-600">Aktuellt</p>
-        <h2 id="assigned-title" class="text-xl font-black">Senaste tilldelningar</h2>
+        <h2 id="assigned-title" class="text-xl font-black">Aktuella tilldelningar</h2>
         <div class="mt-4 grid gap-3">
-          @for (assignment of assignments(); track assignment.assignmentId) {
+          @for (assignment of activeAssignments(); track assignment.assignmentId) {
             <article class="rounded-2xl bg-white p-4 ring-1 ring-line">
               <div class="flex flex-wrap items-start gap-3 sm:items-center sm:gap-4">
                 <div class="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-50">✓</div>
@@ -586,6 +586,15 @@
             </article>
           }
         </div>
+      </section>
+    }
+    @if (!isLoading() && (completedAssignments().length > 0 || hiddenCompletedAssignments().length > 0)) {
+      <section class="mt-8" aria-labelledby="completed-title">
+        <div><p class="text-sm font-bold text-brand-600">Historik</p><h2 id="completed-title" class="text-xl font-black">Senaste godkända sysslor</h2><p class="mt-1 text-sm text-muted">De tio senaste visas här.</p></div>
+        @if (historyError()) { <p class="mt-3 font-bold text-red-700" role="alert">{{ historyError() }}</p> }
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">@for (assignment of completedAssignments(); track assignment.assignmentId) { <article class="relative rounded-3xl bg-white p-5 ring-1 ring-line"><button type="button" (click)="archiveAssignment(assignment)" [disabled]="historyBusyId() !== null" [attr.aria-label]="'Dölj ' + assignment.choreTitle + ' ur historiken'" class="absolute right-3 top-3 grid size-11 place-items-center rounded-full text-xl text-muted hover:bg-brand-50">×</button><h3 class="pr-12 font-black">{{ assignment.choreTitle }}</h3><p class="mt-1 text-sm text-muted">{{ assignment.childName }} · {{ assignment.points }} poäng</p><p class="mt-3 font-bold text-emerald-800">Godkänd</p></article> } @if (lastArchivedId(); as archivedId) { <article class="flex min-h-36 flex-col justify-center rounded-3xl bg-brand-50 p-5 ring-1 ring-brand-100 transition-opacity duration-300" [class.opacity-0]="archiveUndoFading()"><p class="font-bold text-brand-600">Historikkortet är dolt.</p><button type="button" (click)="restoreAssignment(assignments().find(item => item.assignmentId === archivedId)!)" class="mt-3 min-h-11 self-start rounded-xl bg-white px-4 font-bold text-brand-600">Ångra</button></article> }</div>
+        @if (hiddenCompletedAssignments().length > 0) { <button type="button" (click)="showHiddenHistory.update(value => !value)" class="mt-4 min-h-11 rounded-xl bg-white px-4 font-bold text-brand-600 ring-1 ring-line">{{ showHiddenHistory() ? 'Dölj dolda' : 'Visa dolda (' + hiddenCompletedAssignments().length + ')' }}</button> }
+        @if (showHiddenHistory()) { <section class="mt-5 rounded-3xl bg-slate-50 p-5" aria-label="Dold historik"><h3 class="text-lg font-black">Dolda godkända sysslor</h3><div class="mt-3 grid gap-3 sm:grid-cols-2">@for (assignment of hiddenCompletedAssignments(); track assignment.assignmentId) { <article class="flex items-center justify-between gap-3 rounded-2xl bg-white p-4 ring-1 ring-line"><div class="min-w-0"><p class="font-bold">{{ assignment.choreTitle }}</p><p class="text-sm text-muted">{{ assignment.childName }}</p></div><button type="button" (click)="restoreAssignment(assignment)" [disabled]="historyBusyId() !== null" class="min-h-11 shrink-0 rounded-xl bg-brand-50 px-4 font-bold text-brand-600">Återställ</button></article> }</div></section> }
       </section>
     }
   </main>

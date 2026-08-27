@@ -244,6 +244,48 @@ public sealed class ChoreAssignmentCancellationTests : IDisposable
         Assert.Equal(20, completion.PointsAwarded);
     }
 
+    [Fact]
+    public async Task Adult_can_archive_and_restore_only_final_assignment_history()
+    {
+        using var adultClient = CreateClient();
+        using var childClient = CreateClient();
+        await RegisterAndLoginAdult(
+            adultClient,
+            "Familjen Archive Chore",
+            "archive.chore@example.test");
+        var child = await CreateChild(adultClient, "Albin");
+        var chore = await CreateChore(adultClient, "Sortera tvätt");
+        var assignment = await AssignChore(adultClient, chore.Id, child.Id);
+
+        Assert.Equal(
+            HttpStatusCode.Conflict,
+            (await adultClient.PostAsync($"/api/chore-assignments/{assignment.Id}/archive", null)).StatusCode);
+
+        await PairChild(adultClient, childClient, child.Id);
+        await SubmitAssignment(childClient, assignment.Id);
+        Assert.Equal(
+            HttpStatusCode.OK,
+            (await adultClient.PostAsJsonAsync(
+                $"/api/chore-assignments/{assignment.Id}/approve",
+                new ReviewChoreAssignmentRequest())).StatusCode);
+
+        Assert.Equal(
+            HttpStatusCode.NoContent,
+            (await adultClient.PostAsync($"/api/chore-assignments/{assignment.Id}/archive", null)).StatusCode);
+        using (var scope = factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.NotNull((await dbContext.ChoreAssignments.SingleAsync()).AdultArchivedAt);
+        }
+
+        Assert.Equal(
+            HttpStatusCode.NoContent,
+            (await adultClient.PostAsync($"/api/chore-assignments/{assignment.Id}/restore", null)).StatusCode);
+        using var restoredScope = factory.Services.CreateScope();
+        var restoredDbContext = restoredScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Null((await restoredDbContext.ChoreAssignments.SingleAsync()).AdultArchivedAt);
+    }
+
     public void Dispose() => factory.Dispose();
 
     private HttpClient CreateClient() => factory.CreateClient(

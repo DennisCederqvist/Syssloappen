@@ -16,12 +16,16 @@ import { RewardsService } from './rewards.service';
 export class AdultRewardsPage implements OnInit {
   private readonly rewardsService = inject(RewardsService);
   private readonly formBuilder = inject(FormBuilder);
+  private successTimer: number | null = null;
+  private successClearTimer: number | null = null;
   readonly rewards = signal<Reward[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal('');
   readonly formError = signal('');
   readonly successMessage = signal('');
+  readonly successFading = signal(false);
   readonly editing = signal<Reward | null>(null);
+  readonly showForm = signal(false);
   readonly confirmingId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
   readonly navItems: NavItem[] = [
@@ -53,12 +57,14 @@ export class AdultRewardsPage implements OnInit {
       });
   }
   openCreate(): void {
+    this.showForm.set(true);
     this.editing.set(null);
     this.formError.set('');
     this.rewardForm.reset({ name: '', description: '', pointsCost: 1, stockQuantity: 1 });
     focusAfterRender('reward-name');
   }
   openEdit(reward: Reward): void {
+    this.showForm.set(true);
     this.editing.set(reward);
     this.formError.set('');
     this.rewardForm.setValue({
@@ -68,6 +74,12 @@ export class AdultRewardsPage implements OnInit {
       stockQuantity: reward.stockQuantity,
     });
     focusAfterRender('reward-name');
+  }
+  closeForm(): void {
+    this.showForm.set(false);
+    this.editing.set(null);
+    this.formError.set('');
+    this.rewardForm.reset({ name: '', description: '', pointsCost: 1, stockQuantity: 1 });
   }
   save(): void {
     if (this.rewardForm.invalid) {
@@ -102,8 +114,9 @@ export class AdultRewardsPage implements OnInit {
           ),
         );
         this.editing.set(null);
+        this.showForm.set(false);
         this.rewardForm.reset({ name: '', description: '', pointsCost: 1, stockQuantity: 1 });
-        this.successMessage.set(`${reward.name} är ${existing ? 'uppdaterad' : 'skapad'}.`);
+        this.showSuccess(`${reward.name} är ${existing ? 'uppdaterad' : 'skapad'}.`);
         focusAfterRender('rewards-success');
       },
       error: (error: HttpErrorResponse) =>
@@ -134,10 +147,24 @@ export class AdultRewardsPage implements OnInit {
         next: () => {
           this.rewards.update((items) => items.filter((item) => item.id !== reward.id));
           this.confirmingId.set(null);
-          this.successMessage.set(`${reward.name} är bortplockad från belöningslistan.`);
+          this.showSuccess(`${reward.name} är bortplockad från belöningslistan.`);
           focusAfterRender('rewards-success');
         },
         error: () => this.formError.set('Belöningen kunde inte plockas bort. Försök igen.'),
       });
+  }
+
+  private showSuccess(message: string): void {
+    if (this.successTimer !== null) window.clearTimeout(this.successTimer);
+    if (this.successClearTimer !== null) window.clearTimeout(this.successClearTimer);
+    this.successFading.set(false);
+    this.successMessage.set(message);
+    this.successTimer = window.setTimeout(() => this.successFading.set(true), 2700);
+    this.successClearTimer = window.setTimeout(() => {
+      this.successMessage.set('');
+      this.successTimer = null;
+      this.successClearTimer = null;
+      this.successFading.set(false);
+    }, 3000);
   }
 }

@@ -200,10 +200,49 @@ public sealed class ChoreAssignmentsController(
                 assignment.ReviewedAt,
                 assignment.ReviewComment,
                 assignment.CancelledByUserId,
-                assignment.CancelledAt))
+                assignment.CancelledAt,
+                assignment.AdultArchivedAt))
             .ToListAsync();
 
         return Ok(assignments);
+    }
+
+    [HttpPost("{assignmentId:int}/archive")]
+    public Task<IActionResult> Archive(int assignmentId) => SetArchiveState(assignmentId, archived: true);
+
+    [HttpPost("{assignmentId:int}/restore")]
+    public Task<IActionResult> Restore(int assignmentId) => SetArchiveState(assignmentId, archived: false);
+
+    private async Task<IActionResult> SetArchiveState(int assignmentId, bool archived)
+    {
+        if (assignmentId <= 0)
+        {
+            ModelState.AddModelError(nameof(assignmentId), "Assignment ID must be positive.");
+            return ValidationProblem(ModelState);
+        }
+
+        var currentUser = await userManager.GetUserAsync(User);
+        if (currentUser is null) return Unauthorized();
+
+        var assignment = await dbContext.ChoreAssignments.SingleOrDefaultAsync(item =>
+            item.Id == assignmentId
+            && item.HouseholdId == currentUser.HouseholdId
+            && item.Child.HouseholdId == currentUser.HouseholdId
+            && item.Chore.HouseholdId == currentUser.HouseholdId);
+        if (assignment is null) return NotFound();
+
+        if (assignment.Status is not (ChoreAssignmentStatus.Approved or ChoreAssignmentStatus.Cancelled))
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Only completed assignments can be archived",
+                Status = StatusCodes.Status409Conflict
+            });
+        }
+
+        assignment.AdultArchivedAt = archived ? timeProvider.GetUtcNow().UtcDateTime : null;
+        await dbContext.SaveChangesAsync();
+        return NoContent();
     }
 
     [HttpPost("{assignmentId:int}/approve")]

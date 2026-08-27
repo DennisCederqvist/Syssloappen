@@ -17,6 +17,8 @@ type ReviewDecision = 'approve' | 'reject';
 })
 export class AdultReviewPage implements OnInit {
   private readonly choresService = inject(ChoresService);
+  private archiveUndoTimer: number | null = null;
+  private archiveUndoClearTimer: number | null = null;
 
   readonly assignments = signal<AdultAssignment[]>([]);
   readonly isLoading = signal(true);
@@ -25,14 +27,25 @@ export class AdultReviewPage implements OnInit {
   readonly reviewComments = signal<Readonly<Record<number, string>>>({});
   readonly reviewErrors = signal<Readonly<Record<number, string>>>({});
   readonly successMessage = signal('');
+  readonly historyError = signal('');
+  readonly historyBusyId = signal<number | null>(null);
+  readonly lastArchivedId = signal<number | null>(null);
+  readonly archiveUndoFading = signal(false);
+  readonly showHiddenHistory = signal(false);
 
   readonly pendingAssignments = computed(() =>
     this.assignments().filter((assignment) => assignment.status === 'PendingApproval'),
   );
+  readonly needsRedoAssignments = computed(() =>
+    this.assignments().filter((assignment) => assignment.status === 'NeedsRedo'),
+  );
   readonly reviewedAssignments = computed(() =>
-    this.assignments().filter(
-      (assignment) => assignment.status === 'Approved' || assignment.status === 'NeedsRedo',
-    ),
+    this.assignments()
+      .filter((assignment) => assignment.status === 'Approved' && !assignment.adultArchivedAt)
+      .slice(0, 10),
+  );
+  readonly hiddenAssignments = computed(() =>
+    this.assignments().filter((assignment) => assignment.status === 'Approved' && assignment.adultArchivedAt),
   );
 
   readonly navItems: NavItem[] = [
@@ -99,6 +112,40 @@ export class AdultReviewPage implements OnInit {
     });
   }
 
+  archive(assignment: AdultAssignment): void {
+    if (this.historyBusyId() !== null) return;
+    this.historyBusyId.set(assignment.assignmentId);
+    this.historyError.set('');
+    this.choresService.archiveAssignment(assignment.assignmentId)
+      .pipe(finalize(() => this.historyBusyId.set(null)))
+      .subscribe({
+        next: () => {
+          this.assignments.update((items) => items.map((item) => item.assignmentId === assignment.assignmentId
+            ? { ...item, adultArchivedAt: new Date().toISOString() }
+            : item));
+          this.showArchiveUndo(assignment.assignmentId);
+        },
+        error: () => this.historyError.set('Historiken kunde inte döljas. Försök igen.'),
+      });
+  }
+
+  restore(assignment: AdultAssignment): void {
+    if (this.historyBusyId() !== null) return;
+    this.historyBusyId.set(assignment.assignmentId);
+    this.historyError.set('');
+    this.choresService.restoreAssignment(assignment.assignmentId)
+      .pipe(finalize(() => this.historyBusyId.set(null)))
+      .subscribe({
+        next: () => {
+          this.assignments.update((items) => items.map((item) => item.assignmentId === assignment.assignmentId
+            ? { ...item, adultArchivedAt: null }
+            : item));
+          this.clearArchiveUndo();
+        },
+        error: () => this.historyError.set('Historiken kunde inte återställas. Försök igen.'),
+      });
+  }
+
   private applyReview(assignment: AdultAssignment, reviewed: ReviewedAssignment): void {
     this.assignments.update((assignments) =>
       assignments.map((item) =>
@@ -123,5 +170,21 @@ export class AdultReviewPage implements OnInit {
 
   private setReviewError(assignmentId: number, message: string): void {
     this.reviewErrors.update((errors) => ({ ...errors, [assignmentId]: message }));
+  }
+
+  private showArchiveUndo(assignmentId: number): void {
+    this.clearArchiveUndo();
+    this.lastArchivedId.set(assignmentId);
+    this.archiveUndoTimer = window.setTimeout(() => this.archiveUndoFading.set(true), 2700);
+    this.archiveUndoClearTimer = window.setTimeout(() => this.clearArchiveUndo(), 3000);
+  }
+
+  private clearArchiveUndo(): void {
+    if (this.archiveUndoTimer !== null) window.clearTimeout(this.archiveUndoTimer);
+    if (this.archiveUndoClearTimer !== null) window.clearTimeout(this.archiveUndoClearTimer);
+    this.archiveUndoTimer = null;
+    this.archiveUndoClearTimer = null;
+    this.archiveUndoFading.set(false);
+    this.lastArchivedId.set(null);
   }
 }

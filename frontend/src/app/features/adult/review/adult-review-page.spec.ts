@@ -22,6 +22,7 @@ const pendingAssignment: AdultAssignment = {
   reviewComment: null,
   cancelledByUserId: null,
   cancelledAt: null,
+  adultArchivedAt: null,
 };
 
 class FakeChoresService {

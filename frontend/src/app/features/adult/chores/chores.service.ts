@@ -44,6 +44,14 @@ export class ChoresService {
     return this.http.delete<void>(`/api/chore-assignments/${assignmentId}`);
   }
 
+  archiveAssignment(assignmentId: number): Observable<void> {
+    return this.http.post<void>(`/api/chore-assignments/${assignmentId}/archive`, null);
+  }
+
+  restoreAssignment(assignmentId: number): Observable<void> {
+    return this.http.post<void>(`/api/chore-assignments/${assignmentId}/restore`, null);
+  }
+
   approveAssignment(
     assignmentId: number,
     request: ReviewAssignmentRequest,

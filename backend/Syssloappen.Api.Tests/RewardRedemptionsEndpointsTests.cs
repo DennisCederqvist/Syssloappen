@@ -114,6 +114,42 @@ public sealed class RewardRedemptionsEndpointsTests : IDisposable
         Assert.Equal(0, (await scope.ServiceProvider.GetRequiredService<AppDbContext>().ChildPointReservations.SingleAsync()).ReservedPoints);
     }
 
+    [Fact]
+    public async Task Adult_can_archive_and_restore_only_final_redemption_history()
+    {
+        using var adult = Client(); using var childClient = Client();
+        await RegisterLogin(adult, "Redemption Archive", "redemption.archive@example.test");
+        var child = await CreateChild(adult, "Mio"); await AwardPoints(adult, childClient, child.Id, 20);
+        var reward = await CreateReward(adult, "Pyssel", 10);
+        var requested = await Redeem(childClient, reward.Id, Guid.NewGuid().ToString());
+        var redemption = (await requested.Content.ReadFromJsonAsync<RewardRedemptionResponse>())!;
+
+        Assert.Equal(
+            HttpStatusCode.Conflict,
+            (await adult.PostAsync($"/api/reward-redemptions/{redemption.Id}/archive", null)).StatusCode);
+        Assert.Equal(
+            HttpStatusCode.OK,
+            (await adult.PostAsJsonAsync(
+                $"/api/reward-redemptions/{redemption.Id}/cancel",
+                new UpdateRewardRedemptionRequest())).StatusCode);
+        Assert.Equal(
+            HttpStatusCode.NoContent,
+            (await adult.PostAsync($"/api/reward-redemptions/{redemption.Id}/archive", null)).StatusCode);
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.NotNull((await db.RewardRedemptions.SingleAsync()).AdultArchivedAt);
+        }
+
+        Assert.Equal(
+            HttpStatusCode.NoContent,
+            (await adult.PostAsync($"/api/reward-redemptions/{redemption.Id}/restore", null)).StatusCode);
+        using var restoredScope = factory.Services.CreateScope();
+        var restoredDb = restoredScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Null((await restoredDb.RewardRedemptions.SingleAsync()).AdultArchivedAt);
+    }
+
     public void Dispose() => factory.Dispose();
     private HttpClient Client() => factory.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), HandleCookies = true, AllowAutoRedirect = false });
     private static async Task<HttpResponseMessage> Redeem(HttpClient client, int rewardId, string key) { var request = new HttpRequestMessage(HttpMethod.Post, "/api/child/reward-redemptions") { Content = JsonContent.Create(new CreateRewardRedemptionRequest { RewardId = rewardId }) }; request.Headers.Add("Idempotency-Key", key); return await client.SendAsync(request); }

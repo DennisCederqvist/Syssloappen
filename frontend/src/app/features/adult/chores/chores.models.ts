@@ -45,6 +45,7 @@ export interface AdultAssignment {
   reviewComment: string | null;
   cancelledByUserId: string | null;
   cancelledAt: string | null;
+  adultArchivedAt: string | null;
 }
 
 export interface ReviewAssignmentRequest {

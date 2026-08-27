@@ -47,14 +47,28 @@ public sealed class RewardRedemptionsController(
         ChangeStatus(redemptionId, request, RewardRedemptionStatus.Delivered);
 
     [HttpPost("{redemptionId:int}/archive")]
-    public async Task<IActionResult> Archive(int redemptionId)
+    public Task<IActionResult> Archive(int redemptionId) => SetArchiveState(redemptionId, archived: true);
+
+    [HttpPost("{redemptionId:int}/restore")]
+    public Task<IActionResult> Restore(int redemptionId) => SetArchiveState(redemptionId, archived: false);
+
+    private async Task<IActionResult> SetArchiveState(int redemptionId, bool archived)
     {
+        if (redemptionId <= 0)
+        {
+            ModelState.AddModelError(nameof(redemptionId), "Redemption ID must be positive.");
+            return ValidationProblem(ModelState);
+        }
+
         var adult = await users.GetUserAsync(User);
         if (adult is null) return Unauthorized();
-        var redemption = await db.RewardRedemptions.SingleOrDefaultAsync(item => item.Id == redemptionId && item.HouseholdId == adult.HouseholdId);
+        var redemption = await db.RewardRedemptions.SingleOrDefaultAsync(item => item.Id == redemptionId
+            && item.HouseholdId == adult.HouseholdId
+            && item.Child.HouseholdId == adult.HouseholdId
+            && item.Reward.HouseholdId == adult.HouseholdId);
         if (redemption is null) return NotFound();
         if (redemption.Status is not (RewardRedemptionStatus.Cancelled or RewardRedemptionStatus.Delivered)) return Conflict();
-        redemption.AdultArchivedAt = clock.GetUtcNow().UtcDateTime;
+        redemption.AdultArchivedAt = archived ? clock.GetUtcNow().UtcDateTime : null;
         await db.SaveChangesAsync();
         return NoContent();
     }

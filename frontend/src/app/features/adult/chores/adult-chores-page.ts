@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
@@ -18,6 +18,8 @@ import { ChoresService } from './chores.service';
 })
 export class AdultChoresPage implements OnInit {
   private readonly choresService = inject(ChoresService);
+  private archiveUndoTimer: number | null = null;
+  private archiveUndoClearTimer: number | null = null;
   private readonly childrenService = inject(ChildrenService);
   private readonly formBuilder = inject(FormBuilder);
 
@@ -42,6 +44,19 @@ export class AdultChoresPage implements OnInit {
   readonly assignmentError = signal('');
   readonly assignmentCancellationError = signal('');
   readonly successMessage = signal('');
+  readonly historyBusyId = signal<number | null>(null);
+  readonly historyError = signal('');
+  readonly lastArchivedId = signal<number | null>(null);
+  readonly archiveUndoFading = signal(false);
+  readonly showHiddenHistory = signal(false);
+  readonly activeAssignments = computed(() => this.assignments().filter((assignment) =>
+    assignment.status === 'Assigned' || assignment.status === 'PendingApproval' || assignment.status === 'NeedsRedo',
+  ));
+  readonly completedAssignments = computed(() => this.assignments()
+    .filter((assignment) => assignment.status === 'Approved' && !assignment.adultArchivedAt)
+    .slice(0, 10));
+  readonly hiddenCompletedAssignments = computed(() => this.assignments()
+    .filter((assignment) => assignment.status === 'Approved' && assignment.adultArchivedAt));
   private assignmentReturnFocusId = 'open-assignment-trigger';
   private editChoreReturnFocusId = '';
 
@@ -313,6 +328,7 @@ export class AdultChoresPage implements OnInit {
               reviewComment: null,
               cancelledByUserId: null,
               cancelledAt: null,
+              adultArchivedAt: null,
             },
             ...assignments,
           ]);
@@ -378,6 +394,38 @@ export class AdultChoresPage implements OnInit {
       });
   }
 
+  archiveAssignment(assignment: AdultAssignment): void {
+    if (this.historyBusyId() !== null) return;
+    this.historyBusyId.set(assignment.assignmentId);
+    this.historyError.set('');
+    this.choresService.archiveAssignment(assignment.assignmentId)
+      .pipe(finalize(() => this.historyBusyId.set(null)))
+      .subscribe({
+        next: () => {
+          this.assignments.update((items) => items.map((item) => item.assignmentId === assignment.assignmentId
+            ? { ...item, adultArchivedAt: new Date().toISOString() } : item));
+          this.showArchiveUndo(assignment.assignmentId);
+        },
+        error: () => this.historyError.set('Historiken kunde inte döljas. Försök igen.'),
+      });
+  }
+
+  restoreAssignment(assignment: AdultAssignment): void {
+    if (this.historyBusyId() !== null) return;
+    this.historyBusyId.set(assignment.assignmentId);
+    this.historyError.set('');
+    this.choresService.restoreAssignment(assignment.assignmentId)
+      .pipe(finalize(() => this.historyBusyId.set(null)))
+      .subscribe({
+        next: () => {
+          this.assignments.update((items) => items.map((item) => item.assignmentId === assignment.assignmentId
+            ? { ...item, adultArchivedAt: null } : item));
+          this.clearArchiveUndo();
+        },
+        error: () => this.historyError.set('Historiken kunde inte återställas. Försök igen.'),
+      });
+  }
+
   assignmentStatusLabel(status: AdultAssignment['status']): string {
     switch (status) {
       case 'Assigned':
@@ -397,5 +445,21 @@ export class AdultChoresPage implements OnInit {
     const now = new Date();
     const offset = now.getTimezoneOffset() * 60_000;
     return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+  }
+
+  private showArchiveUndo(assignmentId: number): void {
+    this.clearArchiveUndo();
+    this.lastArchivedId.set(assignmentId);
+    this.archiveUndoTimer = window.setTimeout(() => this.archiveUndoFading.set(true), 2700);
+    this.archiveUndoClearTimer = window.setTimeout(() => this.clearArchiveUndo(), 3000);
+  }
+
+  private clearArchiveUndo(): void {
+    if (this.archiveUndoTimer !== null) window.clearTimeout(this.archiveUndoTimer);
+    if (this.archiveUndoClearTimer !== null) window.clearTimeout(this.archiveUndoClearTimer);
+    this.archiveUndoTimer = null;
+    this.archiveUndoClearTimer = null;
+    this.archiveUndoFading.set(false);
+    this.lastArchivedId.set(null);
   }
 }
