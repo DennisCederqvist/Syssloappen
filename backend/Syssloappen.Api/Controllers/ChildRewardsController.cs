@@ -18,7 +18,7 @@ public sealed class ChildRewardsController(AppDbContext db, UserManager<Applicat
     public async Task<ActionResult<ChildRewardsResponse>> GetRewards()
     {
         var child = await GetChild(); if (child is null) return Unauthorized();
-        var rewards = await db.Rewards.AsNoTracking().Where(r => r.HouseholdId == child.HouseholdId && r.IsActive
+        var rewards = await db.Rewards.AsNoTracking().Where(r => r.HouseholdId == child.HouseholdId && r.IsActive && r.StockQuantity > 0
                 && !db.RewardRedemptions.Any(redemption => redemption.ChildId == child.Id && redemption.RewardId == r.Id
                     && (redemption.Status == RewardRedemptionStatus.Requested || redemption.Status == RewardRedemptionStatus.Approved)))
             .OrderBy(r => r.Name).Select(r => new ChildRewardResponse(r.Id, r.Name, r.Description, r.PointsCost)).ToListAsync();
@@ -36,7 +36,7 @@ public sealed class ChildRewardsController(AppDbContext db, UserManager<Applicat
         var keyText = key.ToString();
         var existing = await db.RewardRedemptions.Include(r => r.Reward).SingleOrDefaultAsync(r => r.ChildId == child.Id && r.IdempotencyKey == keyText);
         if (existing is not null) return Ok(ToResponse(existing, await AvailablePoints(child)));
-        var reward = await db.Rewards.SingleOrDefaultAsync(r => r.Id == request.RewardId && r.HouseholdId == child.HouseholdId && r.IsActive);
+        var reward = await db.Rewards.SingleOrDefaultAsync(r => r.Id == request.RewardId && r.HouseholdId == child.HouseholdId && r.IsActive && r.StockQuantity > 0);
         if (reward is null) return NotFound();
         await using var transaction = await db.Database.BeginTransactionAsync();
         if (await db.RewardRedemptions.AnyAsync(redemption => redemption.ChildId == child.Id && redemption.RewardId == reward.Id
@@ -53,6 +53,7 @@ public sealed class ChildRewardsController(AppDbContext db, UserManager<Applicat
         var earned = await EarnedPoints(child);
         if (earned - reservation.ReservedPoints < reward.PointsCost) return Conflict(new ProblemDetails { Title = "Insufficient available points", Status = StatusCodes.Status409Conflict });
         reservation.ReservedPoints += reward.PointsCost; reservation.Version++;
+        reward.StockQuantity--;
         var redemption = new RewardRedemption { HouseholdId = child.HouseholdId, ChildId = child.Id, RewardId = reward.Id, PointsCost = reward.PointsCost, IdempotencyKey = keyText, RequestedAt = clock.GetUtcNow().UtcDateTime };
         db.RewardRedemptions.Add(redemption);
         try { await db.SaveChangesAsync(); await transaction.CommitAsync(); }

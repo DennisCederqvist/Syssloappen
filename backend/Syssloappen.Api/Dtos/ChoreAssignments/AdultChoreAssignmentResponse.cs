@@ -8,6 +8,7 @@ public sealed record AdultChoreAssignmentResponse(
     string ChildName,
     int Points,
     DateTime AssignedAt,
+    DateOnly DueDate,
     string Status,
     DateTime? SubmittedAt,
     string? ReviewedByUserId,

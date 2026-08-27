@@ -61,6 +61,7 @@ export class AdultChoresPage implements OnInit {
   readonly assignmentForm = this.formBuilder.nonNullable.group({
     choreId: [0, Validators.min(1)],
     childId: [0, Validators.min(1)],
+    dueDate: [this.todayInputValue(), Validators.required],
   });
 
   readonly editChoreForm = this.formBuilder.nonNullable.group({
@@ -260,7 +261,7 @@ export class AdultChoresPage implements OnInit {
   openAssignmentForm(choreId = 0, returnFocusId?: string): void {
     this.assignmentReturnFocusId =
       returnFocusId ?? (choreId ? `assign-chore-${choreId}` : 'open-assignment-trigger');
-    this.assignmentForm.setValue({ choreId, childId: 0 });
+    this.assignmentForm.setValue({ choreId, childId: 0, dueDate: this.todayInputValue() });
     this.assignmentError.set('');
     this.showAssignmentForm.set(true);
     focusAfterRender('assignment-panel');
@@ -269,7 +270,7 @@ export class AdultChoresPage implements OnInit {
   closeAssignmentForm(): void {
     this.showAssignmentForm.set(false);
     this.assignmentError.set('');
-    this.assignmentForm.reset({ choreId: 0, childId: 0 });
+    this.assignmentForm.reset({ choreId: 0, childId: 0, dueDate: this.todayInputValue() });
     focusAfterRender(this.assignmentReturnFocusId);
   }
 
@@ -304,6 +305,7 @@ export class AdultChoresPage implements OnInit {
               childName: child.name,
               points: created.points,
               assignedAt: created.assignedAt,
+              dueDate: created.dueDate,
               status: 'Assigned',
               submittedAt: null,
               reviewedByUserId: null,
@@ -389,5 +391,11 @@ export class AdultChoresPage implements OnInit {
       case 'Cancelled':
         return 'Borttagen';
     }
+  }
+
+  private todayInputValue(): string {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60_000;
+    return new Date(now.getTime() - offset).toISOString().slice(0, 10);
   }
 }

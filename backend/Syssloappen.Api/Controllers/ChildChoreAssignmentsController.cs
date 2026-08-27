@@ -46,6 +46,7 @@ public sealed class ChildChoreAssignmentsController(
 
         // Repeating every ownership condition in the SQL query protects the private
         // Child view even if inconsistent assignment data were ever introduced.
+        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
         var assignments = await dbContext.ChoreAssignments
             .AsNoTracking()
             .Where(assignment =>
@@ -55,8 +56,10 @@ public sealed class ChildChoreAssignmentsController(
                 && assignment.Child.UserId == currentUser.Id
                 && assignment.Child.IsActive
                 && assignment.Chore.HouseholdId == currentUser.HouseholdId
-                && assignment.Status != ChoreAssignmentStatus.Cancelled)
-            .OrderByDescending(assignment => assignment.AssignedAt)
+                && assignment.Status != ChoreAssignmentStatus.Cancelled
+                && assignment.DueDate <= today)
+            .OrderByDescending(assignment => assignment.DueDate)
+            .ThenByDescending(assignment => assignment.AssignedAt)
             .ThenByDescending(assignment => assignment.Id)
             .Select(assignment => new ChildChoreAssignmentResponse(
                 assignment.Id,
@@ -65,6 +68,7 @@ public sealed class ChildChoreAssignmentsController(
                 assignment.Chore.Description,
                 assignment.Points,
                 assignment.AssignedAt,
+                assignment.DueDate,
                 assignment.Status.ToString(),
                 assignment.SubmittedAt,
                 assignment.ReviewComment))

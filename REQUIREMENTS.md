@@ -17,7 +17,7 @@ Varje familj ska fungera som en separat enhet, ett **Household**. Användare som
 
 ### Statusmarkering
 
-- `[x]` betyder att kriteriet är implementerat, testat och mergat till `main`.
+- `[x]` betyder att kriteriet är implementerat, automatiskt testat och användargodkänt. Merge-status dokumenteras separat i `docs/HANDOFF.md`.
 - `[ ]` betyder att kriteriet inte är implementerat eller endast är delvis uppfyllt.
 - Breda kriterier lämnas okryssade tills hela formuleringen är uppfylld.
 
@@ -415,6 +415,24 @@ så att fel barn inte behöver se eller utföra uppgiften.
 
 ---
 
+## US-035 – Vuxen planerar en engångssyssla
+
+**Som vuxen**
+vill jag välja ett datum när jag tilldelar en syssla
+så att barnets lista visar rätt uppgifter för dagen utan att skapa stress kring sådant som blev kvar.
+
+### Acceptance Criteria
+
+- [x] En Adult ska välja datum vid tilldelning och dagens datum ska vara förvalt.
+- [x] Datumet ska sparas separat från den tekniska tilldelningstiden.
+- [x] Barnet ska se dagens sysslor och tidigare ännu ej färdiga sysslor.
+- [x] Framtida sysslor ska inte visas för barnet.
+- [x] Äldre sysslor ska inte märkas som försenade.
+- [x] Sysslor i `PendingApproval` ska visas separat från barnets aktiva sysslor tills de har granskats.
+- [x] Återkommande sysslor är uttryckligen en senare arbetsdel.
+
+---
+
 # 8. User Stories – Barnets vy
 
 ## US-040 – Barn kan se sina sysslor
@@ -579,22 +597,22 @@ så att jag kan använda mina intjänade poäng.
 
 ### Acceptance Criteria
 
-- [ ] Barnet måste vara autentiserat och aktivt.
-- [ ] Barnet ska endast se aktiva belöningar från sitt eget Household.
+- [x] Barnet måste vara autentiserat och aktivt.
+- [x] Barnet ska endast se aktiva belöningar från sitt eget Household.
 - [ ] Barnet ska se belöningens namn, poängpris, valfria beskrivning och eventuell bild.
-- [ ] Tillgängliga poäng ska beräknas som intjänade poäng minus reserverade och slutligt använda poäng.
-- [ ] Barnets primära poängsaldo ska visa tillgängliga poäng, inte enbart historiskt intjänade poäng.
-- [ ] Backend ska kontrollera att barnet har tillräckligt många tillgängliga poäng.
-- [ ] En godkänd begäran ska reservera poängen direkt så att samma poäng inte kan användas flera gånger samtidigt.
-- [ ] Backend ska skapa en beständig redemption med status `Requested`.
-- [ ] Redemption ska spara belöningen, barnet, Household, det aktuella poängpriset och begäranstiden.
-- [ ] Det sparade poängpriset ska vara en snapshot som inte ändras om belöningens pris senare ändras.
-- [ ] Klienten får inte styra Child, Household, poängpris, status eller tidsuppgifter.
-- [ ] Otillräckliga poäng, avaktiverade belöningar och upprepade eller manipulerade anrop ska hanteras atomärt och säkert.
-- [ ] Ett barn får inte se eller begära ett syskons eller ett annat Households belöningar.
-- [ ] Belöningsbutiken ska ligga i en egen Child-route eller meny, inte bland barnets dagliga sysslor på startsidan.
-- [ ] En belöning med barnets redan väntande förfrågan ska inte visas som valbar för samma barn förrän förfrågan har hanterats.
-- [ ] Barnet ska kunna se sina egna belöningsförfrågningar och om de väntar på vuxenhantering, är godkända, avbrutna eller utlämnade.
+- [x] Tillgängliga poäng ska beräknas som intjänade poäng minus reserverade och slutligt använda poäng.
+- [x] Barnets primära poängsaldo ska visa tillgängliga poäng, inte enbart historiskt intjänade poäng.
+- [x] Backend ska kontrollera att barnet har tillräckligt många tillgängliga poäng.
+- [x] En godkänd begäran ska reservera poängen direkt så att samma poäng inte kan användas flera gånger samtidigt.
+- [x] Backend ska skapa en beständig redemption med status `Requested`.
+- [x] Redemption ska spara belöningen, barnet, Household, det aktuella poängpriset och begäranstiden.
+- [x] Det sparade poängpriset ska vara en snapshot som inte ändras om belöningens pris senare ändras.
+- [x] Klienten får inte styra Child, Household, poängpris, status eller tidsuppgifter.
+- [x] Otillräckliga poäng, avaktiverade belöningar och upprepade eller manipulerade anrop ska hanteras atomärt och säkert.
+- [x] Ett barn får inte se eller begära ett syskons eller ett annat Households belöningar.
+- [x] Belöningsbutiken ska ligga i en egen Child-route eller meny, inte bland barnets dagliga sysslor på startsidan.
+- [x] En belöning med barnets redan väntande förfrågan ska inte visas som valbar för samma barn förrän förfrågan har hanterats.
+- [x] Barnet ska kunna se sina egna belöningsförfrågningar och om de väntar på vuxenhantering, är godkända, får avslag eller är utlämnade.
 
 ---
 
@@ -606,20 +624,20 @@ så att familjens fysiska belöningar hanteras kontrollerat.
 
 ### Acceptance Criteria
 
-- [ ] Endast en autentiserad Adult i samma Household får hantera förfrågan.
-- [ ] En Adult ska kunna se Householdets förfrågningar med barn, belöning, poängpris och status.
-- [ ] Adult-vyn ska tydligt visa nya `Requested`-förfrågningar som väntar på hantering; separat pushnotis ingår inte i denna arbetsdel.
-- [ ] En `Requested`-förfrågan ska kunna ändras till `Approved` eller `Cancelled`.
-- [ ] En `Approved`-förfrågan ska kunna markeras som `Delivered` när belöningen lämnats ut.
-- [ ] En förfrågan som avbryts före utlämning ska frigöra de reserverade poängen.
-- [ ] En `Delivered`-förfrågan ska inte kunna avbrytas eller återbetalas genom ett manipulerat anrop.
-- [ ] Systemet ska spara vilken Adult som hanterade förfrågan och när.
-- [ ] Den vuxna ska valfritt kunna lämna en kommentar.
-- [ ] Samma förfrågan får inte dra av, frigöra eller återbetala poäng flera gånger.
-- [ ] Samtidiga anrop får inte kunna skapa negativt saldo eller dubbel användning av poäng.
-- [ ] Historiken ska bevaras även om barnet eller belöningen senare avaktiveras.
-- [ ] Information och ändringar ska vara strikt isolerade per Household.
-- [ ] När en förfrågan är slutligt utlämnad eller avbruten ska belöningsmallen åter kunna visas som valbar, så länge den fortfarande är aktiv.
+- [x] Endast en autentiserad Adult i samma Household får hantera förfrågan.
+- [x] En Adult ska kunna se Householdets förfrågningar med barn, belöning, poängpris och status.
+- [x] Adult-vyn ska tydligt visa nya `Requested`-förfrågningar som väntar på hantering; separat pushnotis ingår inte i denna arbetsdel.
+- [x] En `Requested`-förfrågan ska kunna ändras till `Approved` eller `Cancelled`.
+- [x] En `Approved`-förfrågan ska kunna markeras som `Delivered` när belöningen lämnats ut.
+- [x] En förfrågan som avbryts före utlämning ska frigöra de reserverade poängen.
+- [x] En `Delivered`-förfrågan ska inte kunna avbrytas eller återbetalas genom ett manipulerat anrop.
+- [x] Systemet ska spara vilken Adult som hanterade förfrågan och när.
+- [x] Den vuxna ska valfritt kunna lämna en kommentar.
+- [x] Samma förfrågan får inte dra av, frigöra eller återbetala poäng flera gånger.
+- [x] Samtidiga anrop får inte kunna skapa negativt saldo eller dubbel användning av poäng.
+- [x] Historiken ska bevaras även om barnet eller belöningen senare avaktiveras.
+- [x] Information och ändringar ska vara strikt isolerade per Household.
+- [x] Ett avslag ska lägga tillbaka en reserverad lagerenhet. En utlämnad enhet är förbrukad och visas igen först om belöningen har kvarvarande lager eller en Adult fyller på lagret.
 
 ---
 

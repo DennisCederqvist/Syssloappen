@@ -219,6 +219,17 @@
               >
             }
           </label>
+          <label class="block font-bold sm:col-span-2"
+            >Datum<input
+              id="assignment-due-date"
+              formControlName="dueDate"
+              type="date"
+              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4"
+            />
+            <span class="mt-2 block text-sm font-normal text-muted"
+              >Sysslan visas för barnet på det här datumet.</span
+            >
+          </label>
           @if (children().length === 0) {
             <p class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 sm:col-span-2">
               Lägg till ett aktivt barn innan du tilldelar en syssla.
@@ -502,7 +513,7 @@
                   <h3 class="font-black">{{ assignment.choreTitle }}</h3>
                   <p class="mt-1 text-sm text-muted">
                     {{ assignment.childName }} · {{ assignment.points }} poäng ·
-                    {{ assignment.assignedAt | date: 'd MMM HH:mm' }}
+                    {{ assignment.dueDate | date: 'd MMM' }}
                   </p>
                 </div>
                 <span

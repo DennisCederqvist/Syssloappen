@@ -78,11 +78,11 @@ describe('AdultChoresPage', () => {
     expect(component.chores()).toHaveLength(2);
   });
 
-  it('creates an assignment using only selected ids', () => {
+  it('creates an assignment with the selected chore, child and date', () => {
     component.openAssignmentForm(1);
-    component.assignmentForm.setValue({ choreId: 1, childId: 7 });
+    component.assignmentForm.setValue({ choreId: 1, childId: 7, dueDate: '2026-08-27' });
     component.createAssignment();
-    expect(service.assignmentCalls).toEqual([{ choreId: 1, childId: 7 }]);
+    expect(service.assignmentCalls).toEqual([{ choreId: 1, childId: 7, dueDate: '2026-08-27' }]);
     expect(component.assignments()[0].childName).toBe('Maja');
   });
 
@@ -137,7 +137,7 @@ describe('AdultChoresPage', () => {
 
   it('requires confirmation and removes a cancelled assignment immediately', () => {
     component.openAssignmentForm(1);
-    component.assignmentForm.setValue({ choreId: 1, childId: 7 });
+    component.assignmentForm.setValue({ choreId: 1, childId: 7, dueDate: '2026-08-27' });
     component.createAssignment();
     const assignment = component.assignments()[0];
 
@@ -152,7 +152,7 @@ describe('AdultChoresPage', () => {
 
   it('gives the assignment cancellation button an accessible name', () => {
     component.openAssignmentForm(1);
-    component.assignmentForm.setValue({ choreId: 1, childId: 7 });
+    component.assignmentForm.setValue({ choreId: 1, childId: 7, dueDate: '2026-08-27' });
     component.createAssignment();
     fixture.detectChanges();
 

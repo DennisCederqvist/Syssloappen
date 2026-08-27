@@ -55,6 +55,16 @@ public sealed class ChoreAssignmentsController(
             return NotFound();
         }
 
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var today = DateOnly.FromDateTime(now);
+        var dueDate = request.DueDate ?? today;
+
+        if (dueDate < today)
+        {
+            ModelState.AddModelError(nameof(request.DueDate), "Due date cannot be in the past.");
+            return ValidationProblem(ModelState);
+        }
+
         var assignment = new ChoreAssignment
         {
             // Ownership, creating Adult and time are always backend-controlled.
@@ -62,7 +72,8 @@ public sealed class ChoreAssignmentsController(
             ChoreId = request.ChoreId,
             ChildId = request.ChildId,
             AssignedByUserId = currentUser.Id,
-            AssignedAt = timeProvider.GetUtcNow().UtcDateTime,
+            AssignedAt = now,
+            DueDate = dueDate,
             // Snapshot the promised value so later chore edits cannot rewrite history.
             Points = chore.Points
         };
@@ -75,7 +86,8 @@ public sealed class ChoreAssignmentsController(
             assignment.ChoreId,
             assignment.ChildId,
             assignment.Points,
-            assignment.AssignedAt);
+            assignment.AssignedAt,
+            assignment.DueDate);
 
         return Created("/api/chore-assignments", response);
     }
@@ -181,6 +193,7 @@ public sealed class ChoreAssignmentsController(
                 assignment.Child.Name,
                 assignment.Points,
                 assignment.AssignedAt,
+                assignment.DueDate,
                 assignment.Status.ToString(),
                 assignment.SubmittedAt,
                 assignment.ReviewedByUserId,

@@ -96,6 +96,32 @@ public sealed class ChoreAssignmentsEndpointsTests : IDisposable
         Assert.Equal(child.Id, stored.ChildId);
         Assert.Equal(created.Id, stored.Id);
         Assert.Equal(created.AssignedAt, stored.AssignedAt);
+        Assert.Equal(DateOnly.FromDateTime(created.AssignedAt), created.DueDate);
+        Assert.Equal(created.DueDate, stored.DueDate);
+    }
+
+    [Fact]
+    public async Task Adult_can_choose_a_future_calendar_date_for_an_assignment()
+    {
+        using var adultClient = CreateClient();
+        await RegisterAndLoginAdult(adultClient, "Familjen Datum", "due-date@example.test");
+        var child = await CreateChild(adultClient, "Sam");
+        var chore = await CreateChore(adultClient, "Packa väskan");
+        var dueDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(2);
+
+        var response = await adultClient.PostAsJsonAsync(
+            "/api/chore-assignments",
+            new CreateChoreAssignmentRequest
+            {
+                ChoreId = chore.Id,
+                ChildId = child.Id,
+                DueDate = dueDate
+            });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var created = await response.Content.ReadFromJsonAsync<ChoreAssignmentResponse>();
+        Assert.NotNull(created);
+        Assert.Equal(dueDate, created.DueDate);
     }
 
     [Fact]

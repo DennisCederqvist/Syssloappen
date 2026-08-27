@@ -65,6 +65,15 @@
             formControlName="pointsCost"
             class="min-h-12 rounded-xl border border-line px-3"
         /></label>
+        <label class="grid gap-1 font-bold" for="reward-stock"
+          >Antal i lager<input
+            id="reward-stock"
+            type="number"
+            min="0"
+            step="1"
+            formControlName="stockQuantity"
+            class="min-h-12 rounded-xl border border-line px-3"
+        /></label>
         @if (formError()) {
           <p class="font-bold text-red-700" role="alert">{{ formError() }}</p>
         }
@@ -120,6 +129,7 @@
               <p class="mt-1 min-h-10 text-sm text-muted">
                 {{ reward.description || 'Ingen extra beskrivning.' }}
               </p>
+              <p class="mt-2 text-sm font-bold text-muted">Lager: {{ reward.stockQuantity }}</p>
               @if (confirmingId() === reward.id) {
                 <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4" role="group">
                   <p class="font-bold text-red-900">

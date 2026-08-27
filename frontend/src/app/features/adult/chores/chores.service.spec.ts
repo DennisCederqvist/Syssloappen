@@ -49,11 +49,11 @@ describe('ChoresService', () => {
     expect(http.expectOne('/api/chores/3').request.method).toBe('DELETE');
   });
 
-  it('assigns only a chore and child id', () => {
-    service.createAssignment({ choreId: 3, childId: 7 }).subscribe();
+  it('assigns a chore, child and date', () => {
+    service.createAssignment({ choreId: 3, childId: 7, dueDate: '2026-08-27' }).subscribe();
     const request = http.expectOne('/api/chore-assignments');
     expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({ choreId: 3, childId: 7 });
+    expect(request.request.body).toEqual({ choreId: 3, childId: 7, dueDate: '2026-08-27' });
     request.flush({ id: 9, choreId: 3, childId: 7, points: 10, assignedAt: '' });
   });
 

@@ -14,6 +14,7 @@ const pendingAssignment: AdultAssignment = {
   childName: 'Maja',
   points: 5,
   assignedAt: '2026-08-26T08:00:00Z',
+  dueDate: '2026-08-26',
   status: 'PendingApproval',
   submittedAt: '2026-08-26T09:00:00Z',
   reviewedByUserId: null,

@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
 import { AppBottomNav, NavItem } from '../../shared/app-bottom-nav';
 import { UserHeader } from '../../shared/user-header';
@@ -21,6 +21,17 @@ export class ChildHomePage implements OnInit {
   readonly loadError = signal('');
   readonly submittingAssignmentIds = signal<ReadonlySet<number>>(new Set());
   readonly submissionErrors = signal<Readonly<Record<number, string>>>({});
+  readonly actionableAssignments = computed(() =>
+    this.assignments().filter((assignment) => this.canSubmit(assignment)),
+  );
+  readonly pendingAssignments = computed(() =>
+    this.assignments().filter((assignment) => assignment.status === 'PendingApproval'),
+  );
+  readonly recentlyApprovedAssignments = computed(() =>
+    this.assignments()
+      .filter((assignment) => assignment.status === 'Approved')
+      .slice(0, 5),
+  );
 
   readonly navItems: NavItem[] = [
     { label: 'Idag', icon: '⌂', active: true, route: '/barn' },

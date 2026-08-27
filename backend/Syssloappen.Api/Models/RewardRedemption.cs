@@ -18,4 +18,5 @@ public sealed class RewardRedemption
     public string? DeliveredByUserId { get; set; }
     public DateTime? DeliveredAt { get; set; }
     public string? Comment { get; set; }
+    public DateTime? AdultArchivedAt { get; set; }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Syssloappen.Api.Data;
@@ -11,9 +12,11 @@ using Syssloappen.Api.Data;
 namespace Syssloappen.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260827174837_AddRewardRedemptionAdultArchive")]
+    partial class AddRewardRedemptionAdultArchive
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -471,9 +474,6 @@ namespace Syssloappen.Api.Migrations
                     b.Property<int>("ChoreId")
                         .HasColumnType("integer");
 
-                    b.Property<DateOnly>("DueDate")
-                        .HasColumnType("date");
-
                     b.Property<int>("HouseholdId")
                         .HasColumnType("integer");
 
@@ -515,7 +515,7 @@ namespace Syssloappen.Api.Migrations
 
                     b.HasIndex("ReviewedByUserId");
 
-                    b.HasIndex("HouseholdId", "ChildId", "DueDate");
+                    b.HasIndex("HouseholdId", "ChildId");
 
                     b.ToTable("ChoreAssignments", t =>
                         {

@@ -16,14 +16,16 @@ export interface NavItem {
     aria-label="Huvudnavigation"
   >
     <div
-      class="mx-auto flex max-w-lg justify-around md:h-full md:flex-col md:justify-start md:gap-3"
+      class="mx-auto grid w-full max-w-lg gap-1 md:h-full md:w-auto md:grid-cols-1 md:justify-start md:gap-3"
+      [class.grid-cols-3]="displayedItems().length === 3"
+      [class.grid-cols-6]="displayedItems().length === 6"
     >
       @for (item of displayedItems(); track item.label) {
         @if (item.route) {
           <a
             [routerLink]="item.route"
             [attr.aria-current]="item.active ? 'page' : null"
-            class="flex min-h-14 min-w-16 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-xs font-bold transition hover:bg-brand-50 md:min-h-16"
+            class="flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-center text-[10px] leading-3 font-bold transition hover:bg-brand-50 md:min-h-16 md:min-w-16 md:px-2 md:text-xs"
             [class.bg-brand-50]="item.active"
             [class.text-brand-600]="item.active"
             [class.text-muted]="!item.active"
@@ -35,7 +37,7 @@ export interface NavItem {
           <button
             type="button"
             disabled
-            class="flex min-h-14 min-w-16 flex-col items-center justify-center gap-1 rounded-2xl px-2 text-xs font-bold text-muted opacity-60 md:min-h-16"
+            class="flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-center text-[10px] leading-3 font-bold text-muted opacity-60 md:min-h-16 md:min-w-16 md:px-2 md:text-xs"
           >
             <span class="text-xl leading-none" aria-hidden="true">{{ item.icon }}</span
             >{{ item.label }}
@@ -50,7 +52,9 @@ export class AppBottomNav {
   readonly items = input.required<NavItem[]>();
   readonly displayedItems = computed(() => {
     const isChild = this.items().some((item) => item.route?.startsWith('/barn'));
-    const currentUrl = this.router.url;
+    // Router.url percent-encodes Swedish route characters. Decode it before
+    // comparing so routes such as /vuxen/belöningar receive their active state.
+    const currentUrl = decodeURIComponent(this.router.url.split(/[?#]/, 1)[0]);
     const navigation = isChild
       ? [
           { label: 'Idag', icon: '⌂', route: '/barn' },

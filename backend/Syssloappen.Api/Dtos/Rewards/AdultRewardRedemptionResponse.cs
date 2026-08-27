@@ -11,4 +11,5 @@ public sealed record AdultRewardRedemptionResponse(
     DateTime RequestedAt,
     DateTime? ReviewedAt,
     DateTime? DeliveredAt,
-    string? Comment);
+    string? Comment,
+    DateTime? AdultArchivedAt);

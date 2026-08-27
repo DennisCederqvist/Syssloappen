@@ -3,6 +3,7 @@ export interface Reward {
   name: string;
   description: string | null;
   pointsCost: number;
+  stockQuantity: number;
   createdAt: string;
 }
 
@@ -10,4 +11,5 @@ export interface RewardRequest {
   name: string;
   description: string | null;
   pointsCost: number;
+  stockQuantity?: number;
 }

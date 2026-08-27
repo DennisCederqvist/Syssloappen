@@ -14,6 +14,7 @@ export interface AdultRewardRedemption {
   reviewedAt: string | null;
   deliveredAt: string | null;
   comment: string | null;
+  adultArchivedAt: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,4 +28,5 @@ export class RewardRedemptionsService {
   change(id: number, action: 'approve' | 'cancel' | 'deliver', comment: string | null): Observable<AdultRewardRedemption> {
     return this.http.post<AdultRewardRedemption>(`/api/reward-redemptions/${id}/${action}`, { comment });
   }
+  archive(id: number): Observable<void> { return this.http.post<void>(`/api/reward-redemptions/${id}/archive`, null); }
 }

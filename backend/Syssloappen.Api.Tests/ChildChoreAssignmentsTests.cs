@@ -87,6 +87,52 @@ public sealed class ChildChoreAssignmentsTests : IDisposable
     }
 
     [Fact]
+    public async Task Child_sees_todays_and_earlier_unfinished_chores_but_not_future_chores()
+    {
+        using var adultClient = CreateClient();
+        using var childClient = CreateClient();
+        var registration = await RegisterAndLoginAdult(
+            adultClient,
+            "Familjen Kalender",
+            "calendar.child.assignments@example.test");
+        var child = await CreateChild(adultClient, "Vera");
+        var todayChore = await CreateChore(adultClient, "Dagens syssla", null);
+        var futureChore = await CreateChore(adultClient, "Framtida syssla", null);
+        var olderChore = await CreateChore(adultClient, "Tidigare syssla", null);
+        var todayAssignment = await AssignChore(adultClient, todayChore.Id, child.Id);
+        var futureAssignment = await AssignChore(
+            adultClient,
+            futureChore.Id,
+            child.Id,
+            DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1));
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var adult = await dbContext.Users.SingleAsync(user =>
+                user.Email == "calendar.child.assignments@example.test");
+            dbContext.ChoreAssignments.Add(new ChoreAssignment
+            {
+                HouseholdId = registration.HouseholdId,
+                ChoreId = olderChore.Id,
+                ChildId = child.Id,
+                AssignedByUserId = adult.Id,
+                AssignedAt = DateTime.UtcNow.AddDays(-1),
+                DueDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1)
+            });
+            await dbContext.SaveChangesAsync();
+        }
+
+        await PairChild(adultClient, childClient, child.Id);
+        var assignments = await childClient.GetFromJsonAsync<List<ChildChoreAssignmentResponse>>(
+            "/api/child/chore-assignments");
+
+        Assert.Contains(assignments!, item => item.AssignmentId == todayAssignment.Id);
+        Assert.Contains(assignments!, item => item.Title == "Tidigare syssla");
+        Assert.DoesNotContain(assignments!, item => item.AssignmentId == futureAssignment.Id);
+    }
+
+    [Fact]
     public async Task Child_does_not_see_siblings_assignments()
     {
         using var adultClient = CreateClient();
@@ -298,14 +344,16 @@ public sealed class ChildChoreAssignmentsTests : IDisposable
     private static async Task<ChoreAssignmentResponse> AssignChore(
         HttpClient client,
         int choreId,
-        int childId)
+        int childId,
+        DateOnly? dueDate = null)
     {
         var response = await client.PostAsJsonAsync(
             "/api/chore-assignments",
             new CreateChoreAssignmentRequest
             {
                 ChoreId = choreId,
-                ChildId = childId
+                ChildId = childId,
+                DueDate = dueDate
             });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         return (await response.Content.ReadFromJsonAsync<ChoreAssignmentResponse>())!;

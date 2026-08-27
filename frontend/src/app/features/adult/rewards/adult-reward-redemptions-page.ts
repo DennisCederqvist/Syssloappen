@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { finalize } from 'rxjs';
@@ -8,7 +7,7 @@ import { AdultRewardRedemption, RewardRedemptionsService } from './reward-redemp
 
 @Component({
   selector: 'app-adult-reward-redemptions-page',
-  imports: [AppBottomNav, DatePipe, UserHeader],
+  imports: [AppBottomNav, UserHeader],
   templateUrl: './adult-reward-redemptions-page.html',
 })
 export class AdultRewardRedemptionsPage implements OnInit {
@@ -19,6 +18,8 @@ export class AdultRewardRedemptionsPage implements OnInit {
   readonly busyId = signal<number | null>(null);
   readonly comments = signal<Readonly<Record<number, string>>>({});
   readonly pending = computed(() => this.items().filter((item) => item.status === 'Requested'));
+  readonly active = computed(() => this.items().filter((item) => item.status === 'Requested' || item.status === 'Approved'));
+  readonly history = computed(() => this.items().filter((item) => !item.adultArchivedAt && (item.status === 'Cancelled' || item.status === 'Delivered')).slice(0, 10));
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: 'H', route: '/vuxen' },
     { label: 'Beloningar', icon: '*', route: '/vuxen/beloningar' },
@@ -46,6 +47,14 @@ export class AdultRewardRedemptionsPage implements OnInit {
     this.service.change(item.id, action, rawComment.trim() || null).pipe(finalize(() => this.busyId.set(null))).subscribe({
       next: (updated) => this.items.update((items) => items.map((current) => current.id === updated.id ? updated : current)),
       error: (response: HttpErrorResponse) => this.error.set(response.status === 409 ? 'Forfragningen har redan hanterats. Uppdatera listan.' : 'Andringen kunde inte sparas.'),
+    });
+  }
+  archive(item: AdultRewardRedemption): void {
+    if (this.busyId() !== null) return;
+    this.busyId.set(item.id);
+    this.service.archive(item.id).pipe(finalize(() => this.busyId.set(null))).subscribe({
+      next: () => this.items.update((items) => items.map((current) => current.id === item.id ? { ...current, adultArchivedAt: new Date().toISOString() } : current)),
+      error: () => this.error.set('Historiken kunde inte döljas.'),
     });
   }
 }

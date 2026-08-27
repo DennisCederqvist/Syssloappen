@@ -46,6 +46,19 @@ public sealed class RewardRedemptionsController(
     public Task<ActionResult<AdultRewardRedemptionResponse>> Deliver(int redemptionId, UpdateRewardRedemptionRequest request) =>
         ChangeStatus(redemptionId, request, RewardRedemptionStatus.Delivered);
 
+    [HttpPost("{redemptionId:int}/archive")]
+    public async Task<IActionResult> Archive(int redemptionId)
+    {
+        var adult = await users.GetUserAsync(User);
+        if (adult is null) return Unauthorized();
+        var redemption = await db.RewardRedemptions.SingleOrDefaultAsync(item => item.Id == redemptionId && item.HouseholdId == adult.HouseholdId);
+        if (redemption is null) return NotFound();
+        if (redemption.Status is not (RewardRedemptionStatus.Cancelled or RewardRedemptionStatus.Delivered)) return Conflict();
+        redemption.AdultArchivedAt = clock.GetUtcNow().UtcDateTime;
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
+
     private async Task<ActionResult<AdultRewardRedemptionResponse>> ChangeStatus(
         int redemptionId,
         UpdateRewardRedemptionRequest request,
@@ -121,6 +134,7 @@ public sealed class RewardRedemptionsController(
 
             reservation.ReservedPoints -= redemption.PointsCost;
             reservation.Version++;
+            redemption.Reward.StockQuantity++;
         }
 
         try
@@ -152,5 +166,6 @@ public sealed class RewardRedemptionsController(
         redemption.RequestedAt,
         redemption.ReviewedAt,
         redemption.DeliveredAt,
-        redemption.Comment);
+        redemption.Comment,
+        redemption.AdultArchivedAt);
 }

@@ -228,9 +228,14 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(reward => reward.IsActive)
                 .HasDefaultValue(true);
 
+            entity.Property(reward => reward.StockQuantity).HasDefaultValue(1);
+
             entity.ToTable(table => table.HasCheckConstraint(
                 "CK_Rewards_PointsCost_Positive",
                 "\"PointsCost\" > 0"));
+            entity.ToTable(table => table.HasCheckConstraint(
+                "CK_Rewards_StockQuantity_NonNegative",
+                "\"StockQuantity\" >= 0"));
 
             entity.HasIndex(reward => reward.HouseholdId);
 
@@ -286,6 +291,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(assignment => assignment.Points)
                 .HasDefaultValue(5);
 
+            entity.Property(assignment => assignment.DueDate)
+                .HasColumnType("date");
+
             entity.Property(assignment => assignment.ReviewComment)
                 .HasMaxLength(500);
 
@@ -296,7 +304,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasIndex(assignment => new
             {
                 assignment.HouseholdId,
-                assignment.ChildId
+                assignment.ChildId,
+                assignment.DueDate
             });
 
             entity.HasIndex(assignment => assignment.ChoreId);

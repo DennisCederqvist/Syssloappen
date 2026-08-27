@@ -7,6 +7,7 @@ export interface ChildChoreAssignment {
   description: string | null;
   points: number;
   assignedAt: string;
+  dueDate: string;
   status: ChildChoreStatus;
   submittedAt: string | null;
   reviewComment: string | null;

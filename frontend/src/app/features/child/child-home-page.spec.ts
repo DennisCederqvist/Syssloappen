@@ -13,6 +13,7 @@ const assignedChore: ChildChoreAssignment = {
   description: 'Fyll både mat och vatten.',
   points: 10,
   assignedAt: '2026-08-26T08:00:00Z',
+  dueDate: '2026-08-26',
   status: 'Assigned',
   submittedAt: null,
   reviewComment: null,
