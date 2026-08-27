@@ -4,7 +4,7 @@ import { finalize, forkJoin } from 'rxjs';
 import { AppBottomNav, NavItem } from '../../shared/app-bottom-nav';
 import { UserHeader } from '../../shared/user-header';
 import { focusAfterRender } from '../../shared/focus';
-import { ChildChoreAssignment, ChildChoreStatus, ChildReward } from './child-chores.models';
+import { ChildChoreAssignment, ChildChoreStatus } from './child-chores.models';
 import { ChildChoresService } from './child-chores.service';
 
 @Component({
@@ -16,12 +16,7 @@ export class ChildHomePage implements OnInit {
   private readonly childChoresService = inject(ChildChoresService);
 
   readonly assignments = signal<ChildChoreAssignment[]>([]);
-  readonly totalPoints = signal(0);
   readonly availablePoints = signal(0);
-  readonly rewards = signal<ChildReward[]>([]);
-  readonly redeemingIds = signal<ReadonlySet<number>>(new Set());
-  readonly rewardError = signal('');
-  readonly rewardSuccess = signal('');
   readonly isLoading = signal(true);
   readonly loadError = signal('');
   readonly submittingAssignmentIds = signal<ReadonlySet<number>>(new Set());
@@ -29,7 +24,8 @@ export class ChildHomePage implements OnInit {
 
   readonly navItems: NavItem[] = [
     { label: 'Idag', icon: '⌂', active: true, route: '/barn' },
-    { label: 'Poäng', icon: '★' },
+    { label: 'Belöningar', icon: '★', route: '/barn/beloningar' },
+    { label: 'Önskningar', icon: '♡', route: '/barn/onskningar' },
     { label: 'Profil', icon: '☺' },
   ];
 
@@ -42,31 +38,17 @@ export class ChildHomePage implements OnInit {
     this.loadError.set('');
     forkJoin({
       assignments: this.childChoresService.getAssignments(),
-      points: this.childChoresService.getPoints(),
       rewards: this.childChoresService.getRewards(),
     })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: ({ assignments, points, rewards }) => {
+        next: ({ assignments, rewards }) => {
           this.assignments.set(assignments);
-          this.totalPoints.set(points.totalPoints);
           this.availablePoints.set(rewards.availablePoints);
-          this.rewards.set(rewards.rewards);
         },
         error: () => this.loadError.set('Dina sysslor och poäng kunde inte hämtas. Försök igen.'),
       });
   }
-
-  requestReward(reward: ChildReward): void {
-    if (this.redeemingIds().has(reward.id)) return;
-    this.redeemingIds.update((ids) => new Set(ids).add(reward.id)); this.rewardError.set(''); this.rewardSuccess.set('');
-    this.childChoresService.requestReward(reward.id, crypto.randomUUID()).pipe(finalize(() => this.redeemingIds.update((ids) => { const next = new Set(ids); next.delete(reward.id); return next; }))).subscribe({
-      next: (redemption) => { this.availablePoints.set(redemption.availablePoints); this.rewardSuccess.set(`${reward.name} är önskad. En vuxen hjälper dig snart.`); focusAfterRender('child-reward-success'); },
-      error: (error: HttpErrorResponse) => this.rewardError.set(error.status === 409 ? 'Du har inte tillräckligt många tillgängliga poäng.' : error.status === 404 ? 'Belöningen finns inte längre.' : 'Belöningen kunde inte önskas. Försök igen.'),
-    });
-  }
-
-  isRedeeming(rewardId: number): boolean { return this.redeemingIds().has(rewardId); }
 
   submitAssignment(assignment: ChildChoreAssignment): void {
     if (!this.canSubmit(assignment) || this.isSubmitting(assignment.assignmentId)) return;

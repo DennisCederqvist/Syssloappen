@@ -64,7 +64,7 @@ describe('ChildHomePage', () => {
 
   it('shows real assignments and the authenticated child points', () => {
     expect(component.assignments()).toEqual([assignedChore]);
-    expect(component.totalPoints()).toBe(25);
+    expect(component.availablePoints()).toBe(25);
     expect(fixture.nativeElement.textContent).toContain('Mata katten');
     expect(fixture.nativeElement.textContent).toContain('25');
   });

@@ -24,4 +24,17 @@ export interface SubmittedChildChoreAssignment {
 
 export interface ChildReward { id: number; name: string; description: string | null; pointsCost: number; }
 export interface ChildRewards { availablePoints: number; rewards: ChildReward[]; }
-export interface RewardRedemption { id: number; rewardId: number; rewardName: string; pointsCost: number; status: 'Requested'; requestedAt: string; availablePoints: number; }
+export type RewardRedemptionStatus = 'Requested' | 'Approved' | 'Cancelled' | 'Delivered';
+
+export interface RewardRedemption {
+  id: number;
+  rewardId: number;
+  rewardName: string;
+  pointsCost: number;
+  status: RewardRedemptionStatus;
+  requestedAt: string;
+  reviewedAt: string | null;
+  deliveredAt: string | null;
+  comment: string | null;
+  availablePoints: number;
+}

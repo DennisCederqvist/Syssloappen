@@ -259,7 +259,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
         modelBuilder.Entity<RewardRedemption>(entity =>
         {
             entity.Property(redemption => redemption.Status).HasConversion<string>().HasMaxLength(30)
-                .HasDefaultValue(RewardRedemptionStatus.Requested);
+                .HasDefaultValue(RewardRedemptionStatus.Requested).IsConcurrencyToken();
             entity.Property(redemption => redemption.IdempotencyKey).HasMaxLength(36).IsRequired();
             entity.Property(redemption => redemption.Comment).HasMaxLength(500);
             entity.ToTable(table => table.HasCheckConstraint("CK_RewardRedemptions_PointsCost_Positive", "\"PointsCost\" > 0"));
@@ -269,6 +269,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasOne(redemption => redemption.Reward).WithMany().HasForeignKey(redemption => redemption.RewardId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(redemption => redemption.Child).WithMany().HasForeignKey(redemption => redemption.ChildId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(redemption => redemption.ReviewedByUserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(redemption => redemption.DeliveredByUserId).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ChoreAssignment>(entity =>

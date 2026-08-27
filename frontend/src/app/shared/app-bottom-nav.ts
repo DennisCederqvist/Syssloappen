@@ -1,5 +1,5 @@
-import { Component, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, inject, input } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
 export interface NavItem {
   label: string;
@@ -18,7 +18,7 @@ export interface NavItem {
     <div
       class="mx-auto flex max-w-lg justify-around md:h-full md:flex-col md:justify-start md:gap-3"
     >
-      @for (item of items(); track item.label) {
+      @for (item of displayedItems(); track item.label) {
         @if (item.route) {
           <a
             [routerLink]="item.route"
@@ -46,5 +46,25 @@ export interface NavItem {
   </nav>`,
 })
 export class AppBottomNav {
+  private readonly router = inject(Router);
   readonly items = input.required<NavItem[]>();
+  readonly displayedItems = computed(() => {
+    const isChild = this.items().some((item) => item.route?.startsWith('/barn'));
+    const currentUrl = this.router.url;
+    const navigation = isChild
+      ? [
+          { label: 'Idag', icon: '⌂', route: '/barn' },
+          { label: 'Belöningar', icon: '★', route: '/barn/beloningar' },
+          { label: 'Önskningar', icon: '♡', route: '/barn/onskningar' },
+        ]
+      : [
+          { label: 'Hem', icon: '⌂', route: '/vuxen' },
+          { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
+          { label: 'Belöningar', icon: '★', route: '/vuxen/belöningar' },
+          { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
+          { label: 'Önskningar', icon: '♡', route: '/vuxen/onskningar' },
+          { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
+        ];
+    return navigation.map((item) => ({ ...item, active: currentUrl === item.route }));
+  });
 }

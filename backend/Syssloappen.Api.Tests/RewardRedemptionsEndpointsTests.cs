@@ -76,6 +76,44 @@ public sealed class RewardRedemptionsEndpointsTests : IDisposable
         Assert.Empty(await scope.ServiceProvider.GetRequiredService<AppDbContext>().RewardRedemptions.ToListAsync());
     }
 
+    [Fact]
+    public async Task Adult_can_approve_then_deliver_but_cannot_change_a_delivered_redemption()
+    {
+        using var adult = Client(); using var childClient = Client();
+        await RegisterLogin(adult, "Redemption G", "redemption.delivery@example.test");
+        var child = await CreateChild(adult, "Noah"); await AwardPoints(adult, childClient, child.Id, 20);
+        var reward = await CreateReward(adult, "Spel", 10);
+        var requested = await Redeem(childClient, reward.Id, Guid.NewGuid().ToString());
+        var redemption = (await requested.Content.ReadFromJsonAsync<RewardRedemptionResponse>())!;
+
+        var approved = await adult.PostAsJsonAsync($"/api/reward-redemptions/{redemption.Id}/approve", new UpdateRewardRedemptionRequest { Comment = "Bra jobbat" });
+        Assert.Equal(HttpStatusCode.OK, approved.StatusCode);
+        Assert.Equal("Approved", (await approved.Content.ReadFromJsonAsync<AdultRewardRedemptionResponse>())!.Status);
+        var delivered = await adult.PostAsJsonAsync($"/api/reward-redemptions/{redemption.Id}/deliver", new UpdateRewardRedemptionRequest());
+        Assert.Equal(HttpStatusCode.OK, delivered.StatusCode);
+        Assert.NotNull((await delivered.Content.ReadFromJsonAsync<AdultRewardRedemptionResponse>())!.DeliveredAt);
+        Assert.Equal(HttpStatusCode.Conflict, (await adult.PostAsJsonAsync($"/api/reward-redemptions/{redemption.Id}/cancel", new UpdateRewardRedemptionRequest())).StatusCode);
+    }
+
+    [Fact]
+    public async Task Cancellation_releases_points_once_and_makes_reward_selectable_again()
+    {
+        using var adult = Client(); using var childClient = Client(); using var otherAdult = Client();
+        await RegisterLogin(adult, "Redemption H", "redemption.cancel@example.test");
+        var child = await CreateChild(adult, "Ella"); await AwardPoints(adult, childClient, child.Id, 20);
+        var reward = await CreateReward(adult, "Bok", 15);
+        var requested = await Redeem(childClient, reward.Id, Guid.NewGuid().ToString());
+        var redemption = (await requested.Content.ReadFromJsonAsync<RewardRedemptionResponse>())!;
+        await RegisterLogin(otherAdult, "Redemption I", "redemption.cancel-other@example.test");
+        Assert.Equal(HttpStatusCode.NotFound, (await otherAdult.PostAsJsonAsync($"/api/reward-redemptions/{redemption.Id}/cancel", new UpdateRewardRedemptionRequest())).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await adult.PostAsJsonAsync($"/api/reward-redemptions/{redemption.Id}/cancel", new UpdateRewardRedemptionRequest())).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await adult.PostAsJsonAsync($"/api/reward-redemptions/{redemption.Id}/cancel", new UpdateRewardRedemptionRequest())).StatusCode);
+        var rewards = await childClient.GetFromJsonAsync<ChildRewardsResponse>("/api/child/rewards");
+        Assert.Equal(20, rewards!.AvailablePoints); Assert.Equal(reward.Id, Assert.Single(rewards.Rewards).Id);
+        using var scope = factory.Services.CreateScope();
+        Assert.Equal(0, (await scope.ServiceProvider.GetRequiredService<AppDbContext>().ChildPointReservations.SingleAsync()).ReservedPoints);
+    }
+
     public void Dispose() => factory.Dispose();
     private HttpClient Client() => factory.CreateClient(new WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost"), HandleCookies = true, AllowAutoRedirect = false });
     private static async Task<HttpResponseMessage> Redeem(HttpClient client, int rewardId, string key) { var request = new HttpRequestMessage(HttpMethod.Post, "/api/child/reward-redemptions") { Content = JsonContent.Create(new CreateRewardRedemptionRequest { RewardId = rewardId }) }; request.Headers.Add("Idempotency-Key", key); return await client.SendAsync(request); }

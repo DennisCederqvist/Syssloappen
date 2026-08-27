@@ -23,6 +23,10 @@ export class ChildChoresService {
     return this.http.post<RewardRedemption>('/api/child/reward-redemptions', { rewardId }, { headers: { 'Idempotency-Key': idempotencyKey } });
   }
 
+  getRewardRedemptions(): Observable<RewardRedemption[]> {
+    return this.http.get<RewardRedemption[]>('/api/child/reward-redemptions');
+  }
+
   getPoints(): Observable<ChildPoints> {
     return this.http.get<ChildPoints>('/api/child/points');
   }

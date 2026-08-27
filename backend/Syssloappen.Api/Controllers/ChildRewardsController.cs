@@ -18,7 +18,9 @@ public sealed class ChildRewardsController(AppDbContext db, UserManager<Applicat
     public async Task<ActionResult<ChildRewardsResponse>> GetRewards()
     {
         var child = await GetChild(); if (child is null) return Unauthorized();
-        var rewards = await db.Rewards.AsNoTracking().Where(r => r.HouseholdId == child.HouseholdId && r.IsActive)
+        var rewards = await db.Rewards.AsNoTracking().Where(r => r.HouseholdId == child.HouseholdId && r.IsActive
+                && !db.RewardRedemptions.Any(redemption => redemption.ChildId == child.Id && redemption.RewardId == r.Id
+                    && (redemption.Status == RewardRedemptionStatus.Requested || redemption.Status == RewardRedemptionStatus.Approved)))
             .OrderBy(r => r.Name).Select(r => new ChildRewardResponse(r.Id, r.Name, r.Description, r.PointsCost)).ToListAsync();
         return Ok(new ChildRewardsResponse(await AvailablePoints(child), rewards));
     }
@@ -37,6 +39,11 @@ public sealed class ChildRewardsController(AppDbContext db, UserManager<Applicat
         var reward = await db.Rewards.SingleOrDefaultAsync(r => r.Id == request.RewardId && r.HouseholdId == child.HouseholdId && r.IsActive);
         if (reward is null) return NotFound();
         await using var transaction = await db.Database.BeginTransactionAsync();
+        if (await db.RewardRedemptions.AnyAsync(redemption => redemption.ChildId == child.Id && redemption.RewardId == reward.Id
+                && (redemption.Status == RewardRedemptionStatus.Requested || redemption.Status == RewardRedemptionStatus.Approved)))
+        {
+            return Conflict(new ProblemDetails { Title = "Reward is already being handled", Status = StatusCodes.Status409Conflict });
+        }
         var reservation = await db.ChildPointReservations.SingleOrDefaultAsync(r => r.ChildId == child.Id);
         if (reservation is null)
         {
@@ -67,5 +74,18 @@ public sealed class ChildRewardsController(AppDbContext db, UserManager<Applicat
                 && c.Chore.HouseholdId == child.HouseholdId)
             .SumAsync(c => (int?)c.PointsAwarded) ?? 0;
     private async Task<int> AvailablePoints(ChildProfile child) => await EarnedPoints(child) - (await db.ChildPointReservations.Where(r => r.ChildId == child.Id && r.HouseholdId == child.HouseholdId).Select(r => (int?)r.ReservedPoints).SingleOrDefaultAsync() ?? 0);
-    private static RewardRedemptionResponse ToResponse(RewardRedemption redemption, int available) => new(redemption.Id, redemption.RewardId, redemption.Reward.Name, redemption.PointsCost, redemption.Status.ToString(), redemption.RequestedAt, available);
+    [HttpGet("reward-redemptions")]
+    public async Task<ActionResult<IReadOnlyList<RewardRedemptionResponse>>> GetRedemptions()
+    {
+        var child = await GetChild(); if (child is null) return Unauthorized();
+        var available = await AvailablePoints(child);
+        var redemptions = await db.RewardRedemptions.AsNoTracking()
+            .Where(redemption => redemption.ChildId == child.Id && redemption.HouseholdId == child.HouseholdId
+                && redemption.Child.UserId == child.UserId)
+            .OrderByDescending(redemption => redemption.RequestedAt)
+            .Include(redemption => redemption.Reward)
+            .ToListAsync();
+        return Ok(redemptions.Select(redemption => ToResponse(redemption, available)).ToList());
+    }
+    private static RewardRedemptionResponse ToResponse(RewardRedemption redemption, int available) => new(redemption.Id, redemption.RewardId, redemption.Reward.Name, redemption.PointsCost, redemption.Status.ToString(), redemption.RequestedAt, redemption.ReviewedAt, redemption.DeliveredAt, redemption.Comment, available);
 }

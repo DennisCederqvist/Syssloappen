@@ -15,6 +15,7 @@ public sealed class RewardRedemption
     public DateTime RequestedAt { get; set; }
     public string? ReviewedByUserId { get; set; }
     public DateTime? ReviewedAt { get; set; }
+    public string? DeliveredByUserId { get; set; }
     public DateTime? DeliveredAt { get; set; }
     public string? Comment { get; set; }
 }
