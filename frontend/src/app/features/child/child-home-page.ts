@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
 import { AppBottomNav, NavItem } from '../../shared/app-bottom-nav';
 import { UserHeader } from '../../shared/user-header';
@@ -16,15 +16,27 @@ export class ChildHomePage implements OnInit {
   private readonly childChoresService = inject(ChildChoresService);
 
   readonly assignments = signal<ChildChoreAssignment[]>([]);
-  readonly totalPoints = signal(0);
+  readonly availablePoints = signal(0);
   readonly isLoading = signal(true);
   readonly loadError = signal('');
   readonly submittingAssignmentIds = signal<ReadonlySet<number>>(new Set());
   readonly submissionErrors = signal<Readonly<Record<number, string>>>({});
+  readonly actionableAssignments = computed(() =>
+    this.assignments().filter((assignment) => this.canSubmit(assignment)),
+  );
+  readonly pendingAssignments = computed(() =>
+    this.assignments().filter((assignment) => assignment.status === 'PendingApproval'),
+  );
+  readonly recentlyApprovedAssignments = computed(() =>
+    this.assignments()
+      .filter((assignment) => assignment.status === 'Approved')
+      .slice(0, 5),
+  );
 
   readonly navItems: NavItem[] = [
     { label: 'Idag', icon: '⌂', active: true, route: '/barn' },
-    { label: 'Poäng', icon: '★' },
+    { label: 'Belöningar', icon: '★', route: '/barn/beloningar' },
+    { label: 'Önskningar', icon: '♡', route: '/barn/onskningar' },
     { label: 'Profil', icon: '☺' },
   ];
 
@@ -37,13 +49,13 @@ export class ChildHomePage implements OnInit {
     this.loadError.set('');
     forkJoin({
       assignments: this.childChoresService.getAssignments(),
-      points: this.childChoresService.getPoints(),
+      rewards: this.childChoresService.getRewards(),
     })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: ({ assignments, points }) => {
+        next: ({ assignments, rewards }) => {
           this.assignments.set(assignments);
-          this.totalPoints.set(points.totalPoints);
+          this.availablePoints.set(rewards.availablePoints);
         },
         error: () => this.loadError.set('Dina sysslor och poäng kunde inte hämtas. Försök igen.'),
       });

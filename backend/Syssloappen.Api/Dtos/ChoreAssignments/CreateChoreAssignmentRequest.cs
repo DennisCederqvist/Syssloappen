@@ -9,4 +9,6 @@ public sealed class CreateChoreAssignmentRequest
 
     [Range(1, int.MaxValue)]
     public int ChildId { get; init; }
+
+    public DateOnly? DueDate { get; init; }
 }

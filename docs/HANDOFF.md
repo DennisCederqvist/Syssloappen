@@ -1,6 +1,6 @@
 # Syssloappen - Project Handoff
 
-Senast uppdaterad: 2026-08-26
+Senast uppdaterad: 2026-08-27
 
 Läs alltid `REQUIREMENTS.md` först. Den här filen kompletterar kraven med projektets aktuella tekniska status och fattade beslut.
 
@@ -429,6 +429,17 @@ Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt 
 Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; PostgreSQL lade till den obligatoriska `IsActive`-kolumnen med standardvärdet `true` utan fel.
 
 ## Aktuell arbetsdel
+
+US-071 och US-072 är implementerade, automatiskt verifierade och användargodkända. De är mergade till `main`; den tidigare feature-branchen är borttagen efter push:
+
+- Migrationerna `AddRewardStock`, `AddRewardRedemptionAdultArchive` och `AddChoreAssignmentDueDate` är applicerade i `syssloappen_dev`.
+- Belöningar är lagerobjekt. En Child-request reserverar atomärt både poäng och en lagerenhet. Avslag frigör exakt en poäng- och lagerreservation; utlämning förbrukar lagerenheten permanent. Adult kan fylla på lagret i belöningskatalogen.
+- Child har separata routes för tillgängliga belöningar och egna önskningar. Tillgängligt saldo visas på startsidan. Aktiva önskningar visas separat och de fem senaste slutliga beskeden visas med grönt för godkänt/utlämnat och rött för avslag.
+- Adult har en Household-isolerad kö för `Requested` och `Approved`, med flödena godkänn, avslag med frigjord reservation och markera som utlämnad. Slutliga ärenden lämnar kön; Adult-historiken kan döljas lokalt utan att auditdata raderas.
+- Adult väljer datum när en engångssyssla tilldelas, med dagens datum förvalt. Barnets startsida visar dagens och tidigare oavslutade sysslor, aldrig framtida sysslor eller stressande försenad-markering. `PendingApproval` visas i en separat lugn statussektion. Återkommande scheman är senare arbete.
+- Den delade navigationen använder samma meny för varje roll. Svenska URL:er avkodas innan aktiv sida bestäms, vilket gör att Belöningar markeras korrekt. Mobilmenyn är fast vid skärmens nederkant även efter sidans inledande animation.
+- Verifiering: 126 backendtester, 60 frontendtester och Angular-produktionsbygget passerar. Kalenderflödet har två nya integrationstester för valt datum samt filtrering av framtida sysslor.
+- Användaren har manuellt testat och godkänt belönings- och kalenderflödet. `REQUIREMENTS.md` är uppdaterad i enlighet med detta.
 
 US-070:s bildfria belöningskatalog är implementerad, automatiskt verifierad, användartestad och godkänd för merge:
 

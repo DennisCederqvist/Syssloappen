@@ -50,6 +50,14 @@ export const routes: Routes = [
       import('./features/adult/rewards/adult-rewards-page').then((c) => c.AdultRewardsPage),
   },
   {
+    path: 'vuxen/onskningar',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/rewards/adult-reward-redemptions-page').then(
+        (c) => c.AdultRewardRedemptionsPage,
+      ),
+  },
+  {
     path: 'vuxen/granska',
     canActivate: [adultGuard],
     loadComponent: () =>
@@ -59,6 +67,26 @@ export const routes: Routes = [
     path: 'barn',
     canActivate: [childGuard],
     loadComponent: () => import('./features/child/child-home-page').then((c) => c.ChildHomePage),
+  },
+  {
+    path: 'barn/beloningar',
+    canActivate: [childGuard],
+    loadComponent: () => import('./features/child/child-rewards-page').then((c) => c.ChildRewardsPage),
+  },
+  {
+    path: 'barn/onskningar',
+    canActivate: [childGuard],
+    loadComponent: () => import('./features/child/child-redemptions-page').then((c) => c.ChildRedemptionsPage),
+  },
+  {
+    path: 'barn/beloningar',
+    canActivate: [childGuard],
+    loadComponent: () => import('./features/child/child-rewards-page').then((c) => c.ChildRewardsPage),
+  },
+  {
+    path: 'barn/onskningar',
+    canActivate: [childGuard],
+    loadComponent: () => import('./features/child/child-redemptions-page').then((c) => c.ChildRedemptionsPage),
   },
   { path: '**', redirectTo: '' },
 ];

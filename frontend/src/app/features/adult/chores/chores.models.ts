@@ -17,6 +17,7 @@ export type UpdateChoreRequest = CreateChoreRequest;
 export interface CreateAssignmentRequest {
   choreId: number;
   childId: number;
+  dueDate: string;
 }
 
 export interface CreatedAssignment {
@@ -25,6 +26,7 @@ export interface CreatedAssignment {
   childId: number;
   points: number;
   assignedAt: string;
+  dueDate: string;
 }
 
 export interface AdultAssignment {
@@ -35,6 +37,7 @@ export interface AdultAssignment {
   childName: string;
   points: number;
   assignedAt: string;
+  dueDate: string;
   status: 'Assigned' | 'PendingApproval' | 'NeedsRedo' | 'Approved' | 'Cancelled';
   submittedAt: string | null;
   reviewedByUserId: string | null;

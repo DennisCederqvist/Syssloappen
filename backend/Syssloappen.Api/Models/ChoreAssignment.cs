@@ -24,6 +24,10 @@ public sealed class ChoreAssignment
 
     public DateTime AssignedAt { get; set; }
 
+    // The calendar day the child should see and complete this one-off chore.
+    // AssignedAt remains an audit timestamp and must not be used as scheduling data.
+    public DateOnly DueDate { get; set; }
+
     public int Points { get; set; } = 5;
 
     public ChoreAssignmentStatus Status { get; set; } = ChoreAssignmentStatus.Assigned;

@@ -21,11 +21,11 @@
       </div>
       <div
         class="flex min-h-16 min-w-24 shrink-0 items-center justify-center gap-2 rounded-2xl bg-amber-50 px-4 text-amber-800"
-        [attr.aria-label]="isLoading() || loadError() ? null : totalPoints() + ' poäng'"
+        [attr.aria-label]="isLoading() || loadError() ? null : availablePoints() + ' poäng'"
       >
         <span class="text-2xl" aria-hidden="true">⭐</span>
         <strong class="text-2xl font-black">{{
-          isLoading() || loadError() ? '–' : totalPoints()
+          isLoading() || loadError() ? '–' : availablePoints()
         }}</strong>
       </div>
     </section>
@@ -62,7 +62,7 @@
             Försök igen
           </button>
         </div>
-      } @else if (assignments().length === 0) {
+      } @else if (actionableAssignments().length === 0) {
         <div
           class="mt-4 flex min-h-48 flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-brand-500/30 bg-white p-6 text-center shadow-sm"
         >
@@ -77,7 +77,7 @@
         </div>
       } @else {
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
-          @for (assignment of assignments(); track assignment.assignmentId) {
+          @for (assignment of actionableAssignments(); track assignment.assignmentId) {
             <article
               [id]="'child-assignment-' + assignment.assignmentId"
               tabindex="-1"
@@ -160,5 +160,40 @@
         </div>
       }
     </section>
+
+    @if (!isLoading() && !loadError() && pendingAssignments().length > 0) {
+      <section class="mt-8" aria-labelledby="waiting-title">
+        <p class="text-sm font-extrabold text-amber-800">På väg</p>
+        <h2 id="waiting-title" class="mt-1 text-2xl font-black">Väntar på svar</h2>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          @for (assignment of pendingAssignments(); track assignment.assignmentId) {
+            <article class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line sm:p-6">
+              <div class="flex items-start justify-between gap-3">
+                <h3 class="text-xl font-black">{{ assignment.title }}</h3>
+                <span class="shrink-0 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-800">Väntar på godkännande</span>
+              </div>
+              <p class="mt-4 rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-900">
+                Bra jobbat! En vuxen tittar på uppgiften innan poängen delas ut.
+              </p>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (!isLoading() && !loadError() && recentlyApprovedAssignments().length > 0) {
+      <section class="mt-8" aria-labelledby="done-title">
+        <p class="text-sm font-extrabold text-emerald-800">Klart</p>
+        <h2 id="done-title" class="mt-1 text-2xl font-black">Senast godkända</h2>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          @for (assignment of recentlyApprovedAssignments(); track assignment.assignmentId) {
+            <article class="rounded-3xl bg-emerald-50 p-5 ring-1 ring-emerald-100">
+              <h3 class="text-lg font-black">{{ assignment.title }}</h3>
+              <p class="mt-2 font-bold text-emerald-900">Godkänt! {{ assignment.points }} poäng är tillagda i ditt saldo.</p>
+            </article>
+          }
+        </div>
+      </section>
+    }
   </main>
 </div>

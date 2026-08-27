@@ -13,4 +13,7 @@ public sealed class CreateRewardRequest
 
     [Range(1, int.MaxValue)]
     public int PointsCost { get; init; }
+
+    [Range(0, int.MaxValue)]
+    public int StockQuantity { get; init; } = 1;
 }

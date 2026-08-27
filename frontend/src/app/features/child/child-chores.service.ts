@@ -5,6 +5,8 @@ import {
   ChildChoreAssignment,
   ChildPoints,
   SubmittedChildChoreAssignment,
+  ChildRewards,
+  RewardRedemption,
 } from './child-chores.models';
 
 @Injectable({ providedIn: 'root' })
@@ -13,6 +15,16 @@ export class ChildChoresService {
 
   getAssignments(): Observable<ChildChoreAssignment[]> {
     return this.http.get<ChildChoreAssignment[]>('/api/child/chore-assignments');
+  }
+
+  getRewards(): Observable<ChildRewards> { return this.http.get<ChildRewards>('/api/child/rewards'); }
+
+  requestReward(rewardId: number, idempotencyKey: string): Observable<RewardRedemption> {
+    return this.http.post<RewardRedemption>('/api/child/reward-redemptions', { rewardId }, { headers: { 'Idempotency-Key': idempotencyKey } });
+  }
+
+  getRewardRedemptions(): Observable<RewardRedemption[]> {
+    return this.http.get<RewardRedemption[]>('/api/child/reward-redemptions');
   }
 
   getPoints(): Observable<ChildPoints> {

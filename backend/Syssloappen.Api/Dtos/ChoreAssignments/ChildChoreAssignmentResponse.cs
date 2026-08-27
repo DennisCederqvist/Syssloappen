@@ -7,6 +7,7 @@ public sealed record ChildChoreAssignmentResponse(
     string? Description,
     int Points,
     DateTime AssignedAt,
+    DateOnly DueDate,
     string Status,
     DateTime? SubmittedAt,
     string? ReviewComment);

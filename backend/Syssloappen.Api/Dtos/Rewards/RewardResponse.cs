@@ -5,4 +5,5 @@ public sealed record RewardResponse(
     string Name,
     string? Description,
     int PointsCost,
+    int StockQuantity,
     DateTime CreatedAt);

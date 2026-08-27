@@ -5,4 +5,5 @@ public sealed record ChoreAssignmentResponse(
     int ChoreId,
     int ChildId,
     int Points,
-    DateTime AssignedAt);
+    DateTime AssignedAt,
+    DateOnly DueDate);

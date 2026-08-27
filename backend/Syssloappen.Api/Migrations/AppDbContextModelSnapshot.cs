@@ -328,6 +328,39 @@ namespace Syssloappen.Api.Migrations
                     b.ToTable("ChildPairingCodes");
                 });
 
+            modelBuilder.Entity("Syssloappen.Api.Models.ChildPointReservation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChildId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("HouseholdId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReservedPoints")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChildId")
+                        .IsUnique();
+
+                    b.HasIndex("HouseholdId");
+
+                    b.ToTable("ChildPointReservations");
+                });
+
             modelBuilder.Entity("Syssloappen.Api.Models.ChildProfile", b =>
                 {
                     b.Property<int>("Id")
@@ -438,6 +471,9 @@ namespace Syssloappen.Api.Migrations
                     b.Property<int>("ChoreId")
                         .HasColumnType("integer");
 
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("date");
+
                     b.Property<int>("HouseholdId")
                         .HasColumnType("integer");
 
@@ -479,7 +515,7 @@ namespace Syssloappen.Api.Migrations
 
                     b.HasIndex("ReviewedByUserId");
 
-                    b.HasIndex("HouseholdId", "ChildId");
+                    b.HasIndex("HouseholdId", "ChildId", "DueDate");
 
                     b.ToTable("ChoreAssignments", t =>
                         {
@@ -647,6 +683,11 @@ namespace Syssloappen.Api.Migrations
                     b.Property<int>("PointsCost")
                         .HasColumnType("integer");
 
+                    b.Property<int>("StockQuantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedByUserId");
@@ -656,6 +697,82 @@ namespace Syssloappen.Api.Migrations
                     b.ToTable("Rewards", t =>
                         {
                             t.HasCheckConstraint("CK_Rewards_PointsCost_Positive", "\"PointsCost\" > 0");
+
+                            t.HasCheckConstraint("CK_Rewards_StockQuantity_NonNegative", "\"StockQuantity\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Syssloappen.Api.Models.RewardRedemption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AdultArchivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ChildId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeliveredByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("HouseholdId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<int>("PointsCost")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReviewedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("RewardId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasDefaultValue("Requested");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeliveredByUserId");
+
+                    b.HasIndex("ReviewedByUserId");
+
+                    b.HasIndex("RewardId");
+
+                    b.HasIndex("ChildId", "IdempotencyKey")
+                        .IsUnique();
+
+                    b.HasIndex("HouseholdId", "ChildId");
+
+                    b.ToTable("RewardRedemptions", t =>
+                        {
+                            t.HasCheckConstraint("CK_RewardRedemptions_PointsCost_Positive", "\"PointsCost\" > 0");
                         });
                 });
 
@@ -771,6 +888,25 @@ namespace Syssloappen.Api.Migrations
                     b.Navigation("ChildProfile");
 
                     b.Navigation("CreatedByUser");
+
+                    b.Navigation("Household");
+                });
+
+            modelBuilder.Entity("Syssloappen.Api.Models.ChildPointReservation", b =>
+                {
+                    b.HasOne("Syssloappen.Api.Models.ChildProfile", "Child")
+                        .WithMany()
+                        .HasForeignKey("ChildId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Syssloappen.Api.Models.Household", "Household")
+                        .WithMany()
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Child");
 
                     b.Navigation("Household");
                 });
@@ -940,6 +1076,43 @@ namespace Syssloappen.Api.Migrations
                     b.Navigation("CreatedByUser");
 
                     b.Navigation("Household");
+                });
+
+            modelBuilder.Entity("Syssloappen.Api.Models.RewardRedemption", b =>
+                {
+                    b.HasOne("Syssloappen.Api.Models.ChildProfile", "Child")
+                        .WithMany()
+                        .HasForeignKey("ChildId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Syssloappen.Api.Authentication.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("DeliveredByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Syssloappen.Api.Models.Household", "Household")
+                        .WithMany()
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Syssloappen.Api.Authentication.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Syssloappen.Api.Models.Reward", "Reward")
+                        .WithMany()
+                        .HasForeignKey("RewardId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Child");
+
+                    b.Navigation("Household");
+
+                    b.Navigation("Reward");
                 });
 #pragma warning restore 612, 618
         }

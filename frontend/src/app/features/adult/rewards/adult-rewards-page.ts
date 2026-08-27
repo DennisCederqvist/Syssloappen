@@ -35,6 +35,7 @@ export class AdultRewardsPage implements OnInit {
     name: ['', [Validators.required, Validators.maxLength(100)]],
     description: ['', Validators.maxLength(500)],
     pointsCost: [1, [Validators.required, Validators.min(1), Validators.pattern(/^[0-9]+$/)]],
+    stockQuantity: [1, [Validators.required, Validators.min(0), Validators.pattern(/^[0-9]+$/)]],
   });
 
   ngOnInit(): void {
@@ -54,7 +55,7 @@ export class AdultRewardsPage implements OnInit {
   openCreate(): void {
     this.editing.set(null);
     this.formError.set('');
-    this.rewardForm.reset({ name: '', description: '', pointsCost: 1 });
+    this.rewardForm.reset({ name: '', description: '', pointsCost: 1, stockQuantity: 1 });
     focusAfterRender('reward-name');
   }
   openEdit(reward: Reward): void {
@@ -64,6 +65,7 @@ export class AdultRewardsPage implements OnInit {
       name: reward.name,
       description: reward.description ?? '',
       pointsCost: reward.pointsCost,
+      stockQuantity: reward.stockQuantity,
     });
     focusAfterRender('reward-name');
   }
@@ -84,6 +86,7 @@ export class AdultRewardsPage implements OnInit {
       name,
       description: value.description.trim() || null,
       pointsCost: value.pointsCost,
+      stockQuantity: value.stockQuantity,
     };
     const existing = this.editing();
     this.busyId.set(existing?.id ?? 0);
@@ -99,7 +102,7 @@ export class AdultRewardsPage implements OnInit {
           ),
         );
         this.editing.set(null);
-        this.rewardForm.reset({ name: '', description: '', pointsCost: 1 });
+        this.rewardForm.reset({ name: '', description: '', pointsCost: 1, stockQuantity: 1 });
         this.successMessage.set(`${reward.name} är ${existing ? 'uppdaterad' : 'skapad'}.`);
         focusAfterRender('rewards-success');
       },

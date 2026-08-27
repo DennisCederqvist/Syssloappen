@@ -16,6 +16,7 @@ export class AdultHomePage {
     { label: 'Hem', icon: '⌂', active: true, route: '/vuxen' },
     { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
     { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
+    { label: 'Önskningar', icon: '★', route: '/vuxen/onskningar' },
     { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
   ];
 }

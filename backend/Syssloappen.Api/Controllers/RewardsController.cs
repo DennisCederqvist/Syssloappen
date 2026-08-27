@@ -38,6 +38,7 @@ public sealed class RewardsController(
             Name = name,
             Description = NormalizeDescription(request.Description),
             PointsCost = request.PointsCost,
+            StockQuantity = request.StockQuantity,
             IsActive = true,
             CreatedAt = timeProvider.GetUtcNow().UtcDateTime
         };
@@ -56,7 +57,7 @@ public sealed class RewardsController(
             .Where(reward => reward.HouseholdId == currentUser.HouseholdId && reward.IsActive)
             .OrderBy(reward => reward.Name).ThenBy(reward => reward.Id)
             .Select(reward => new RewardResponse(
-                reward.Id, reward.Name, reward.Description, reward.PointsCost, reward.CreatedAt))
+                reward.Id, reward.Name, reward.Description, reward.PointsCost, reward.StockQuantity, reward.CreatedAt))
             .ToListAsync();
         return Ok(rewards);
     }
@@ -88,6 +89,7 @@ public sealed class RewardsController(
         reward.Name = name;
         reward.Description = NormalizeDescription(request.Description);
         reward.PointsCost = request.PointsCost;
+        reward.StockQuantity = request.StockQuantity;
         await dbContext.SaveChangesAsync();
         return Ok(ToResponse(reward));
     }
@@ -118,5 +120,5 @@ public sealed class RewardsController(
         string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
     private static RewardResponse ToResponse(Reward reward) => new(
-        reward.Id, reward.Name, reward.Description, reward.PointsCost, reward.CreatedAt);
+        reward.Id, reward.Name, reward.Description, reward.PointsCost, reward.StockQuantity, reward.CreatedAt);
 }

@@ -35,6 +35,9 @@ body {
   background:
     radial-gradient(circle at 5% 0%, rgb(213 241 235 / 55%), transparent 32rem), var(--color-canvas);
 }
+.page-enter > main {
+  min-width: 0;
+}
 button,
 input,
 select,
@@ -68,7 +71,6 @@ a {
   @keyframes page-enter {
     from {
       opacity: 0;
-      transform: translateY(8px);
     }
   }
 }

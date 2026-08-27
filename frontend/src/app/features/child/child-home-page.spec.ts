@@ -13,6 +13,7 @@ const assignedChore: ChildChoreAssignment = {
   description: 'Fyll både mat och vatten.',
   points: 10,
   assignedAt: '2026-08-26T08:00:00Z',
+  dueDate: '2026-08-26',
   status: 'Assigned',
   submittedAt: null,
   reviewComment: null,
@@ -21,6 +22,7 @@ const assignedChore: ChildChoreAssignment = {
 class FakeChildChoresService {
   assignments = [assignedChore];
   points = 25;
+  rewards = { availablePoints: 25, rewards: [] };
   submitCalls: number[] = [];
   submission = new Subject<SubmittedChildChoreAssignment>();
 
@@ -30,6 +32,10 @@ class FakeChildChoresService {
 
   getPoints() {
     return of({ totalPoints: this.points });
+  }
+
+  getRewards() {
+    return of(this.rewards);
   }
 
   submitAssignment(assignmentId: number) {
@@ -59,7 +65,7 @@ describe('ChildHomePage', () => {
 
   it('shows real assignments and the authenticated child points', () => {
     expect(component.assignments()).toEqual([assignedChore]);
-    expect(component.totalPoints()).toBe(25);
+    expect(component.availablePoints()).toBe(25);
     expect(fixture.nativeElement.textContent).toContain('Mata katten');
     expect(fixture.nativeElement.textContent).toContain('25');
   });
