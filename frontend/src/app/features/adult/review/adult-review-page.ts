@@ -44,6 +44,11 @@ export class AdultReviewPage implements OnInit {
       .filter((assignment) => assignment.status === 'Approved' && !assignment.adultArchivedAt)
       .slice(0, 10),
   );
+  readonly reviewedHistoryAssignments = computed(() =>
+    this.assignments()
+      .filter((assignment) => assignment.status === 'Approved' && (!assignment.adultArchivedAt || assignment.assignmentId === this.lastArchivedId()))
+      .slice(0, 10),
+  );
   readonly hiddenAssignments = computed(() =>
     this.assignments().filter((assignment) => assignment.status === 'Approved' && assignment.adultArchivedAt),
   );
@@ -175,8 +180,8 @@ export class AdultReviewPage implements OnInit {
   private showArchiveUndo(assignmentId: number): void {
     this.clearArchiveUndo();
     this.lastArchivedId.set(assignmentId);
-    this.archiveUndoTimer = window.setTimeout(() => this.archiveUndoFading.set(true), 2700);
-    this.archiveUndoClearTimer = window.setTimeout(() => this.clearArchiveUndo(), 3000);
+    this.archiveUndoTimer = window.setTimeout(() => this.archiveUndoFading.set(true), 3000);
+    this.archiveUndoClearTimer = window.setTimeout(() => this.clearArchiveUndo(), 5000);
   }
 
   private clearArchiveUndo(): void {

@@ -159,12 +159,12 @@ export class AdultRewardsPage implements OnInit {
     if (this.successClearTimer !== null) window.clearTimeout(this.successClearTimer);
     this.successFading.set(false);
     this.successMessage.set(message);
-    this.successTimer = window.setTimeout(() => this.successFading.set(true), 2700);
+    this.successTimer = window.setTimeout(() => this.successFading.set(true), 3000);
     this.successClearTimer = window.setTimeout(() => {
       this.successMessage.set('');
       this.successTimer = null;
       this.successClearTimer = null;
       this.successFading.set(false);
-    }, 3000);
+    }, 5000);
   }
 }

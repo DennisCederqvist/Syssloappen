@@ -25,6 +25,9 @@ export class AdultRewardRedemptionsPage implements OnInit {
   readonly pending = computed(() => this.items().filter((item) => item.status === 'Requested'));
   readonly active = computed(() => this.items().filter((item) => item.status === 'Requested' || item.status === 'Approved'));
   readonly history = computed(() => this.items().filter((item) => !item.adultArchivedAt && (item.status === 'Cancelled' || item.status === 'Delivered')).slice(0, 10));
+  readonly historyItems = computed(() => this.items().filter((item) =>
+    (item.status === 'Cancelled' || item.status === 'Delivered') && (!item.adultArchivedAt || item.id === this.lastArchivedId()),
+  ).slice(0, 10));
   readonly hiddenHistory = computed(() => this.items().filter((item) => item.adultArchivedAt && (item.status === 'Cancelled' || item.status === 'Delivered')));
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: 'H', route: '/vuxen' },
@@ -81,8 +84,8 @@ export class AdultRewardRedemptionsPage implements OnInit {
   private showArchiveUndo(id: number): void {
     this.clearArchiveUndo();
     this.lastArchivedId.set(id);
-    this.archiveUndoTimer = window.setTimeout(() => this.archiveUndoFading.set(true), 2700);
-    this.archiveUndoClearTimer = window.setTimeout(() => this.clearArchiveUndo(), 3000);
+    this.archiveUndoTimer = window.setTimeout(() => this.archiveUndoFading.set(true), 3000);
+    this.archiveUndoClearTimer = window.setTimeout(() => this.clearArchiveUndo(), 5000);
   }
 
   private clearArchiveUndo(): void {

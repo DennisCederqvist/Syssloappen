@@ -169,7 +169,10 @@
         <p class="text-sm font-bold text-brand-600">Historik</p>
         <h2 id="reviewed-title" class="mt-1 text-2xl font-black">Senaste granskningar</h2>
         <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          @for (assignment of reviewedAssignments(); track assignment.assignmentId) {
+          @for (assignment of reviewedHistoryAssignments(); track assignment.assignmentId) {
+            @if (assignment.assignmentId === lastArchivedId()) {
+              <article class="flex items-center justify-between gap-3 rounded-3xl bg-brand-50 p-4 ring-1 ring-brand-100 transition-opacity duration-[2000ms]" [class.opacity-0]="archiveUndoFading()"><p class="font-bold text-brand-600">Historikkortet är dolt.</p><button type="button" (click)="restore(assignment)" class="min-h-11 shrink-0 rounded-xl bg-white px-4 font-bold text-brand-600">Ångra</button></article>
+            } @else {
             <article class="relative rounded-3xl bg-white p-5 shadow-sm ring-1 ring-line">
               <button type="button" (click)="archive(assignment)" [disabled]="historyBusyId() !== null" [attr.aria-label]="'Dölj ' + assignment.choreTitle + ' ur historiken'" class="absolute right-3 top-3 grid size-11 place-items-center rounded-full text-xl text-muted hover:bg-brand-50">×</button>
               <div class="min-w-0 pr-12">
@@ -182,7 +185,7 @@
                   {{ assignment.points }} poäng
                 </p>
                 <span
-                  class="shrink-0 rounded-full px-3 py-1 text-xs font-black"
+                  class="ml-auto shrink-0 rounded-full px-3 py-1 text-xs font-black"
                   [class.bg-emerald-50]="assignment.status === 'Approved'"
                   [class.text-emerald-800]="assignment.status === 'Approved'"
                   [class.bg-red-50]="assignment.status === 'NeedsRedo'"
@@ -197,8 +200,8 @@
                 </p>
               }
             </article>
+            }
           }
-          @if (lastArchivedId(); as archivedId) { <article class="flex min-h-36 flex-col justify-center rounded-3xl bg-brand-50 p-5 ring-1 ring-brand-100 transition-opacity duration-300" [class.opacity-0]="archiveUndoFading()"><p class="font-bold text-brand-600">Historikkortet är dolt.</p><button type="button" (click)="restore(assignments().find(item => item.assignmentId === archivedId)!)" class="mt-3 min-h-11 self-start rounded-xl bg-white px-4 font-bold text-brand-600">Ångra</button></article> }
         </div>
         @if (historyError()) { <p class="mt-3 font-bold text-red-700" role="alert">{{ historyError() }}</p> }
         @if (hiddenAssignments().length > 0) { <button type="button" (click)="showHiddenHistory.update(value => !value)" class="mt-4 min-h-11 rounded-xl bg-white px-4 font-bold text-brand-600 ring-1 ring-line">{{ showHiddenHistory() ? 'Dölj dolda' : 'Visa dolda (' + hiddenAssignments().length + ')' }}</button> }

@@ -430,7 +430,7 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-US-071 och US-072 är implementerade, automatiskt verifierade och användargodkända. De är mergade till `main`; den tidigare feature-branchen är borttagen efter push:
+US-071, US-072 och den efterföljande Adult-historikförbättringen är implementerade, automatiskt verifierade och användargodkända. De är mergade till `main`; feature-branchen `feature/adult-history-archiving` är borttagen efter push:
 
 - Migrationerna `AddRewardStock`, `AddRewardRedemptionAdultArchive` och `AddChoreAssignmentDueDate` är applicerade i `syssloappen_dev`.
 - Belöningar är lagerobjekt. En Child-request reserverar atomärt både poäng och en lagerenhet. Avslag frigör exakt en poäng- och lagerreservation; utlämning förbrukar lagerenheten permanent. Adult kan fylla på lagret i belöningskatalogen.
@@ -440,6 +440,10 @@ US-071 och US-072 är implementerade, automatiskt verifierade och användargodk�
 - Den delade navigationen använder samma meny för varje roll. Svenska URL:er avkodas innan aktiv sida bestäms, vilket gör att Belöningar markeras korrekt. Mobilmenyn är fast vid skärmens nederkant även efter sidans inledande animation.
 - Verifiering: 126 backendtester, 60 frontendtester och Angular-produktionsbygget passerar. Kalenderflödet har två nya integrationstester för valt datum samt filtrering av framtida sysslor.
 - Användaren har manuellt testat och godkänt belönings- och kalenderflödet. `REQUIREMENTS.md` är uppdaterad i enlighet med detta.
+- Migrationen `AddChoreAssignmentAdultArchive` är applicerad i `syssloappen_dev`. Adult kan reversibelt dölja endast avslutade historikkort: `Approved` sysslor samt `Cancelled`/`Delivered` belöningsärenden. Backend behåller auditdata och avvisar försök att dölja aktiva ärenden; Household-isolering gäller även arkivering och återställning.
+- Adult-vyerna visar högst tio synliga avslutade kort. X öppnar en tillfällig Ångra-platshållare på exakt samma plats; återställning är också möjlig via “Visa dolda”. Aktiva tilldelningar, `NeedsRedo`, `Requested` och `Approved` kan aldrig döljas.
+- Belöningsformuläret öppnas först via “+ Ny belöning”, kan stängas med X och bekräftelse-/Ångra-meddelanden tonar ut efter fem sekunder. Manuell testning har godkänt flödet.
+- Verifiering för denna del: 128 backendtester, 60 frontendtester och Angular-produktionsbygget passerar.
 
 US-070:s bildfria belöningskatalog är implementerad, automatiskt verifierad, användartestad och godkänd för merge:
 
