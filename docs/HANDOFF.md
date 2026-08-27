@@ -430,7 +430,7 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-US-071 och US-072 är implementerade, automatiskt verifierade och användargodkända på `feature/reward-redemptions`, men branchen är uttryckligen **inte redo för merge** förrän användaren ger separat godkännande:
+US-071 och US-072 är implementerade, automatiskt verifierade och användargodkända. De är mergade till `main`; den tidigare feature-branchen är borttagen efter push:
 
 - Migrationerna `AddRewardStock`, `AddRewardRedemptionAdultArchive` och `AddChoreAssignmentDueDate` är applicerade i `syssloappen_dev`.
 - Belöningar är lagerobjekt. En Child-request reserverar atomärt både poäng och en lagerenhet. Avslag frigör exakt en poäng- och lagerreservation; utlämning förbrukar lagerenheten permanent. Adult kan fylla på lagret i belöningskatalogen.

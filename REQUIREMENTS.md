@@ -886,6 +886,14 @@ Följande funktioner kan vara intressanta senare men ska **inte byggas innan kä
 
 ## Återkommande sysslor
 
+Återkommande sysslor är beslutad som nästa möjliga produktdel, men ska inte implementeras förrän ett separat produktbeslut tas.
+
+- En Adult ska kunna välja en enkel upprepning, först `varje dag` eller valda veckodagar.
+- Varje förekomst ska bli en separat datumstyrd `ChoreAssignment` med eget statusflöde och poängsnapshot.
+- Systemet får aldrig skapa dubbla förekomster för samma mall, barn och datum.
+- Barnets vy ska även då bara visa dagens och tidigare oavslutade sysslor, utan försenad-markering eller framtida sysslor.
+- Avancerade regler som intervall, undantag, tidszoner och kalenderimport ligger utanför första delen.
+
 Exempel:
 
 ```text
@@ -903,7 +911,7 @@ Varje söndag
 
 ## Belöningsbutik
 
-Poäng för godkända sysslor är implementerade. Nästa framtida del är familjedefinierade belöningar och belöningsförfrågningar enligt US-070–US-072.
+Familjedefinierade belöningar och belöningsförfrågningar enligt US-070–US-072 är implementerade. Bilduppladdning är fortfarande en senare, separat del.
 
 ```text
 Lite godis          25 poäng
