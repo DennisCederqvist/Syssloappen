@@ -1,4 +1,4 @@
-<div class="page-enter min-h-dvh bg-canvas pb-24 md:flex md:pb-0">
+<div class="page-enter min-h-dvh overflow-x-hidden bg-canvas pb-24 md:flex md:pb-0">
   <app-bottom-nav [items]="navItems" />
   <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
     <app-user-header eyebrow="Familjens plan" title="Sysslor och tilldelning" variant="adult" />
@@ -8,10 +8,8 @@
     >
       <div>
         <p class="text-sm font-extrabold text-brand-100">Små steg, tydliga mål</p>
-        <h2 class="mt-1 text-2xl font-black">Skapa en syssla och välj vem som gör den</h2>
-        <p class="mt-2 max-w-2xl leading-7 text-brand-100">
-          Poängen sparas när uppgiften tilldelas och delas ut först efter godkännande.
-        </p>
+        <h2 class="mt-1 text-2xl font-black">Skapa syssla</h2>
+        <p class="mt-2 max-w-2xl leading-7 text-brand-100">Tilldela när det passar.</p>
       </div>
       <button
         id="new-chore-trigger"
@@ -401,30 +399,22 @@
       } @else {
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           @for (chore of chores(); track chore.id) {
-            <article class="relative rounded-3xl bg-white p-5 shadow-sm ring-1 ring-line">
-              <button
-                [id]="'deactivate-chore-' + chore.id"
-                type="button"
-                (click)="requestDeactivation(chore.id)"
-                [disabled]="deactivatingChoreId() !== null"
-                class="absolute top-2 right-2 grid size-12 place-items-center rounded-full text-xl font-bold text-muted transition hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
-                [attr.aria-label]="'Plocka bort ' + chore.title"
-              >
-                ×
-              </button>
-              <div class="flex items-start justify-between gap-3">
-                <div class="grid size-12 place-items-center rounded-2xl bg-amber-50 text-2xl">
-                  🧹
-                </div>
-                <span
-                  class="mr-10 rounded-full bg-amber-100 px-3 py-1 text-sm font-black text-amber-900"
-                  >★ {{ chore.points }}</span
-                >
-              </div>
-              <h3 class="mt-4 text-lg font-black">{{ chore.title }}</h3>
-              <p class="mt-1 min-h-10 text-sm leading-5 text-muted">
-                {{ chore.description || 'Ingen extra beskrivning.' }}
-              </p>
+             <article class="relative w-full max-w-full overflow-visible rounded-3xl bg-white p-3 shadow-sm ring-1 ring-line">
+               <button
+                 type="button"
+                 (click)="toggleChoreMenu(chore.id)"
+                 class="absolute right-3 top-3 z-20 grid size-10 place-items-center rounded-full text-xl font-bold text-muted hover:bg-slate-50"
+                 [attr.aria-label]="'Fler val för ' + chore.title"
+               >
+                 ⋮
+               </button>
+               @if (openChoreMenuId() === chore.id) {
+                 <div class="absolute right-3 top-14 z-30 rounded-xl bg-white p-2 shadow-lg ring-1 ring-line"><button [id]="'deactivate-chore-' + chore.id" type="button" (click)="requestDeactivation(chore.id)" class="min-h-10 rounded-lg px-3 text-sm font-bold text-red-700">Ta bort</button></div>
+               }
+               <div class="flex items-start gap-3 pr-10">
+                 <div class="min-w-0 flex-1"><h3 class="truncate text-base font-black sm:text-lg">{{ chore.title }}</h3><p class="mt-0.5 truncate text-sm text-muted">{{ chore.description || 'Ingen extra beskrivning.' }}</p></div>
+                 <span class="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-sm font-black text-amber-900">★ {{ chore.points }}</span>
+               </div>
               @if (confirmingDeactivationId() === chore.id) {
                 <div
                   class="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4"
@@ -463,7 +453,7 @@
                   </div>
                 </div>
               } @else {
-                <div class="mt-4 grid grid-cols-2 gap-2">
+                 <div class="mt-1 grid grid-cols-2 divide-x divide-line border-t border-line pt-0.5">
                   <button
                     [id]="'edit-chore-' + chore.id"
                     type="button"
@@ -472,7 +462,7 @@
                       editingChore()?.id === chore.id ? 'edit-chore-panel' : null
                     "
                     [attr.aria-expanded]="editingChore()?.id === chore.id"
-                    class="min-h-11 rounded-xl bg-white px-3 text-sm font-extrabold text-brand-600 ring-1 ring-line"
+                     class="min-h-8 text-xs font-bold text-brand-600"
                   >
                     Redigera
                   </button>
@@ -488,7 +478,7 @@
                     [attr.aria-expanded]="
                       showAssignmentForm() && assignmentForm.controls.choreId.value === chore.id
                     "
-                    class="min-h-11 rounded-xl bg-brand-50 px-3 text-sm font-extrabold text-brand-600"
+                     class="min-h-8 text-xs font-bold text-brand-600"
                   >
                     Tilldela
                   </button>
@@ -500,16 +490,16 @@
       }
     </section>
 
-    @if (!isLoading() && activeAssignments().length > 0) {
+    @if (false && !isLoading() && activeAssignments().length > 0) {
       <section class="mt-8" aria-labelledby="assigned-title">
         <p class="text-sm font-bold text-brand-600">Aktuellt</p>
         <h2 id="assigned-title" class="text-xl font-black">Aktuella tilldelningar</h2>
         <div class="mt-4 grid gap-3">
           @for (assignment of activeAssignments(); track assignment.assignmentId) {
-            <article class="rounded-2xl bg-white p-4 ring-1 ring-line">
-              <div class="flex flex-wrap items-start gap-3 sm:items-center sm:gap-4">
-                <div class="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-50">✓</div>
-                <div class="min-w-0 basis-48 flex-1">
+            <article class="relative w-full max-w-full rounded-3xl bg-white p-3 ring-1 ring-line">
+              <div class="flex items-start gap-3">
+                <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50">✓</div>
+                <div class="min-w-0 flex-1">
                   <h3 class="font-black">{{ assignment.choreTitle }}</h3>
                   <p class="mt-1 text-sm text-muted">
                     {{ assignment.childName }} · {{ assignment.points }} poäng ·
@@ -522,22 +512,16 @@
                 >
                 @if (assignment.status !== 'Approved') {
                   <button
-                    [id]="'request-assignment-cancellation-' + assignment.assignmentId"
                     type="button"
-                    (click)="requestAssignmentCancellation(assignment.assignmentId)"
-                    [disabled]="cancellingAssignmentId() !== null"
-                    class="min-h-12 w-full rounded-xl bg-white px-3 text-sm font-extrabold text-red-700 ring-1 ring-red-200 disabled:opacity-50 sm:w-auto sm:shrink-0"
-                    [attr.aria-label]="
-                      'Ta bort tilldelningen ' +
-                      assignment.choreTitle +
-                      ' från ' +
-                      assignment.childName
-                    "
+                    (click)="toggleAssignmentMenu(assignment.assignmentId)"
+                    class="z-20 grid size-10 shrink-0 place-items-center rounded-full text-xl text-muted hover:bg-slate-50"
+                    [attr.aria-label]="'Fler val för ' + assignment.choreTitle"
                   >
-                    Ta bort
+                    ⋮
                   </button>
                 }
               </div>
+              @if (openAssignmentMenuId() === assignment.assignmentId) { <div class="absolute right-3 top-12 z-30 rounded-xl bg-white p-2 shadow-lg ring-1 ring-line"><button [id]="'request-assignment-cancellation-' + assignment.assignmentId" type="button" (click)="requestAssignmentCancellation(assignment.assignmentId)" class="min-h-10 rounded-lg px-3 text-sm font-bold text-red-700">Ta bort</button></div> }
               @if (confirmingAssignmentCancellationId() === assignment.assignmentId) {
                 <div
                   class="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4"
@@ -588,7 +572,7 @@
         </div>
       </section>
     }
-    @if (!isLoading() && (completedAssignments().length > 0 || hiddenCompletedAssignments().length > 0)) {
+    @if (false && !isLoading() && (completedAssignments().length > 0 || hiddenCompletedAssignments().length > 0)) {
       <section class="mt-8" aria-labelledby="completed-title">
         <div><p class="text-sm font-bold text-brand-600">Historik</p><h2 id="completed-title" class="text-xl font-black">Senaste godkända sysslor</h2><p class="mt-1 text-sm text-muted">De tio senaste visas här.</p></div>
         @if (historyError()) { <p class="mt-3 font-bold text-red-700" role="alert">{{ historyError() }}</p> }

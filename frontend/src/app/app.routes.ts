@@ -32,6 +32,11 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'vuxen/barn/:childId',
+    canActivate: [adultGuard],
+    loadComponent: () => import('./features/adult/children/adult-child-profile-page').then((c) => c.AdultChildProfilePage),
+  },
+  {
     path: 'vuxen/barn',
     canActivate: [adultGuard],
     loadComponent: () =>

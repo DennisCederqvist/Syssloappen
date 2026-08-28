@@ -35,8 +35,10 @@ export class AdultChoresPage implements OnInit {
   readonly isUpdatingChore = signal(false);
   readonly deactivatingChoreId = signal<number | null>(null);
   readonly confirmingDeactivationId = signal<number | null>(null);
+  readonly openChoreMenuId = signal<number | null>(null);
   readonly isAssigning = signal(false);
   readonly confirmingAssignmentCancellationId = signal<number | null>(null);
+  readonly openAssignmentMenuId = signal<number | null>(null);
   readonly cancellingAssignmentId = signal<number | null>(null);
   readonly choreError = signal('');
   readonly editChoreError = signal('');
@@ -69,6 +71,14 @@ export class AdultChoresPage implements OnInit {
     { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
     { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
   ];
+
+  toggleChoreMenu(choreId: number): void {
+    this.openChoreMenuId.update((current) => current === choreId ? null : choreId);
+  }
+
+  toggleAssignmentMenu(assignmentId: number): void {
+    this.openAssignmentMenuId.update((current) => current === assignmentId ? null : assignmentId);
+  }
 
   readonly choreForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(100)]],

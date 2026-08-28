@@ -430,6 +430,18 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
+### WIP: Adult-UI, barncentrerad översikt (`feature/adult-dashboard-ui`)
+
+Denna branch är en pushad WIP-backup och får **inte** mergas till `main` innan fortsatt grafisk genomgång och uttryckligt användargodkännande. Inga backendmodeller, API-kontrakt eller migrationer har ändrats i denna del.
+
+- Adult-hemsidan är omgjord till en barncentrerad översikt. Varje barnrad visar initial-avatar, namn och en dagsmätare: endast tilldelningar med dagens `DueDate` räknas, och endast `Approved` räknas som klara. Äldre oavslutade uppgifter hör fortsatt till barnets arbetslista men får inte förorena dagens kvot.
+- Startsidan visar direkta kort för `PendingApproval`; Adult kan godkänna eller välja `NeedsRedo` utan omväg. Mobilknapparna ligger under sysslans namn.
+- Barnkort öppnar den nya Adult-skyddade routen `/vuxen/barn/:childId`. Profilen visar aktuella sysslor, direkta granskningskort, de tio senaste godkända sysslorna och en inbyggd sysselista där Adult kan tilldela den valda sysslan till just barnet med dagens datum.
+- Sysslor-sidan är nu avgränsad till uppgiftsbanken. Aktuella tilldelningar och godkänd historik visas inte längre där; de hör till barnets vuxenprofil.
+- Uppgiftsbankens kort har ett tätare Adult-mönster: titel, en kort beskrivning, poängbadge, trepunktsmeny med bekräftad “Ta bort” samt en kompakt rad för Redigera/Tilldela. Den visuella tätheten och responsiviteten behöver fortsatt grafisk genomgång tillsammans med användaren.
+- Nytt barnprofilkomponent är uttryckligen `standalone` för AOT-laddning. Produktionsbygget passerar efter ändringen. Senaste hela automatiska sviter från tidigare main gäller fortfarande, men denna WIP har hittills endast verifierats med Angular-produktionsbygge och användarens manuella funktionstest.
+- Nästa steg är **diskussion, inte kod**: färdigställ Adult-vyns visuella system (typografi, korttäthet, spacing, responsiv navigation, Inställningar och barn-/kontoorganisation) innan fler UI-ändringar byggs. Child-vyn har ännu inte fått sin planerade grafiska genomgång.
+
 US-071, US-072 och den efterföljande Adult-historikförbättringen är implementerade, automatiskt verifierade och användargodkända. De är mergade till `main`; feature-branchen `feature/adult-history-archiving` är borttagen efter push:
 
 - Migrationerna `AddRewardStock`, `AddRewardRedemptionAdultArchive` och `AddChoreAssignmentDueDate` är applicerade i `syssloappen_dev`.
