@@ -37,12 +37,18 @@ export const routes: Routes = [
     loadComponent: () => import('./features/adult/children/adult-child-profile-page').then((c) => c.AdultChildProfilePage),
   },
   {
-    path: 'vuxen/installningar',
+    path: 'vuxen/installningar/barn',
     canActivate: [adultGuard],
     loadComponent: () =>
       import('./features/adult/children/adult-children-page').then((c) => c.AdultChildrenPage),
   },
-  { path: 'vuxen/barn', pathMatch: 'full', redirectTo: 'vuxen/installningar' },
+  {
+    path: 'vuxen/installningar',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/settings/adult-settings-page').then((c) => c.AdultSettingsPage),
+  },
+  { path: 'vuxen/barn', pathMatch: 'full', redirectTo: 'vuxen/installningar/barn' },
   {
     path: 'vuxen/sysslor',
     canActivate: [adultGuard],

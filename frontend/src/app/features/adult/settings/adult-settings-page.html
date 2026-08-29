@@ -1,0 +1,16 @@
+<div class="page-enter min-h-dvh bg-canvas pb-24 md:flex md:pb-0">
+  <app-bottom-nav [items]="[]" />
+  <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+    <app-user-header eyebrow="Familjen" title="Inställningar" variant="adult" />
+    <section class="mt-7 grid gap-3" aria-label="Tillgängliga familjeinställningar">
+      <a
+        routerLink="/vuxen/installningar/barn"
+        class="rounded-3xl bg-white p-5 font-black ring-1 ring-line"
+        >Barn och konton</a
+      >
+      <a routerLink="/vuxen/bjud-in" class="rounded-3xl bg-white p-5 font-black ring-1 ring-line"
+        >Bjud in vuxen</a
+      >
+    </section>
+  </main>
+</div>
