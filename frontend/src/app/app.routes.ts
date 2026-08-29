@@ -37,11 +37,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/adult/children/adult-child-profile-page').then((c) => c.AdultChildProfilePage),
   },
   {
-    path: 'vuxen/barn',
+    path: 'vuxen/installningar',
     canActivate: [adultGuard],
     loadComponent: () =>
       import('./features/adult/children/adult-children-page').then((c) => c.AdultChildrenPage),
   },
+  { path: 'vuxen/barn', pathMatch: 'full', redirectTo: 'vuxen/installningar' },
   {
     path: 'vuxen/sysslor',
     canActivate: [adultGuard],

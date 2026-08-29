@@ -79,7 +79,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// Angular's local development proxy connects to the HTTP launch profile on
+// port 5047. Redirecting that proxied request to HTTPS turns it into a browser
+// CORS request, so HTTPS remains enforced outside Development only.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseRateLimiter();
 app.UseAuthentication();

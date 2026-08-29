@@ -44,6 +44,8 @@ public sealed class ChildChoreAssignmentsController(
             return Unauthorized();
         }
 
+        await MoveUnfinishedAssignmentsToToday(child.Id, currentUser.HouseholdId);
+
         // Repeating every ownership condition in the SQL query protects the private
         // Child view even if inconsistent assignment data were ever introduced.
         var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
@@ -75,6 +77,23 @@ public sealed class ChildChoreAssignmentsController(
             .ToListAsync();
 
         return Ok(assignments);
+    }
+
+    private async Task MoveUnfinishedAssignmentsToToday(int childId, int householdId)
+    {
+        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+
+        // Only chores the child can still perform roll into today. A submitted
+        // chore is waiting for review, while approved and cancelled chores are history.
+        await dbContext.ChoreAssignments
+            .Where(assignment =>
+                assignment.ChildId == childId
+                && assignment.HouseholdId == householdId
+                && assignment.DueDate < today
+                && (assignment.Status == ChoreAssignmentStatus.Assigned
+                    || assignment.Status == ChoreAssignmentStatus.NeedsRedo))
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(assignment => assignment.DueDate, today));
     }
 
     [HttpPost("{assignmentId:int}/submit")]

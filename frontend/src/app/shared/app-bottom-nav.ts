@@ -18,6 +18,7 @@ export interface NavItem {
     <div
       class="mx-auto grid w-full max-w-lg gap-1 md:h-full md:w-auto md:grid-cols-1 md:justify-start md:gap-3"
       [class.grid-cols-3]="displayedItems().length === 3"
+      [class.grid-cols-4]="displayedItems().length === 4"
       [class.grid-cols-6]="displayedItems().length === 6"
     >
       @for (item of displayedItems(); track item.label) {
@@ -65,9 +66,7 @@ export class AppBottomNav {
           { label: 'Hem', icon: '⌂', route: '/vuxen' },
           { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
           { label: 'Belöningar', icon: '★', route: '/vuxen/belöningar' },
-          { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
-          { label: 'Önskningar', icon: '♡', route: '/vuxen/onskningar' },
-          { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
+          { label: 'Inställningar', icon: '⚙', route: '/vuxen/installningar' },
         ];
     return navigation.map((item) => ({ ...item, active: currentUrl === item.route }));
   });

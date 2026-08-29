@@ -125,6 +125,33 @@ public sealed class ChoreAssignmentsEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Adult_list_rolls_an_unfinished_chore_forward_to_today()
+    {
+        using var adultClient = CreateClient();
+        await RegisterAndLoginAdult(adultClient, "Familjen Flytta", "carry-forward.assignment@example.test");
+        var child = await CreateChild(adultClient, "Maja");
+        var chore = await CreateChore(adultClient, "Duka bordet");
+        var created = await (await AssignChore(adultClient, chore.Id, child.Id))
+            .Content.ReadFromJsonAsync<ChoreAssignmentResponse>();
+        Assert.NotNull(created);
+
+        var yesterday = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
+        using (var setupScope = factory.Services.CreateScope())
+        {
+            var dbContext = setupScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var storedAssignment = await dbContext.ChoreAssignments.SingleAsync(item => item.Id == created.Id);
+            storedAssignment.DueDate = yesterday;
+            await dbContext.SaveChangesAsync();
+        }
+
+        var assignments = await adultClient.GetFromJsonAsync<List<AdultChoreAssignmentResponse>>(
+            "/api/chore-assignments");
+
+        var carriedForwardAssignment = Assert.Single(assignments!, item => item.AssignmentId == created.Id);
+        Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), carriedForwardAssignment.DueDate);
+    }
+
+    [Fact]
     public async Task Chore_and_child_must_belong_to_the_adults_household()
     {
         using var firstClient = CreateClient();

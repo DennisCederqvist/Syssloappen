@@ -87,7 +87,7 @@ public sealed class ChildChoreAssignmentsTests : IDisposable
     }
 
     [Fact]
-    public async Task Child_sees_todays_and_earlier_unfinished_chores_but_not_future_chores()
+    public async Task Child_rolls_unfinished_chores_forward_to_today_but_not_future_chores()
     {
         using var adultClient = CreateClient();
         using var childClient = CreateClient();
@@ -128,8 +128,16 @@ public sealed class ChildChoreAssignmentsTests : IDisposable
             "/api/child/chore-assignments");
 
         Assert.Contains(assignments!, item => item.AssignmentId == todayAssignment.Id);
-        Assert.Contains(assignments!, item => item.Title == "Tidigare syssla");
+        var carriedForwardAssignment = Assert.Single(assignments!, item => item.Title == "Tidigare syssla");
+        Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), carriedForwardAssignment.DueDate);
         Assert.DoesNotContain(assignments!, item => item.AssignmentId == futureAssignment.Id);
+
+        using var verificationScope = factory.Services.CreateScope();
+        var verificationDbContext = verificationScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var storedCarriedForwardAssignment = await verificationDbContext.ChoreAssignments
+            .AsNoTracking()
+            .SingleAsync(item => item.Id == carriedForwardAssignment.AssignmentId);
+        Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), storedCarriedForwardAssignment.DueDate);
     }
 
     [Fact]

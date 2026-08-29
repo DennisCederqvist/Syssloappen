@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import {
   AbstractControl,
   FormBuilder,
@@ -28,7 +29,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-adult-children-page',
-  imports: [AppBottomNav, DatePipe, ReactiveFormsModule, UserHeader],
+  imports: [AppBottomNav, DatePipe, ReactiveFormsModule, RouterLink, UserHeader],
   templateUrl: './adult-children-page.html',
 })
 export class AdultChildrenPage implements OnInit {
