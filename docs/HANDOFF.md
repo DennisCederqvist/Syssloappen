@@ -432,6 +432,8 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ### WIP: Adult-UI, barncentrerad översikt (`feature/adult-dashboard-ui`)
 
+> Uppdatering 2026-08-29: WIP-backup `9920d19` är pushad till `origin/feature/adult-dashboard-ui`; merge till `main` är inte godkänd. Adult-menyn är nu Hem, Sysslor, Belöningar och Inställningar. Aktiva belöningsönskningar är manuellt testade från Hem och respektive Barnöversikt. Inställningshubben är endast påbörjad lokalt och dess Hantera vuxna/Historik-länkar är inte färdiga eller pushade. Nästa arbete: Inställnings-dropup och faktisk historik, därefter den separata backenddelen för Household-ägare, vuxenbortkoppling med frigjord e-post och permanent familjeradering.
+
 Denna branch är en pushad WIP-backup och får **inte** mergas till `main` innan fortsatt grafisk genomgång och uttryckligt användargodkännande. Inga backendmodeller, API-kontrakt eller migrationer har ändrats i denna del.
 
 - Adult-hemsidan är omgjord till en barncentrerad översikt. Varje barnrad visar initial-avatar, namn och en dagsmätare: endast tilldelningar med dagens `DueDate` räknas, och endast `Approved` räknas som klara. Äldre oavslutade uppgifter hör fortsatt till barnets arbetslista men får inte förorena dagens kvot.

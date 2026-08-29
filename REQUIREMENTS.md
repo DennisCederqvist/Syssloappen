@@ -174,6 +174,15 @@ så att vi båda kan administrera barn och sysslor.
 
 ## US-012 – Household-data är isolerad
 
+## Beslutad framtida vuxenhantering
+
+- Householdets skapande Adult är huvudägare.
+- Huvudägaren kan ta bort alla inbjudna Adults och radera familjen permanent.
+- Inbjudna Adults kan ta bort sig själva och andra inbjudna Adults, men aldrig huvudägaren.
+- Normal bortkoppling bevarar audit, återkallar åtkomst och frigör e-post för ny registrering.
+- Sista Adult kan inte lämna Householdet genom vanlig bortkoppling.
+- Permanent familjeradering är en separat, destruktiv backenddel med explicit bekräftelse.
+
 **Som användare**
 vill jag att min familjs information ska vara isolerad från andra familjer
 så att andra användare inte kan se eller ändra vår information.
