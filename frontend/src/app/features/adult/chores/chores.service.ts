@@ -32,8 +32,10 @@ export class ChoresService {
     return this.http.delete<void>(`/api/chores/${choreId}`);
   }
 
-  getAssignments(): Observable<AdultAssignment[]> {
-    return this.http.get<AdultAssignment[]>('/api/chore-assignments');
+  getAssignments(includeCancelled = false): Observable<AdultAssignment[]> {
+    return this.http.get<AdultAssignment[]>(
+      `/api/chore-assignments${includeCancelled ? '?includeCancelled=true' : ''}`,
+    );
   }
 
   createAssignment(request: CreateAssignmentRequest): Observable<CreatedAssignment> {

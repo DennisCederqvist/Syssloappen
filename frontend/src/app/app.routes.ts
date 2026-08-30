@@ -48,6 +48,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/adult/settings/adult-settings-page').then((c) => c.AdultSettingsPage),
   },
+  {
+    path: 'vuxen/historik',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/history/adult-history-page').then((c) => c.AdultHistoryPage),
+  },
   { path: 'vuxen/barn', pathMatch: 'full', redirectTo: 'vuxen/installningar/barn' },
   {
     path: 'vuxen/sysslor',

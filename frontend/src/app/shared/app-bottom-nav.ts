@@ -73,10 +73,10 @@ export interface NavItem {
           <p class="text-xs font-extrabold tracking-wide text-brand-600 uppercase">Familjen</p>
           <h2 id="adult-settings-menu-title" class="mt-1 text-lg font-black">Inställningar</h2>
         </div>
-        <a
-          routerLink="/vuxen/installningar/barn"
-          (click)="closeSettingsMenu()"
-          class="flex min-h-14 items-center gap-3 rounded-2xl px-3 font-extrabold transition hover:bg-brand-50"
+        <button
+          type="button"
+          (click)="navigateFromSettings('/vuxen/installningar/barn')"
+          class="flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left font-extrabold transition hover:bg-brand-50"
         >
           <span
             class="grid size-10 place-items-center rounded-xl bg-brand-100 text-lg"
@@ -89,11 +89,11 @@ export interface NavItem {
               >Profiler och enheter</span
             ></span
           >
-        </a>
-        <a
-          routerLink="/vuxen/bjud-in"
-          (click)="closeSettingsMenu()"
-          class="mt-1 flex min-h-14 items-center gap-3 rounded-2xl px-3 font-extrabold transition hover:bg-brand-50"
+        </button>
+        <button
+          type="button"
+          (click)="navigateFromSettings('/vuxen/bjud-in')"
+          class="mt-1 flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left font-extrabold transition hover:bg-brand-50"
         >
           <span
             class="grid size-10 place-items-center rounded-xl bg-brand-100 text-lg"
@@ -106,7 +106,11 @@ export interface NavItem {
               >Dela familjens ansvar</span
             ></span
           >
-        </a>
+        </button>
+        <button type="button" (click)="navigateFromSettings('/vuxen/historik')" class="mt-1 flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left font-extrabold transition hover:bg-brand-50">
+          <span class="grid size-10 place-items-center rounded-xl bg-brand-100 text-lg" aria-hidden="true">◷</span>
+          <span><span class="block">Historik</span><span class="mt-0.5 block text-xs font-bold text-muted">Familjens avslutade aktiviteter</span></span>
+        </button>
       </section>
     }
   </nav>`,
@@ -141,6 +145,11 @@ export class AppBottomNav {
 
   closeSettingsMenu(): void {
     this.settingsMenuOpen.set(false);
+  }
+
+  navigateFromSettings(route: string): void {
+    this.router.navigateByUrl(route);
+    this.closeSettingsMenu();
   }
 
   @HostListener('document:keydown.escape')
