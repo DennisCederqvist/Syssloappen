@@ -27,6 +27,7 @@ export class AdultRewardsPage implements OnInit {
   readonly editing = signal<Reward | null>(null);
   readonly showForm = signal(false);
   readonly confirmingId = signal<number | null>(null);
+  readonly openRewardMenuId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
   readonly navItems: NavItem[] = [
     { label: 'Hem', icon: '⌂', route: '/vuxen' },
@@ -128,9 +129,13 @@ export class AdultRewardsPage implements OnInit {
     });
   }
   requestDeactivate(id: number): void {
+    this.openRewardMenuId.set(null);
     this.confirmingId.set(id);
     this.successMessage.set('');
     focusAfterRender(`cancel-deactivate-reward-${id}`);
+  }
+  toggleRewardMenu(id: number): void {
+    this.openRewardMenuId.update((current) => (current === id ? null : id));
   }
   cancelDeactivate(): void {
     const id = this.confirmingId();

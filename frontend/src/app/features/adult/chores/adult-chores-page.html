@@ -8,7 +8,7 @@
     >
       <div>
         <p class="text-sm font-extrabold text-brand-100">Små steg, tydliga mål</p>
-        <h2 class="mt-1 text-2xl font-black">Skapa syssla</h2>
+        <h2 class="mt-1 text-2xl font-black">Skapa Syssla</h2>
         <p class="mt-2 max-w-2xl leading-7 text-brand-100">Tilldela när det passar.</p>
       </div>
       <button
@@ -409,7 +409,7 @@
                  ⋮
                </button>
                @if (openChoreMenuId() === chore.id) {
-                 <div class="absolute right-3 top-14 z-30 rounded-xl bg-white p-2 shadow-lg ring-1 ring-line"><button [id]="'deactivate-chore-' + chore.id" type="button" (click)="requestDeactivation(chore.id)" class="min-h-10 rounded-lg px-3 text-sm font-bold text-red-700">Ta bort</button></div>
+                 <div class="absolute right-3 top-12 z-10 rounded-xl bg-white p-2 shadow-lg ring-1 ring-line"><button [id]="'deactivate-chore-' + chore.id" type="button" (click)="requestDeactivation(chore.id)" class="min-h-10 rounded-lg px-3 text-sm font-bold text-red-700">Ta bort</button></div>
                }
                <div class="flex items-start gap-3 pr-10">
                  <div class="min-w-0 flex-1"><h3 class="truncate text-base font-black sm:text-lg">{{ chore.title }}</h3><p class="mt-0.5 truncate text-sm text-muted">{{ chore.description || 'Ingen extra beskrivning.' }}</p></div>
@@ -425,7 +425,7 @@
                     [id]="'chore-deactivation-question-' + chore.id"
                     class="text-sm font-bold text-red-900"
                   >
-                    Plocka bort sysslan? Historiken sparas, men den kan inte tilldelas igen.
+                    Plocka bort sysslan? <!-- Historiken sparas, men den kan inte tilldelas igen. -->
                   </p>
                   @if (deactivationError()) {
                     <p class="mt-2 text-sm font-bold text-red-800" role="alert">

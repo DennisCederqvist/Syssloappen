@@ -13,7 +13,7 @@ export interface NavItem {
   selector: 'app-bottom-nav',
   imports: [RouterLink],
   template: `<nav
-    class="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 px-3 pb-[max(.7rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:static md:w-24 md:border-t-0 md:border-r md:px-2 md:pt-6"
+    class="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-white/95 px-3 pb-[max(.7rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:static md:w-24 md:border-t-0 md:border-r md:px-2 md:pt-6"
     aria-label="Huvudnavigation"
   >
     <div
@@ -30,13 +30,13 @@ export interface NavItem {
             (click)="toggleSettingsMenu()"
             [attr.aria-controls]="settingsMenuOpen() ? 'adult-settings-menu' : null"
             [attr.aria-expanded]="settingsMenuOpen()"
-            class="flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-center text-[10px] leading-3 font-bold transition hover:bg-brand-50 md:min-h-16 md:min-w-16 md:px-2 md:text-xs"
+            class="flex min-h-14 min-w-0 appearance-none flex-col items-center justify-center gap-1 rounded-2xl px-1 text-center transition hover:bg-brand-50 md:min-h-16 md:min-w-16 md:px-2"
             [class.bg-brand-50]="item.active || settingsMenuOpen()"
             [class.text-brand-600]="item.active || settingsMenuOpen()"
             [class.text-muted]="!item.active && !settingsMenuOpen()"
           >
             <span class="text-xl leading-none" aria-hidden="true">{{ item.icon }}</span>
-            {{ item.label }}
+            <span class="text-[10px] leading-3 font-bold md:text-xs">{{ item.label }}</span>
           </button>
         } @else if (item.route) {
           <a

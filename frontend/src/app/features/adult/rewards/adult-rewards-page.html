@@ -6,10 +6,10 @@
       class="mt-7 rounded-[1.75rem] bg-brand-600 p-5 text-white shadow-xl sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7"
     >
       <div>
-        <p class="text-sm font-extrabold text-brand-100">Familjens egna mål</p>
-        <h2 class="mt-1 text-2xl font-black">Vad kan poängen användas till?</h2>
+        <p class="text-sm font-extrabold text-brand-100">Målmedvetenhet</p>
+        <h2 class="mt-1 text-2xl font-black">Skapa Belöningar</h2>
         <p class="mt-2 text-brand-100">
-          Bilder läggs till senare. Just nu räcker ett tydligt namn och pris.
+          Belöningar som barnet kan önska med insamlade poäng
         </p>
       </div>
       <button
@@ -119,27 +119,18 @@
       } @else {
         <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           @for (reward of rewards(); track reward.id) {
-            <article class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-line">
-              <div class="flex items-start justify-between gap-3">
-                <div
-                  class="grid size-12 place-items-center rounded-2xl bg-amber-50 text-2xl"
-                  aria-hidden="true"
-                >
-                  ★
+            <article class="relative w-full max-w-full overflow-visible rounded-3xl bg-white p-3 shadow-sm ring-1 ring-line">
+              <button type="button" (click)="toggleRewardMenu(reward.id)" [attr.aria-label]="'Fler val för ' + reward.name" class="absolute right-3 top-3 z-10 grid size-10 place-items-center rounded-full text-xl font-bold text-muted hover:bg-slate-50">⋮</button>
+              @if (openRewardMenuId() === reward.id) {
+                <div class="absolute right-3 top-12 z-10 rounded-xl bg-white p-2 shadow-lg ring-1 ring-line">
+                  <button [id]="'deactivate-reward-' + reward.id" type="button" (click)="requestDeactivate(reward.id)" class="min-h-10 rounded-lg px-3 text-sm font-bold text-red-700">Ta bort</button>
                 </div>
-                <span class="rounded-full bg-amber-100 px-3 py-1 text-sm font-black text-amber-900"
-                  >{{ reward.pointsCost }} poäng</span
-                >
-              </div>
-              <h3 class="mt-4 text-lg font-black">{{ reward.name }}</h3>
-              <p class="mt-1 min-h-10 text-sm text-muted">
-                {{ reward.description || 'Ingen extra beskrivning.' }}
-              </p>
-              <p class="mt-2 text-sm font-bold text-muted">Lager: {{ reward.stockQuantity }}</p>
+              }
+              <div class="flex items-start gap-3 pr-10"><div class="min-w-0 flex-1"><h3 class="truncate text-base font-black sm:text-lg">{{ reward.name }}</h3><p class="mt-0.5 truncate text-sm text-muted">{{ reward.description || 'Ingen extra beskrivning.' }}</p></div><span class="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-sm font-black text-amber-900">★ {{ reward.pointsCost }}</span></div>
               @if (confirmingId() === reward.id) {
                 <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4" role="group">
                   <p class="font-bold text-red-900">
-                    Plocka bort belöningen? Historik bevaras när belöningsförfrågningar läggs till.
+                     Plocka bort belöningen? <!-- Historik bevaras när belöningsförfrågningar läggs till. -->
                   </p>
                   <div class="mt-3 grid grid-cols-2 gap-2">
                     <button
@@ -159,21 +150,14 @@
                   </div>
                 </div>
               } @else {
-                <div class="mt-4 grid grid-cols-2 gap-2">
+                <div class="mt-2 flex items-center justify-evenly gap-3 border-t border-line pt-2">
                   <button
                     type="button"
                     (click)="openEdit(reward)"
-                    class="min-h-11 rounded-xl bg-white font-bold text-brand-600 ring-1 ring-line"
+                    class="py-1 text-sm font-bold text-brand-600"
                   >
-                    Redigera</button
-                  ><button
-                    [id]="'deactivate-reward-' + reward.id"
-                    type="button"
-                    (click)="requestDeactivate(reward.id)"
-                    class="min-h-11 rounded-xl bg-red-50 font-bold text-red-700"
-                  >
-                    Ta bort
-                  </button>
+                    Redigera</button>
+                  <span class="text-sm font-bold text-muted">Lager: {{ reward.stockQuantity }}</span>
                 </div>
               }
             </article>
