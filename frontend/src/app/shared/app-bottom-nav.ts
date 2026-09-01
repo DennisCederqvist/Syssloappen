@@ -107,9 +107,22 @@ export interface NavItem {
             ></span
           >
         </button>
-        <button type="button" (click)="navigateFromSettings('/vuxen/historik')" class="mt-1 flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left font-extrabold transition hover:bg-brand-50">
-          <span class="grid size-10 place-items-center rounded-xl bg-brand-100 text-lg" aria-hidden="true">◷</span>
-          <span><span class="block">Historik</span><span class="mt-0.5 block text-xs font-bold text-muted">Familjens avslutade aktiviteter</span></span>
+        <button
+          type="button"
+          (click)="navigateFromSettings('/vuxen/historik')"
+          class="mt-1 flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left font-extrabold transition hover:bg-brand-50"
+        >
+          <span
+            class="grid size-10 place-items-center rounded-xl bg-brand-100 text-lg"
+            aria-hidden="true"
+            >◷</span
+          >
+          <span
+            ><span class="block">Historik</span
+            ><span class="mt-0.5 block text-xs font-bold text-muted"
+              >Familjens avslutade aktiviteter</span
+            ></span
+          >
         </button>
       </section>
     }

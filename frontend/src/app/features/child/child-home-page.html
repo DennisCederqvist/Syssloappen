@@ -170,9 +170,14 @@
             <article class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line sm:p-6">
               <div class="flex items-start justify-between gap-3">
                 <h3 class="text-xl font-black">{{ assignment.title }}</h3>
-                <span class="shrink-0 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-800">Väntar på godkännande</span>
+                <span
+                  class="shrink-0 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-800"
+                  >Väntar på godkännande</span
+                >
               </div>
-              <p class="mt-4 rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-900">
+              <p
+                class="mt-4 rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-900"
+              >
                 Bra jobbat! En vuxen tittar på uppgiften innan poängen delas ut.
               </p>
             </article>
@@ -189,7 +194,9 @@
           @for (assignment of recentlyApprovedAssignments(); track assignment.assignmentId) {
             <article class="rounded-3xl bg-emerald-50 p-5 ring-1 ring-emerald-100">
               <h3 class="text-lg font-black">{{ assignment.title }}</h3>
-              <p class="mt-2 font-bold text-emerald-900">Godkänt! {{ assignment.points }} poäng är tillagda i ditt saldo.</p>
+              <p class="mt-2 font-bold text-emerald-900">
+                Godkänt! {{ assignment.points }} poäng är tillagda i ditt saldo.
+              </p>
             </article>
           }
         </div>
