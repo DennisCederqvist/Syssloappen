@@ -178,15 +178,15 @@ test('hela syssleflödet fungerar mellan Adult och Child', async ({ browser }) =
   await childPage.getByRole('button', { name: `Rapportera ${choreTitle} som klar` }).click();
   await expect(childChore).toContainText('Väntar på godkännande');
 
-  await adultPage.goto('/vuxen/granska');
-  const pendingReviewSection = adultPage.locator('section[aria-labelledby="pending-review-title"]');
+  await adultPage.goto('/vuxen');
+  const pendingReviewSection = adultPage.locator('section[aria-labelledby="pending-title"]');
   const adultReview = pendingReviewSection.getByRole('article').filter({ hasText: choreTitle });
   await expectResponsiveAndAccessible(adultPage);
   await expect(adultReview).toContainText(childName);
+  await adultReview.getByRole('button', { name: 'Avslå' }).click();
   await adultReview.getByLabel(/Kommentar/).fill(redoComment);
-  await adultReview.getByRole('button', { name: `Be ${childName} göra om ${choreTitle}` }).click();
+  await adultReview.getByRole('button', { name: 'Skicka' }).click();
   await expect(adultReview).toBeHidden();
-  await expect(adultPage.locator('#review-success-message')).toBeFocused();
 
   await childPage.reload();
   await expect(childChore).toContainText('Behöver göras om');
@@ -198,7 +198,7 @@ test('hela syssleflödet fungerar mellan Adult och Child', async ({ browser }) =
 
   await adultPage.reload();
   await expect(adultReview).toBeVisible();
-  await adultReview.getByRole('button', { name: `Godkänn ${choreTitle} för ${childName}` }).click();
+  await adultReview.getByRole('button', { name: 'Godkänn' }).click();
   await expect(adultReview).toBeHidden();
 
   await childPage.reload();

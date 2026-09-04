@@ -9,9 +9,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
-import { UserHeader } from '../../../shared/user-header';
 import { focusAfterRender } from '../../../shared/focus';
+import { AdultBadge } from '../ui/badge';
+import { AdultBottomNav } from '../ui/bottom-nav';
+import { AdultDangerOutlineButton, AdultPrimaryButton, AdultSecondaryTintButton } from '../ui/buttons';
+import { AdultPageHeader } from '../ui/page-header';
+import { AdultSheet } from '../ui/sheet';
+import { AdultTile } from '../ui/tile';
 import {
   ChildDeviceSession,
   ChildPairingCode,
@@ -28,7 +32,18 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-adult-children-page',
-  imports: [AppBottomNav, DatePipe, ReactiveFormsModule, UserHeader],
+  imports: [
+    DatePipe,
+    ReactiveFormsModule,
+    AdultBadge,
+    AdultBottomNav,
+    AdultDangerOutlineButton,
+    AdultPrimaryButton,
+    AdultSecondaryTintButton,
+    AdultPageHeader,
+    AdultSheet,
+    AdultTile,
+  ],
   templateUrl: './adult-children-page.html',
 })
 export class AdultChildrenPage implements OnInit {
@@ -66,13 +81,6 @@ export class AdultChildrenPage implements OnInit {
   private pairingReturnFocusId = '';
   private deviceSessionsReturnFocusId = '';
   private editChildReturnFocusId = '';
-
-  readonly navItems: NavItem[] = [
-    { label: 'Hem', icon: '⌂', route: '/vuxen' },
-    { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
-    { label: 'Barn', icon: '♧', active: true, route: '/vuxen/barn' },
-    { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
-  ];
 
   readonly childForm = this.formBuilder.nonNullable.group(
     {

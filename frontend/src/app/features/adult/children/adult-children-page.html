@@ -1,64 +1,48 @@
-<div class="page-enter min-h-dvh bg-canvas pb-24 md:flex md:pb-0">
-  <app-bottom-nav [items]="navItems" />
-  <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-user-header eyebrow="Familjen" title="Barn och konton" variant="adult" />
-
-    <section
-      class="mt-7 rounded-[1.75rem] bg-brand-600 p-5 text-white shadow-xl shadow-brand-600/10 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7"
-    >
-      <div>
-        <p class="text-sm font-extrabold text-brand-100">Trygga barnkonton</p>
-        <h2 class="mt-1 text-2xl font-black">En egen enkel vy för varje barn</h2>
-        <p class="mt-2 max-w-2xl leading-7 text-brand-100">
-          När du lägger till ett barn skapas profilen och kontot tillsammans i din familj.
-        </p>
-      </div>
+<div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
+  <app-adult-bottom-nav />
+  <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+    <app-adult-page-header title="Barn och konton">
       <button
+        headerAction
         id="create-child-trigger"
         type="button"
+        adultPrimaryButton
         (click)="openForm()"
         [attr.aria-controls]="showForm() ? 'create-child-panel' : null"
         [attr.aria-expanded]="showForm()"
-        class="mt-5 min-h-14 w-full shrink-0 rounded-2xl bg-white px-5 font-extrabold text-brand-600 shadow-lg transition hover:bg-brand-50 sm:mt-0 sm:w-auto"
       >
         + Lägg till barn
       </button>
-    </section>
+    </app-adult-page-header>
 
     @if (createdChild(); as child) {
       <section
         id="created-child-message"
         tabindex="-1"
-        class="mt-5 flex items-start gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-900"
+        class="mt-4 rounded-lg border border-adult-border bg-adult-accent-soft p-3"
         aria-live="polite"
       >
-        <span
-          class="grid size-9 shrink-0 place-items-center rounded-xl bg-green-200 font-black"
-          aria-hidden="true"
-          >✓</span
+        <h2 class="text-[15px] font-semibold text-adult-accent-dark">{{ child.name }} är tillagd</h2>
+        <p class="mt-1 text-sm leading-6 text-adult-accent-dark">
+          Barnets användarnamn är <strong>{{ child.userName }}</strong
+          >. Nu kan du koppla barnets enhet med en engångskod.
+        </p>
+        <button
+          type="button"
+          adultSecondaryTintButton
+          class="mt-3"
+          (click)="generatePairingCode(child, 'pair-created-child-' + child.id)"
+          [id]="'pair-created-child-' + child.id"
+          [disabled]="generatingCodeFor() === child.id"
         >
-        <div>
-          <h2 class="font-black">{{ child.name }} är tillagd</h2>
-          <p class="mt-1 text-sm leading-6">
-            Barnets användarnamn är <strong>{{ child.userName }}</strong
-            >. Nu kan du koppla barnets enhet med en engångskod.
-          </p>
-          <button
-            type="button"
-            (click)="generatePairingCode(child, 'pair-created-child-' + child.id)"
-            [id]="'pair-created-child-' + child.id"
-            [disabled]="generatingCodeFor() === child.id"
-            class="mt-3 min-h-11 rounded-xl bg-white px-4 text-sm font-extrabold text-green-900 shadow-sm ring-1 ring-green-200 disabled:opacity-60"
-          >
-            {{ generatingCodeFor() === child.id ? 'Skapar kod…' : 'Koppla enhet' }}
-          </button>
-        </div>
+          {{ generatingCodeFor() === child.id ? 'Skapar kod…' : 'Koppla enhet' }}
+        </button>
       </section>
     }
 
     @if (pairingError()) {
       <div
-        class="mt-5 rounded-2xl border border-coral/30 bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+        class="mt-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
         role="alert"
       >
         {{ pairingError() }}
@@ -69,22 +53,17 @@
       <div
         id="child-deactivation-success"
         tabindex="-1"
-        class="mt-5 flex items-start gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-900"
+        class="mt-4 flex items-start gap-3 rounded-lg border border-adult-border bg-adult-accent-soft p-3"
         role="status"
       >
-        <span
-          class="grid size-9 shrink-0 place-items-center rounded-xl bg-green-200 font-black"
-          aria-hidden="true"
-          >✓</span
-        >
         <div class="min-w-0 flex-1">
-          <p class="font-black">Barnprofilen är avaktiverad</p>
-          <p class="mt-1 text-sm leading-6">{{ deactivationSuccess() }}</p>
+          <p class="text-[15px] font-semibold text-adult-accent-dark">Barnprofilen är avaktiverad</p>
+          <p class="mt-1 text-sm leading-6 text-adult-accent-dark">{{ deactivationSuccess() }}</p>
         </div>
         <button
           type="button"
           (click)="deactivationSuccess.set('')"
-          class="grid size-12 shrink-0 place-items-center rounded-xl text-xl"
+          class="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-lg text-lg text-adult-accent-dark"
           aria-label="Stäng bekräftelsen"
         >
           ×
@@ -92,6 +71,11 @@
       </div>
     }
 
+    <!--
+      Koppla enhet (engångskod) and Visa enheter (device sessions) are left with
+      their pre-redesign styling for now — the design spec treats device-pairing
+      as its own, later redesign step. Functionality is unchanged.
+    -->
     @if (pairingCode(); as pairing) {
       <section
         id="pairing-code-panel"
@@ -360,250 +344,204 @@
     }
 
     @if (editingChild(); as selectedChild) {
-      <section
-        id="edit-child-panel"
-        tabindex="-1"
-        class="mt-5 overflow-hidden rounded-[1.75rem] bg-white shadow-xl ring-1 ring-line"
-        aria-labelledby="edit-child-title"
+      <app-adult-sheet
+        panelId="edit-child-panel"
+        headingId="edit-child-title"
+        [title]="'Hantera ' + selectedChild.name"
+        closeLabel="Stäng barnprofilen"
+        (close)="closeEditChild()"
       >
-        <div class="flex items-start justify-between gap-4 border-b border-line p-5 sm:p-6">
-          <div>
-            <p class="text-sm font-extrabold text-brand-600">Barnprofil</p>
-            <h2 id="edit-child-title" class="mt-1 text-2xl font-black">
-              Hantera {{ selectedChild.name }}
-            </h2>
-            <p class="mt-2 text-sm leading-6 text-muted">
-              Ändra namnet som visas i familjen eller avaktivera profilen.
-            </p>
-          </div>
-          <button
-            type="button"
-            (click)="closeEditChild()"
-            class="grid size-11 shrink-0 place-items-center rounded-xl border border-line text-xl text-muted"
-            aria-label="Stäng barnprofilen"
-          >
-            ×
-          </button>
-        </div>
+        <p class="-mt-2 mb-4 text-sm text-adult-text-secondary">
+          Ändra namnet som visas i familjen eller avaktivera profilen.
+        </p>
 
-        <div class="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1.25fr_0.75fr]">
-          <form [formGroup]="editChildForm" (ngSubmit)="updateChild()" novalidate>
-            <h3 class="text-lg font-black">Barnets namn</h3>
-            <p class="mt-1 text-sm leading-6 text-muted">
-              Användarnamn och lösenord påverkas inte när visningsnamnet ändras.
-            </p>
-
-            @if (editChildSuccess()) {
-              <div
-                class="mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-900"
-                role="status"
-              >
-                {{ editChildSuccess() }}
-              </div>
-            }
-            @if (editChildError()) {
-              <div
-                class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
-                role="alert"
-              >
-                {{ editChildError() }}
-              </div>
-            }
-
-            <label class="mt-5 block font-bold"
-              >Visningsnamn<input
-                id="edit-child-name"
-                formControlName="name"
-                type="text"
-                autocomplete="off"
-                [attr.aria-invalid]="
-                  editChildForm.controls.name.touched && editChildForm.controls.name.invalid
-                "
-                aria-describedby="edit-child-name-error"
-                class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
-              />
-              @if (editChildForm.controls.name.touched && editChildForm.controls.name.invalid) {
-                <span id="edit-child-name-error" class="mt-2 block text-sm text-red-700"
-                  >Skriv ett namn med högst 100 tecken.</span
-                >
-              }
-            </label>
-            <button
-              type="submit"
-              [disabled]="isUpdatingChild()"
-              class="mt-4 min-h-13 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 disabled:cursor-wait disabled:opacity-60 sm:w-auto"
+        <form [formGroup]="editChildForm" (ngSubmit)="updateChild()" class="grid gap-4" novalidate>
+          @if (editChildSuccess()) {
+            <div
+              class="rounded-lg border border-adult-border bg-adult-accent-soft px-4 py-3 text-sm font-medium text-adult-accent-dark"
+              role="status"
             >
+              {{ editChildSuccess() }}
+            </div>
+          }
+          @if (editChildError()) {
+            <div
+              class="rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+              role="alert"
+            >
+              {{ editChildError() }}
+            </div>
+          }
+          <label class="block text-sm font-semibold text-adult-text">
+            Visningsnamn
+            <input
+              id="edit-child-name"
+              formControlName="name"
+              type="text"
+              autocomplete="off"
+              [attr.aria-invalid]="
+                editChildForm.controls.name.touched && editChildForm.controls.name.invalid
+              "
+              aria-describedby="edit-child-name-error"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
+            />
+            @if (editChildForm.controls.name.touched && editChildForm.controls.name.invalid) {
+              <span id="edit-child-name-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
+                Skriv ett namn med högst 100 tecken.
+              </span>
+            }
+          </label>
+          <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              (click)="closeEditChild()"
+              class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
+            >
+              Avbryt
+            </button>
+            <button type="submit" adultPrimaryButton [disabled]="isUpdatingChild()">
               {{ isUpdatingChild() ? 'Sparar…' : 'Spara nytt namn' }}
             </button>
-          </form>
+          </div>
+        </form>
 
-          <aside class="rounded-3xl border border-red-200 bg-red-50 p-5">
-            <p class="text-xs font-extrabold tracking-wider text-red-700 uppercase">Riskzon</p>
-            <h3 class="mt-2 text-lg font-black text-red-950">Avaktivera barnprofil</h3>
-            <p class="mt-2 text-sm leading-6 text-red-900">
-              Barnet försvinner från den aktiva listan, kan inte få nya sysslor och loggas ut från
-              alla kopplade enheter. Historiken sparas.
-            </p>
-
-            @if (deactivationError()) {
-              <div
-                class="mt-4 rounded-2xl border border-red-300 bg-white px-4 py-3 text-sm font-bold text-red-800"
-                role="alert"
-              >
-                {{ deactivationError() }}
+        <div class="mt-6 border-t border-adult-border pt-4">
+          @if (deactivationError()) {
+            <div
+              class="mb-3 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+              role="alert"
+            >
+              {{ deactivationError() }}
+            </div>
+          }
+          @if (confirmingDeactivation()) {
+            <div
+              class="rounded-lg border border-adult-danger-border bg-adult-danger-bg p-3"
+              role="group"
+              aria-labelledby="child-deactivation-question"
+            >
+              <p id="child-deactivation-question" class="text-sm font-semibold text-adult-danger-text">
+                Är du säker på att {{ selectedChild.name }} ska avaktiveras?
+              </p>
+              <div class="mt-3 flex gap-2">
+                <button
+                  id="cancel-child-deactivation"
+                  type="button"
+                  (click)="cancelDeactivation()"
+                  [disabled]="isDeactivatingChild()"
+                  class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
+                >
+                  Avbryt
+                </button>
+                <button
+                  type="button"
+                  adultDangerOutlineButton
+                  class="flex-1"
+                  (click)="deactivateChild()"
+                  [disabled]="isDeactivatingChild()"
+                >
+                  {{ isDeactivatingChild() ? 'Avaktiverar…' : 'Ja, avaktivera' }}
+                </button>
               </div>
-            }
-
-            @if (confirmingDeactivation()) {
-              <div
-                class="mt-5 rounded-2xl bg-white p-4 ring-1 ring-red-200"
-                role="group"
-                aria-labelledby="child-deactivation-question"
-              >
-                <p id="child-deactivation-question" class="text-sm font-black text-red-950">
-                  Är du säker på att {{ selectedChild.name }} ska avaktiveras?
-                </p>
-                <div class="mt-3 grid grid-cols-2 gap-2">
-                  <button
-                    id="cancel-child-deactivation"
-                    type="button"
-                    (click)="cancelDeactivation()"
-                    [disabled]="isDeactivatingChild()"
-                    class="min-h-11 rounded-xl px-3 text-sm font-extrabold text-muted ring-1 ring-line disabled:opacity-60"
-                  >
-                    Avbryt
-                  </button>
-                  <button
-                    type="button"
-                    (click)="deactivateChild()"
-                    [disabled]="isDeactivatingChild()"
-                    class="min-h-11 rounded-xl bg-red-600 px-3 text-sm font-extrabold text-white disabled:cursor-wait disabled:opacity-60"
-                  >
-                    {{ isDeactivatingChild() ? 'Avaktiverar…' : 'Ja, avaktivera' }}
-                  </button>
-                </div>
-              </div>
-            } @else {
-              <button
-                id="request-child-deactivation"
-                type="button"
-                (click)="requestDeactivation()"
-                class="mt-5 min-h-11 w-full rounded-xl bg-white px-4 text-sm font-extrabold text-red-700 ring-1 ring-red-300 hover:bg-red-100"
-              >
-                Avaktivera barn
-              </button>
-            }
-          </aside>
+            </div>
+          } @else {
+            <button
+              id="request-child-deactivation"
+              type="button"
+              adultDangerOutlineButton
+              (click)="requestDeactivation()"
+            >
+              Avaktivera barn
+            </button>
+          }
         </div>
-      </section>
+      </app-adult-sheet>
     }
 
     @if (showForm()) {
-      <section
-        id="create-child-panel"
-        tabindex="-1"
-        class="mt-5 rounded-[1.75rem] bg-white p-5 shadow-lg ring-1 ring-line sm:p-7"
-        aria-labelledby="create-child-title"
+      <app-adult-sheet
+        panelId="create-child-panel"
+        headingId="create-child-title"
+        title="Lägg till ett barn"
+        closeLabel="Stäng formuläret"
+        (close)="closeForm()"
       >
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-sm font-extrabold text-brand-600">Nytt barnkonto</p>
-            <h2 id="create-child-title" class="mt-1 text-2xl font-black">Lägg till ett barn</h2>
-            <p class="mt-1 text-sm leading-6 text-muted">
-              Uppgifterna används bara inom din familj.
-            </p>
-          </div>
-          <button
-            type="button"
-            (click)="closeForm()"
-            class="grid size-11 shrink-0 place-items-center rounded-xl border border-line text-xl text-muted"
-            aria-label="Stäng formuläret"
-          >
-            ×
-          </button>
-        </div>
+        <p class="-mt-2 mb-4 text-sm text-adult-text-secondary">Uppgifterna används bara inom din familj.</p>
 
         @if (formError()) {
           <div
-            class="mt-5 rounded-2xl border border-coral/30 bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+            class="mb-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
             role="alert"
           >
             {{ formError() }}
           </div>
         }
 
-        <form
-          [formGroup]="childForm"
-          (ngSubmit)="submitChild()"
-          class="mt-6 grid gap-5 sm:grid-cols-2"
-          novalidate
-        >
-          <label class="block font-bold"
-            >Barnets namn<input
+        <form [formGroup]="childForm" (ngSubmit)="submitChild()" class="grid gap-4" novalidate>
+          <label class="block text-sm font-semibold text-adult-text">
+            Barnets namn
+            <input
               id="create-child-name"
               formControlName="name"
               type="text"
               autocomplete="off"
               placeholder="Till exempel Maja"
-              [attr.aria-invalid]="
-                childForm.controls.name.touched && childForm.controls.name.invalid
-              "
+              [attr.aria-invalid]="childForm.controls.name.touched && childForm.controls.name.invalid"
               aria-describedby="create-child-name-error"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
             />
             @if (childForm.controls.name.touched && childForm.controls.name.invalid) {
-              <span id="create-child-name-error" class="mt-2 block text-sm text-red-700"
-                >Skriv barnets namn.</span
-              >
+              <span id="create-child-name-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
+                Skriv barnets namn.
+              </span>
             }
           </label>
-          <label class="block font-bold"
-            >Användarnamn<input
+          <label class="block text-sm font-semibold text-adult-text">
+            Användarnamn
+            <input
               id="create-child-username"
               formControlName="userName"
               type="text"
               autocomplete="off"
               autocapitalize="none"
               placeholder="Till exempel maja"
-              [attr.aria-invalid]="
-                childForm.controls.userName.touched && childForm.controls.userName.invalid
-              "
+              [attr.aria-invalid]="childForm.controls.userName.touched && childForm.controls.userName.invalid"
               aria-describedby="create-child-username-help create-child-username-error"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
             />
-            <span id="create-child-username-help" class="mt-2 block text-xs leading-5 text-muted"
-              >Barnvänligt och unikt inom familjen.</span
-            >
+            <span id="create-child-username-help" class="mt-1.5 block text-xs font-normal text-adult-text-secondary">
+              Barnvänligt och unikt inom familjen.
+            </span>
             @if (childForm.controls.userName.touched && childForm.controls.userName.invalid) {
-              <span id="create-child-username-error" class="mt-1 block text-sm text-red-700"
-                >Skriv ett användarnamn.</span
-              >
+              <span id="create-child-username-error" class="mt-1 block text-sm font-normal text-adult-danger-text">
+                Skriv ett användarnamn.
+              </span>
             }
           </label>
-          <label class="block font-bold"
-            >Lösenord<input
+          <label class="block text-sm font-semibold text-adult-text">
+            Lösenord
+            <input
               id="create-child-password"
               formControlName="password"
               type="password"
               autocomplete="new-password"
               placeholder="Minst 8 tecken"
-              [attr.aria-invalid]="
-                childForm.controls.password.touched && childForm.controls.password.invalid
-              "
+              [attr.aria-invalid]="childForm.controls.password.touched && childForm.controls.password.invalid"
               aria-describedby="create-child-password-help create-child-password-error"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
             />
-            <span id="create-child-password-help" class="mt-2 block text-xs leading-5 text-muted"
-              >Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.</span
-            >
+            <span id="create-child-password-help" class="mt-1.5 block text-xs font-normal text-adult-text-secondary">
+              Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.
+            </span>
             @if (childForm.controls.password.touched && childForm.controls.password.invalid) {
-              <span id="create-child-password-error" class="mt-1 block text-sm text-red-700"
-                >Lösenordet uppfyller inte kraven.</span
-              >
+              <span id="create-child-password-error" class="mt-1 block text-sm font-normal text-adult-danger-text">
+                Lösenordet uppfyller inte kraven.
+              </span>
             }
           </label>
-          <label class="block font-bold"
-            >Upprepa lösenordet<input
+          <label class="block text-sm font-semibold text-adult-text">
+            Upprepa lösenordet
+            <input
               id="create-child-confirm-password"
               formControlName="confirmPassword"
               type="password"
@@ -611,20 +549,16 @@
               placeholder="Skriv lösenordet igen"
               [attr.aria-invalid]="
                 childForm.controls.confirmPassword.touched &&
-                (childForm.controls.confirmPassword.invalid ||
-                  childForm.hasError('passwordMismatch'))
+                (childForm.controls.confirmPassword.invalid || childForm.hasError('passwordMismatch'))
               "
               aria-describedby="create-child-confirm-password-error"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
             />
             @if (
               childForm.controls.confirmPassword.touched &&
               (childForm.controls.confirmPassword.invalid || childForm.hasError('passwordMismatch'))
             ) {
-              <span
-                id="create-child-confirm-password-error"
-                class="mt-2 block text-sm text-red-700"
-              >
+              <span id="create-child-confirm-password-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
                 {{
                   childForm.controls.confirmPassword.invalid
                     ? 'Upprepa lösenordet.'
@@ -633,136 +567,114 @@
               </span>
             }
           </label>
-          <div class="flex flex-col-reverse gap-3 sm:col-span-2 sm:flex-row sm:justify-end">
+          <div class="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button
               type="button"
               (click)="closeForm()"
-              class="min-h-13 rounded-2xl border border-line bg-white px-5 font-bold text-muted"
+              class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
             >
-              Avbryt</button
-            ><button
-              type="submit"
-              [disabled]="isSubmitting()"
-              class="min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white shadow-lg shadow-brand-500/20 hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
-            >
+              Avbryt
+            </button>
+            <button type="submit" adultPrimaryButton [disabled]="isSubmitting()">
               {{ isSubmitting() ? 'Skapar kontot…' : 'Skapa barnkonto' }}
             </button>
           </div>
         </form>
-      </section>
+      </app-adult-sheet>
     }
 
-    <section class="mt-7" aria-labelledby="children-title">
-      <div class="mb-4 flex items-end justify-between gap-4">
-        <div>
-          <p class="text-sm font-bold text-brand-600">Aktiva profiler</p>
-          <h2 id="children-title" class="text-xl font-black">Familjens barn</h2>
-        </div>
-        @if (!isLoading() && !loadError()) {
-          <span
-            class="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-muted shadow-sm ring-1 ring-line"
-            >{{ children().length }} barn</span
-          >
+    <section class="mt-2" aria-labelledby="children-title">
+      <div class="flex items-center gap-2">
+        <h2 id="children-title" class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">
+          Familjens barn
+        </h2>
+        @if (!isLoading() && !loadError() && children().length) {
+          <app-adult-badge variant="count" [value]="children().length" />
         }
       </div>
 
       @if (isLoading()) {
-        <div class="grid gap-3 sm:grid-cols-2" role="status">
-          <div class="h-28 animate-pulse rounded-3xl bg-white"></div>
+        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3" role="status">
+          <div class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-surface"></div>
           <span class="sr-only">Hämtar familjens barn…</span>
-          <div class="h-28 animate-pulse rounded-3xl bg-white"></div>
+          <div class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-surface"></div>
         </div>
       } @else if (loadError()) {
-        <div class="rounded-3xl border border-red-200 bg-red-50 p-5" role="alert">
-          <p class="font-bold text-red-800">{{ loadError() }}</p>
-          <button
-            type="button"
-            (click)="loadChildren()"
-            class="mt-4 min-h-11 rounded-xl bg-white px-4 font-extrabold text-red-800 ring-1 ring-red-200"
-          >
+        <div class="mt-2 rounded-lg border border-adult-danger-border bg-adult-danger-bg p-4" role="alert">
+          <p class="text-sm font-medium text-adult-danger-text">{{ loadError() }}</p>
+          <button type="button" adultDangerOutlineButton class="mt-3" (click)="loadChildren()">
             Försök igen
           </button>
         </div>
       } @else if (children().length === 0) {
-        <div
-          class="rounded-[2rem] border-2 border-dashed border-brand-500/30 bg-white p-8 text-center"
-        >
-          <div
-            class="mx-auto grid size-20 place-items-center rounded-[1.75rem] bg-brand-50 text-4xl"
-            aria-hidden="true"
-          >
-            🧸
-          </div>
-          <h3 class="mt-5 text-xl font-black">Inga barn är tillagda ännu</h3>
-          <p class="mx-auto mt-2 max-w-md leading-7 text-muted">
+        <div class="mt-2 rounded-lg border border-adult-border bg-adult-surface p-6 text-center">
+          <h3 class="text-[15px] font-semibold text-adult-text">Inga barn är tillagda ännu</h3>
+          <p class="mt-1 text-sm text-adult-text-secondary">
             Skapa familjens första barnkonto för att senare kunna tilldela sysslor.
           </p>
           <button
             id="create-child-empty-trigger"
             type="button"
+            adultPrimaryButton
+            class="mt-4"
             (click)="openForm()"
-            class="mt-5 min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white"
           >
             + Lägg till första barnet
           </button>
         </div>
       } @else {
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          @for (child of children(); track child.id; let index = $index) {
-            <article class="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-line">
-              <div class="flex items-center gap-4">
-                <div
-                  class="grid size-14 shrink-0 place-items-center rounded-2xl text-2xl"
-                  [class.bg-brand-100]="index % 3 === 0"
-                  [class.bg-violet-100]="index % 3 === 1"
-                  [class.bg-amber-100]="index % 3 === 2"
-                  aria-hidden="true"
-                >
-                  {{ index % 2 === 0 ? '🧒' : '👧' }}
-                </div>
-                <div class="min-w-0">
-                  <h3 class="truncate text-lg font-black">{{ child.name }}</h3>
-                  <p class="text-sm text-muted">Aktivt barnkonto</p>
-                </div>
-              </div>
-              <div class="mt-4 grid grid-cols-2 gap-2">
-                <button
-                  [id]="'pair-child-' + child.id"
-                  type="button"
-                  (click)="generatePairingCode(child)"
-                  [attr.aria-controls]="
-                    pairingCode()?.childId === child.id ? 'pairing-code-panel' : null
-                  "
-                  [attr.aria-expanded]="pairingCode()?.childId === child.id"
-                  [disabled]="generatingCodeFor() === child.id"
-                  class="min-h-11 rounded-xl bg-brand-50 px-3 text-sm font-extrabold text-brand-600 transition hover:bg-brand-100 disabled:cursor-wait disabled:opacity-60"
-                >
-                  {{ generatingCodeFor() === child.id ? 'Skapar kod…' : 'Koppla enhet' }}
-                </button>
-                <button
-                  [id]="'sessions-child-' + child.id"
-                  type="button"
-                  (click)="openDeviceSessions(child)"
-                  [attr.aria-controls]="
-                    deviceSessionsChild()?.id === child.id ? 'device-sessions-panel' : null
-                  "
-                  [attr.aria-expanded]="deviceSessionsChild()?.id === child.id"
-                  class="min-h-11 rounded-xl bg-white px-3 text-sm font-extrabold text-muted ring-1 ring-line transition hover:text-ink"
-                >
-                  Visa enheter
-                </button>
-              </div>
+        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          @for (child of children(); track child.id) {
+            <app-adult-tile [title]="child.name" [avatarLabel]="child.name.slice(0, 1)">
               <button
+                tileAction
                 [id]="'edit-child-' + child.id"
                 type="button"
                 (click)="openEditChild(child)"
                 [attr.aria-controls]="editingChild()?.id === child.id ? 'edit-child-panel' : null"
                 [attr.aria-expanded]="editingChild()?.id === child.id"
-                class="mt-2 min-h-11 w-full rounded-xl bg-white px-4 text-sm font-extrabold text-muted ring-1 ring-line transition hover:text-ink"
+                [attr.aria-label]="'Hantera ' + child.name"
+                class="grid min-h-11 min-w-11 shrink-0 -m-2 place-items-center rounded-lg text-adult-text-secondary transition hover:bg-adult-bg"
               >
-                Hantera barnprofil
+                <svg
+                  viewBox="0 0 24 24"
+                  class="size-4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 20l4.5-1 10-10a2.121 2.121 0 0 0-3-3l-10 10L4 20z" />
+                  <path d="M13 6l3 3" />
+                </svg>
               </button>
-            </article>
+              <p class="text-sm font-medium text-adult-text-secondary">Aktivt barnkonto</p>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  adultSecondaryTintButton
+                  class="flex-1"
+                  (click)="generatePairingCode(child)"
+                  [attr.aria-controls]="pairingCode()?.childId === child.id ? 'pairing-code-panel' : null"
+                  [attr.aria-expanded]="pairingCode()?.childId === child.id"
+                  [disabled]="generatingCodeFor() === child.id"
+                >
+                  {{ generatingCodeFor() === child.id ? 'Skapar…' : 'Koppla enhet' }}
+                </button>
+                <button
+                  type="button"
+                  adultSecondaryTintButton
+                  class="flex-1"
+                  (click)="openDeviceSessions(child)"
+                  [attr.aria-controls]="deviceSessionsChild()?.id === child.id ? 'device-sessions-panel' : null"
+                  [attr.aria-expanded]="deviceSessionsChild()?.id === child.id"
+                >
+                  Visa enheter
+                </button>
+              </div>
+            </app-adult-tile>
           }
         </div>
       }

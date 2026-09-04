@@ -32,11 +32,29 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'vuxen/barn',
+    path: 'vuxen/barn/:childId',
+    canActivate: [adultGuard],
+    loadComponent: () => import('./features/adult/children/adult-child-profile-page').then((c) => c.AdultChildProfilePage),
+  },
+  {
+    path: 'vuxen/installningar/barn',
     canActivate: [adultGuard],
     loadComponent: () =>
       import('./features/adult/children/adult-children-page').then((c) => c.AdultChildrenPage),
   },
+  {
+    path: 'vuxen/installningar',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/settings/adult-settings-page').then((c) => c.AdultSettingsPage),
+  },
+  {
+    path: 'vuxen/historik',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/history/adult-history-page').then((c) => c.AdultHistoryPage),
+  },
+  { path: 'vuxen/barn', pathMatch: 'full', redirectTo: 'vuxen/installningar/barn' },
   {
     path: 'vuxen/sysslor',
     canActivate: [adultGuard],
@@ -48,20 +66,6 @@ export const routes: Routes = [
     canActivate: [adultGuard],
     loadComponent: () =>
       import('./features/adult/rewards/adult-rewards-page').then((c) => c.AdultRewardsPage),
-  },
-  {
-    path: 'vuxen/onskningar',
-    canActivate: [adultGuard],
-    loadComponent: () =>
-      import('./features/adult/rewards/adult-reward-redemptions-page').then(
-        (c) => c.AdultRewardRedemptionsPage,
-      ),
-  },
-  {
-    path: 'vuxen/granska',
-    canActivate: [adultGuard],
-    loadComponent: () =>
-      import('./features/adult/review/adult-review-page').then((c) => c.AdultReviewPage),
   },
   {
     path: 'barn',

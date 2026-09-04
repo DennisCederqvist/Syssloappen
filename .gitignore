@@ -432,3 +432,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Design reference mockups / ad-hoc screenshots — never pushed to the branch.
+*.png

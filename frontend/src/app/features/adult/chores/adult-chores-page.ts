@@ -1,25 +1,40 @@
-import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
-import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
-import { UserHeader } from '../../../shared/user-header';
 import { focusAfterRender } from '../../../shared/focus';
 import { ChildSummary } from '../children/children.models';
 import { ChildrenService } from '../children/children.service';
+import { AdultBadge } from '../ui/badge';
+import { AdultBottomNav } from '../ui/bottom-nav';
+import { AdultDangerOutlineButton, AdultPrimaryButton, AdultSecondaryTintButton } from '../ui/buttons';
+import { AdultPageHeader } from '../ui/page-header';
+import { AdultSheet } from '../ui/sheet';
+import { AdultTile } from '../ui/tile';
 import { AdultAssignment, Chore } from './chores.models';
 import { ChoresService } from './chores.service';
 
 @Component({
   selector: 'app-adult-chores-page',
-  imports: [AppBottomNav, DatePipe, ReactiveFormsModule, UserHeader],
+  imports: [
+    ReactiveFormsModule,
+    AdultBadge,
+    AdultBottomNav,
+    AdultDangerOutlineButton,
+    AdultPrimaryButton,
+    AdultSecondaryTintButton,
+    AdultPageHeader,
+    AdultSheet,
+    AdultTile,
+  ],
   templateUrl: './adult-chores-page.html',
 })
 export class AdultChoresPage implements OnInit {
   private readonly choresService = inject(ChoresService);
   private archiveUndoTimer: number | null = null;
   private archiveUndoClearTimer: number | null = null;
+  private successTimer: number | null = null;
+  private successClearTimer: number | null = null;
   private readonly childrenService = inject(ChildrenService);
   private readonly formBuilder = inject(FormBuilder);
 
@@ -35,8 +50,10 @@ export class AdultChoresPage implements OnInit {
   readonly isUpdatingChore = signal(false);
   readonly deactivatingChoreId = signal<number | null>(null);
   readonly confirmingDeactivationId = signal<number | null>(null);
+  readonly openChoreMenuId = signal<number | null>(null);
   readonly isAssigning = signal(false);
   readonly confirmingAssignmentCancellationId = signal<number | null>(null);
+  readonly openAssignmentMenuId = signal<number | null>(null);
   readonly cancellingAssignmentId = signal<number | null>(null);
   readonly choreError = signal('');
   readonly editChoreError = signal('');
@@ -44,6 +61,7 @@ export class AdultChoresPage implements OnInit {
   readonly assignmentError = signal('');
   readonly assignmentCancellationError = signal('');
   readonly successMessage = signal('');
+  readonly successFading = signal(false);
   readonly historyBusyId = signal<number | null>(null);
   readonly historyError = signal('');
   readonly lastArchivedId = signal<number | null>(null);
@@ -63,12 +81,13 @@ export class AdultChoresPage implements OnInit {
   private assignmentReturnFocusId = 'open-assignment-trigger';
   private editChoreReturnFocusId = '';
 
-  readonly navItems: NavItem[] = [
-    { label: 'Hem', icon: '⌂', route: '/vuxen' },
-    { label: 'Sysslor', icon: '☷', active: true, route: '/vuxen/sysslor' },
-    { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
-    { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
-  ];
+  toggleChoreMenu(choreId: number): void {
+    this.openChoreMenuId.update((current) => current === choreId ? null : choreId);
+  }
+
+  toggleAssignmentMenu(assignmentId: number): void {
+    this.openAssignmentMenuId.update((current) => current === assignmentId ? null : assignmentId);
+  }
 
   readonly choreForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(100)]],
@@ -155,7 +174,7 @@ export class AdultChoresPage implements OnInit {
             [...chores, chore].sort((a, b) => a.title.localeCompare(b.title, 'sv')),
           );
           this.closeChoreForm();
-          this.successMessage.set(`${chore.title} är skapad och kan nu tilldelas.`);
+          this.showSuccess(`${chore.title} är skapad och kan nu tilldelas.`);
           this.openAssignmentForm(chore.id);
         },
         error: (error: HttpErrorResponse) =>
@@ -221,7 +240,7 @@ export class AdultChoresPage implements OnInit {
               .sort((a, b) => a.title.localeCompare(b.title, 'sv')),
           );
           this.closeEditChore();
-          this.successMessage.set(`${updated.title} är uppdaterad.`);
+          this.showSuccess(`${updated.title} är uppdaterad.`);
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
@@ -264,7 +283,7 @@ export class AdultChoresPage implements OnInit {
           if (this.editingChore()?.id === chore.id) this.closeEditChore();
           if (this.assignmentForm.controls.choreId.value === chore.id) this.closeAssignmentForm();
           this.confirmingDeactivationId.set(null);
-          this.successMessage.set(`${chore.title} är bortplockad från uppgiftsbanken.`);
+          this.showSuccess(`${chore.title} är bortplockad från uppgiftsbanken.`);
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
@@ -336,7 +355,7 @@ export class AdultChoresPage implements OnInit {
             ...assignments,
           ]);
           this.closeAssignmentForm();
-          this.successMessage.set(`${chore.title} är tilldelad till ${child.name}.`);
+          this.showSuccess(`${chore.title} är tilldelad till ${child.name}.`);
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
@@ -381,9 +400,7 @@ export class AdultChoresPage implements OnInit {
             assignments.filter((item) => item.assignmentId !== assignment.assignmentId),
           );
           this.confirmingAssignmentCancellationId.set(null);
-          this.successMessage.set(
-            `${assignment.choreTitle} är borttagen från ${assignment.childName}.`,
-          );
+          this.showSuccess(`${assignment.choreTitle} är borttagen från ${assignment.childName}.`);
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
@@ -442,6 +459,20 @@ export class AdultChoresPage implements OnInit {
       case 'Cancelled':
         return 'Borttagen';
     }
+  }
+
+  private showSuccess(message: string): void {
+    if (this.successTimer !== null) window.clearTimeout(this.successTimer);
+    if (this.successClearTimer !== null) window.clearTimeout(this.successClearTimer);
+    this.successFading.set(false);
+    this.successMessage.set(message);
+    this.successTimer = window.setTimeout(() => this.successFading.set(true), 3000);
+    this.successClearTimer = window.setTimeout(() => {
+      this.successMessage.set('');
+      this.successTimer = null;
+      this.successClearTimer = null;
+      this.successFading.set(false);
+    }, 5000);
   }
 
   private todayInputValue(): string {

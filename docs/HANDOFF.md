@@ -430,6 +430,31 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
+### Adult-UI, grafisk genomgång enligt separat designspec (`feature/adult-dashboard-ui`) — kärndelen klar, godkänd för merge
+
+> Uppdatering 2026-09-04: En fullständig designspec finns i `docs/adult-view-redesign/adult-view-design-spec.md` (färger, typskala, spacing, 8px-radie och layoutregler för Adult-vyn). Ett gemensamt komponentbibliotek (`frontend/src/app/features/adult/ui/`: Card, Tile, ApprovalCard, Badge, PrimaryButton/DangerOutlineButton/SecondaryTintButton, BottomNav, PageHeader, Sheet) är byggt och används genomgående i stället för sida-specifik styling. Samtliga primära Adult-skärmar är ombyggda på detta system, granskade skärm för skärm och godkända av användaren: Hem, Sysslor, Belöningar, Barn och konton, Bjud in vuxen, Historik, Inställningar och barnets vuxenprofil (`/vuxen/barn/:id`).
+>
+> Kvar, medvetet uppskjutet till en egen fortsättning: enhetskopplings-/engångskodsmodalerna i Barn och konton (fortfarande i sin gamla stil, men fullt fungerande) samt inloggningssidan. Dessa fortsätter i en ny branch efter denna merge.
+>
+> Som en del av genomgången togs de tidigare separata routerna `/vuxen/granska` och `/vuxen/onskningar` bort som redundanta. Deras funktion — godkänna eller neka en rapporterad syssla (med en valfri kommentar som visas endast efter att Avslå har klickats) samt godkänna/avslå/lämna ut en belöningsönskan — finns nu inbyggd direkt på Hem och på barnets vuxenprofil. `frontend/e2e/chore-flow.spec.ts` är uppdaterat för att verifiera flödet på `/vuxen` i stället för de borttagna routerna. Historik fick även tillbaka en dölj-/återställ-funktion per post, eftersom den tidigare bara fanns på de nu borttagna sidorna.
+>
+> Inga backendmodeller, API-kontrakt eller migrationer har ändrats i denna del. Angular-produktionsbygge och frontendtester är gröna efter varje skärm. Tre sedan tidigare kända och oförändrade testfel kvarstår, inte orsakade av denna genomgång:
+>
+> - `AppBottomNav`: popup-menyn för Inställningar innehåller redan en länk till Historik trots att testet förväntar sig motsatsen.
+> - `AdultChoresPage` (två tester): förväntar sig ett synligt kryss respektive en tillgängligt namngiven avbrytningsknapp som hörde till en redan avstängd (`@if (false && ...)`) sektion för "Aktuella tilldelningar"; sektionen renderade aldrig något och togs bort som en del av genomgången eftersom den var död kod.
+>
+> Användaren har granskat och godkänt varje skärm samt gett explicit godkännande att merga denna kärndel till `main` via en squash-mergad PR. Branchen och dess PR raderas efter merge; enhetskopplings-/engångskodsmodalerna och inloggningssidan fortsätter i en ny, separat branch.
+>
+> **Nästa större arbetsdel efter denna merge:** den separata, backend-först vuxenhanteringen (huvudägare på `Household`, listning av Householdets vuxna, säker bortkoppling, samt UI:t "Hantera vuxna" i Inställningar och en komplett "Bjud in vuxen"-sida med listan över Householdets vuxna). Se `REQUIREMENTS.md` under US-012 → "Planerad implementationsordning" för den exakta, gröna stegordningen. Det arbetet kräver backend- och datamodelländringar och ska köras som en egen arbetsdel, inte blandas in i frontend-uppföljningen ovan.
+
+- Adult-hemsidan är omgjord till en barncentrerad översikt. Varje barnrad visar initial-avatar, namn och en dagsmätare: endast tilldelningar med dagens `DueDate` räknas, och endast `Approved` räknas som klara. Äldre oavslutade uppgifter hör fortsatt till barnets arbetslista men får inte förorena dagens kvot.
+- Startsidan visar direkta kort för `PendingApproval`; Adult kan godkänna eller välja `NeedsRedo` utan omväg. Mobilknapparna ligger under sysslans namn.
+- Barnkort öppnar den nya Adult-skyddade routen `/vuxen/barn/:childId`. Profilen visar aktuella sysslor, direkta granskningskort, de tio senaste godkända sysslorna och en inbyggd sysselista där Adult kan tilldela den valda sysslan till just barnet med dagens datum.
+- Sysslor-sidan är nu avgränsad till uppgiftsbanken. Aktuella tilldelningar och godkänd historik visas inte längre där; de hör till barnets vuxenprofil.
+- Uppgiftsbankens kort har ett tätare Adult-mönster: titel, en kort beskrivning, poängbadge, trepunktsmeny med bekräftad “Ta bort” samt en kompakt rad för Redigera/Tilldela. Den visuella tätheten och responsiviteten behöver fortsatt grafisk genomgång tillsammans med användaren.
+- Nytt barnprofilkomponent är uttryckligen `standalone` för AOT-laddning. Produktionsbygget passerar efter ändringen. Senaste hela automatiska sviter från tidigare main gäller fortfarande, men denna WIP har hittills endast verifierats med Angular-produktionsbygge och användarens manuella funktionstest.
+- Den diskussion som efterfrågades här ledde till `docs/adult-view-redesign/adult-view-design-spec.md` och den grafiska genomgång som beskrivs i uppdateringen ovan (2026-09-04). Child-vyn har ännu inte fått någon motsvarande planerad grafisk genomgång.
+
 US-071, US-072 och den efterföljande Adult-historikförbättringen är implementerade, automatiskt verifierade och användargodkända. De är mergade till `main`; feature-branchen `feature/adult-history-archiving` är borttagen efter push:
 
 - Migrationerna `AddRewardStock`, `AddRewardRedemptionAdultArchive` och `AddChoreAssignmentDueDate` är applicerade i `syssloappen_dev`.

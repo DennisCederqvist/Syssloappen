@@ -175,6 +175,8 @@ public sealed class ChoreAssignmentsController(
             return Unauthorized();
         }
 
+        await MoveUnfinishedAssignmentsToToday(currentUser.HouseholdId);
+
         var assignments = await dbContext.ChoreAssignments
             .AsNoTracking()
             .Where(assignment =>
@@ -205,6 +207,24 @@ public sealed class ChoreAssignmentsController(
             .ToListAsync();
 
         return Ok(assignments);
+    }
+
+    private async Task MoveUnfinishedAssignmentsToToday(int householdId)
+    {
+        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+
+        // An unfinished chore carries forward into the next day. Submitted,
+        // approved and cancelled chores retain their original dates and audit trail.
+        await dbContext.ChoreAssignments
+            .Where(assignment =>
+                assignment.HouseholdId == householdId
+                && assignment.Child.HouseholdId == householdId
+                && assignment.Child.IsActive
+                && assignment.DueDate < today
+                && (assignment.Status == ChoreAssignmentStatus.Assigned
+                    || assignment.Status == ChoreAssignmentStatus.NeedsRedo))
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(assignment => assignment.DueDate, today));
     }
 
     [HttpPost("{assignmentId:int}/archive")]

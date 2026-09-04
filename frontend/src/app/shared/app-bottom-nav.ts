@@ -1,4 +1,4 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, HostListener, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 export interface NavItem {
@@ -6,22 +6,39 @@ export interface NavItem {
   icon: string;
   active?: boolean;
   route?: string;
+  settings?: boolean;
 }
 
 @Component({
   selector: 'app-bottom-nav',
   imports: [RouterLink],
   template: `<nav
-    class="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 px-3 pb-[max(.7rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:static md:w-24 md:border-t-0 md:border-r md:px-2 md:pt-6"
+    class="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-white/95 px-3 pb-[max(.7rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:static md:w-24 md:border-t-0 md:border-r md:px-2 md:pt-6"
     aria-label="Huvudnavigation"
   >
     <div
       class="mx-auto grid w-full max-w-lg gap-1 md:h-full md:w-auto md:grid-cols-1 md:justify-start md:gap-3"
       [class.grid-cols-3]="displayedItems().length === 3"
+      [class.grid-cols-4]="displayedItems().length === 4"
       [class.grid-cols-6]="displayedItems().length === 6"
     >
       @for (item of displayedItems(); track item.label) {
-        @if (item.route) {
+        @if (item.settings) {
+          <button
+            id="adult-settings-menu-trigger"
+            type="button"
+            (click)="toggleSettingsMenu()"
+            [attr.aria-controls]="settingsMenuOpen() ? 'adult-settings-menu' : null"
+            [attr.aria-expanded]="settingsMenuOpen()"
+            class="flex min-h-14 min-w-0 appearance-none flex-col items-center justify-center gap-1 rounded-2xl px-1 text-center transition hover:bg-brand-50 md:min-h-16 md:min-w-16 md:px-2"
+            [class.bg-brand-50]="item.active || settingsMenuOpen()"
+            [class.text-brand-600]="item.active || settingsMenuOpen()"
+            [class.text-muted]="!item.active && !settingsMenuOpen()"
+          >
+            <span class="text-xl leading-none" aria-hidden="true">{{ item.icon }}</span>
+            <span class="text-[10px] leading-3 font-bold md:text-xs">{{ item.label }}</span>
+          </button>
+        } @else if (item.route) {
           <a
             [routerLink]="item.route"
             [attr.aria-current]="item.active ? 'page' : null"
@@ -45,11 +62,76 @@ export interface NavItem {
         }
       }
     </div>
+
+    @if (settingsMenuOpen()) {
+      <section
+        id="adult-settings-menu"
+        class="absolute right-3 bottom-[calc(100%+0.5rem)] w-[min(22rem,calc(100vw-1.5rem))] rounded-3xl bg-white p-2 shadow-2xl shadow-ink/15 ring-1 ring-line md:right-auto md:bottom-auto md:left-[calc(100%+0.75rem)] md:top-6 md:w-72"
+        aria-labelledby="adult-settings-menu-title"
+      >
+        <div class="px-3 pt-3 pb-2">
+          <p class="text-xs font-extrabold tracking-wide text-brand-600 uppercase">Familjen</p>
+          <h2 id="adult-settings-menu-title" class="mt-1 text-lg font-black">Inställningar</h2>
+        </div>
+        <button
+          type="button"
+          (click)="navigateFromSettings('/vuxen/installningar/barn')"
+          class="flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left font-extrabold transition hover:bg-brand-50"
+        >
+          <span
+            class="grid size-10 place-items-center rounded-xl bg-brand-100 text-lg"
+            aria-hidden="true"
+            >♧</span
+          >
+          <span
+            ><span class="block">Barn och konton</span
+            ><span class="mt-0.5 block text-xs font-bold text-muted"
+              >Profiler och enheter</span
+            ></span
+          >
+        </button>
+        <button
+          type="button"
+          (click)="navigateFromSettings('/vuxen/bjud-in')"
+          class="mt-1 flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left font-extrabold transition hover:bg-brand-50"
+        >
+          <span
+            class="grid size-10 place-items-center rounded-xl bg-brand-100 text-lg"
+            aria-hidden="true"
+            >✉</span
+          >
+          <span
+            ><span class="block">Bjud in vuxen</span
+            ><span class="mt-0.5 block text-xs font-bold text-muted"
+              >Dela familjens ansvar</span
+            ></span
+          >
+        </button>
+        <button
+          type="button"
+          (click)="navigateFromSettings('/vuxen/historik')"
+          class="mt-1 flex min-h-14 w-full items-center gap-3 rounded-2xl px-3 text-left font-extrabold transition hover:bg-brand-50"
+        >
+          <span
+            class="grid size-10 place-items-center rounded-xl bg-brand-100 text-lg"
+            aria-hidden="true"
+            >◷</span
+          >
+          <span
+            ><span class="block">Historik</span
+            ><span class="mt-0.5 block text-xs font-bold text-muted"
+              >Familjens avslutade aktiviteter</span
+            ></span
+          >
+        </button>
+      </section>
+    }
   </nav>`,
 })
 export class AppBottomNav {
   private readonly router = inject(Router);
   readonly items = input.required<NavItem[]>();
+  readonly settingsMenuOpen = signal(false);
   readonly displayedItems = computed(() => {
     const isChild = this.items().some((item) => item.route?.startsWith('/barn'));
     // Router.url percent-encodes Swedish route characters. Decode it before
@@ -65,10 +147,26 @@ export class AppBottomNav {
           { label: 'Hem', icon: '⌂', route: '/vuxen' },
           { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
           { label: 'Belöningar', icon: '★', route: '/vuxen/belöningar' },
-          { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
-          { label: 'Önskningar', icon: '♡', route: '/vuxen/onskningar' },
-          { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
+          { label: 'Inställningar', icon: '⚙', settings: true },
         ];
     return navigation.map((item) => ({ ...item, active: currentUrl === item.route }));
   });
+
+  toggleSettingsMenu(): void {
+    this.settingsMenuOpen.update((open) => !open);
+  }
+
+  closeSettingsMenu(): void {
+    this.settingsMenuOpen.set(false);
+  }
+
+  navigateFromSettings(route: string): void {
+    this.router.navigateByUrl(route);
+    this.closeSettingsMenu();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeSettingsMenu();
+  }
 }
