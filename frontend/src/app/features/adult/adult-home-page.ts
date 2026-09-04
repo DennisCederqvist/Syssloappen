@@ -42,6 +42,8 @@ export class AdultHomePage {
   readonly rewardRedemptions = signal<AdultRewardRedemption[]>([]);
   readonly busyAssignmentId = signal<number | null>(null);
   readonly busyRewardRedemptionId = signal<number | null>(null);
+  readonly rejectingAssignmentId = signal<number | null>(null);
+  readonly rejectComments = signal<Readonly<Record<number, string>>>({});
   readonly loadError = signal('');
   readonly childOverviews = computed(() => this.children().map((child) => this.overview(child)));
   readonly pendingAssignments = computed(() =>
@@ -69,11 +71,25 @@ export class AdultHomePage {
   }
 
   approve(item: AdultAssignment): void {
-    this.review(item, 'approve');
+    this.review(item, 'approve', null);
   }
 
-  needsRedo(item: AdultAssignment): void {
-    this.review(item, 'reject');
+  requestReject(item: AdultAssignment): void {
+    if (this.busyAssignmentId() !== null) return;
+    this.rejectingAssignmentId.set(item.assignmentId);
+  }
+
+  cancelReject(): void {
+    this.rejectingAssignmentId.set(null);
+  }
+
+  setRejectComment(assignmentId: number, comment: string): void {
+    this.rejectComments.update((comments) => ({ ...comments, [assignmentId]: comment }));
+  }
+
+  confirmReject(item: AdultAssignment): void {
+    const rawComment = this.rejectComments()[item.assignmentId] ?? '';
+    this.review(item, 'reject', rawComment.trim() || null);
   }
 
   changeRewardRedemption(item: AdultRewardRedemption, action: 'approve' | 'cancel' | 'deliver'): void {
@@ -89,22 +105,27 @@ export class AdultHomePage {
     });
   }
 
-  private review(item: AdultAssignment, decision: 'approve' | 'reject'): void {
+  private review(item: AdultAssignment, decision: 'approve' | 'reject', comment: string | null): void {
     if (this.busyAssignmentId() !== null) return;
     this.busyAssignmentId.set(item.assignmentId);
     const request =
       decision === 'approve'
-        ? this.choresService.approveAssignment(item.assignmentId, { comment: null })
-        : this.choresService.rejectAssignment(item.assignmentId, { comment: null });
+        ? this.choresService.approveAssignment(item.assignmentId, { comment })
+        : this.choresService.rejectAssignment(item.assignmentId, { comment });
     request.subscribe({
-      next: (reviewed) =>
+      next: (reviewed) => {
         this.assignments.update((items) =>
           items.map((current) =>
             current.assignmentId === reviewed.assignmentId
               ? { ...current, status: reviewed.status, reviewedAt: reviewed.reviewedAt }
               : current,
           ),
-        ),
+        );
+        if (decision === 'reject') {
+          this.rejectingAssignmentId.set(null);
+          this.rejectComments.update(({ [item.assignmentId]: _, ...rest }) => rest);
+        }
+      },
       error: () => this.loadError.set('Granskningen kunde inte sparas. Försök igen.'),
       complete: () => this.busyAssignmentId.set(null),
     });

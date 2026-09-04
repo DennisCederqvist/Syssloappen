@@ -4,12 +4,13 @@ import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { HouseholdInvitation } from '../../../core/auth/auth.models';
-import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
-import { UserHeader } from '../../../shared/user-header';
+import { AdultBottomNav } from '../ui/bottom-nav';
+import { AdultPrimaryButton, AdultSecondaryTintButton } from '../ui/buttons';
+import { AdultPageHeader } from '../ui/page-header';
 
 @Component({
   selector: 'app-adult-invitation-page',
-  imports: [AppBottomNav, DatePipe, RouterLink, UserHeader],
+  imports: [DatePipe, RouterLink, AdultBottomNav, AdultPrimaryButton, AdultSecondaryTintButton, AdultPageHeader],
   templateUrl: './adult-invitation-page.html',
 })
 export class AdultInvitationPage {
@@ -18,12 +19,6 @@ export class AdultInvitationPage {
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal('');
   readonly copied = signal(false);
-  readonly navItems: NavItem[] = [
-    { label: 'Hem', icon: '⌂', route: '/vuxen' },
-    { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
-    { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
-    { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
-  ];
 
   createInvitation(): void {
     this.isSubmitting.set(true);

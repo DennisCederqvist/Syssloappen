@@ -1,21 +1,29 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
-import { UserHeader } from '../../../shared/user-header';
+import { AdultApprovalCard } from '../ui/approval-card';
+import { AdultBadge } from '../ui/badge';
+import { AdultBottomNav } from '../ui/bottom-nav';
+import { AdultDangerOutlineButton, AdultPrimaryButton } from '../ui/buttons';
+import { AdultPageHeader } from '../ui/page-header';
+import { AdultSheet } from '../ui/sheet';
 import { AdultAssignment, Chore } from '../chores/chores.models';
 import { ChoresService } from '../chores/chores.service';
-import {
-  AdultRewardRedemption,
-  RewardRedemptionsService,
-} from '../rewards/reward-redemptions.service';
+import { AdultRewardRedemption, RewardRedemptionsService } from '../rewards/reward-redemptions.service';
 import { ChildSummary } from './children.models';
 import { ChildrenService } from './children.service';
 
 @Component({
-  standalone: true,
   selector: 'app-adult-child-profile-page',
-  imports: [AppBottomNav, UserHeader],
+  imports: [
+    AdultApprovalCard,
+    AdultBadge,
+    AdultBottomNav,
+    AdultDangerOutlineButton,
+    AdultPrimaryButton,
+    AdultPageHeader,
+    AdultSheet,
+  ],
   templateUrl: './adult-child-profile-page.html',
 })
 export class AdultChildProfilePage {
@@ -33,6 +41,8 @@ export class AdultChildProfilePage {
   readonly busyAssignmentId = signal<number | null>(null);
   readonly busyRewardRedemptionId = signal<number | null>(null);
   readonly assigningChoreId = signal<number | null>(null);
+  readonly rejectingAssignmentId = signal<number | null>(null);
+  readonly rejectComments = signal<Readonly<Record<number, string>>>({});
   readonly activeAssignments = computed(() =>
     this.assignments().filter((item) => item.status === 'Assigned' || item.status === 'NeedsRedo'),
   );
@@ -49,26 +59,37 @@ export class AdultChildProfilePage {
       (item) => item.status === 'Requested' || item.status === 'Approved',
     ),
   );
-  readonly navItems: NavItem[] = [
-    { label: 'Hem', icon: '⌂', route: '/vuxen' },
-    { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
-    { label: 'Barn', icon: '♧', active: true, route: '/vuxen/barn' },
-    { label: 'Önskningar', icon: '★', route: '/vuxen/onskningar' },
-    { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
-  ];
 
   constructor() {
     this.load();
   }
+
   toggleAssignmentPicker(): void {
     this.showAssignmentPicker.update((value) => !value);
   }
+
   approve(item: AdultAssignment): void {
-    this.review(item, 'approve');
+    this.review(item, 'approve', null);
   }
-  needsRedo(item: AdultAssignment): void {
-    this.review(item, 'reject');
+
+  requestReject(item: AdultAssignment): void {
+    if (this.busyAssignmentId() !== null) return;
+    this.rejectingAssignmentId.set(item.assignmentId);
   }
+
+  cancelReject(): void {
+    this.rejectingAssignmentId.set(null);
+  }
+
+  setRejectComment(assignmentId: number, comment: string): void {
+    this.rejectComments.update((comments) => ({ ...comments, [assignmentId]: comment }));
+  }
+
+  confirmReject(item: AdultAssignment): void {
+    const rawComment = this.rejectComments()[item.assignmentId] ?? '';
+    this.review(item, 'reject', rawComment.trim() || null);
+  }
+
   changeRewardRedemption(
     item: AdultRewardRedemption,
     action: 'approve' | 'cancel' | 'deliver',
@@ -128,22 +149,27 @@ export class AdultChildProfilePage {
     });
   }
 
-  private review(item: AdultAssignment, decision: 'approve' | 'reject'): void {
+  private review(item: AdultAssignment, decision: 'approve' | 'reject', comment: string | null): void {
     if (this.busyAssignmentId() !== null) return;
     this.busyAssignmentId.set(item.assignmentId);
     const request =
       decision === 'approve'
-        ? this.choresService.approveAssignment(item.assignmentId, { comment: null })
-        : this.choresService.rejectAssignment(item.assignmentId, { comment: null });
+        ? this.choresService.approveAssignment(item.assignmentId, { comment })
+        : this.choresService.rejectAssignment(item.assignmentId, { comment });
     request.subscribe({
-      next: (reviewed) =>
+      next: (reviewed) => {
         this.assignments.update((items) =>
           items.map((current) =>
             current.assignmentId === reviewed.assignmentId
               ? { ...current, status: reviewed.status, reviewedAt: reviewed.reviewedAt }
               : current,
           ),
-        ),
+        );
+        if (decision === 'reject') {
+          this.rejectingAssignmentId.set(null);
+          this.rejectComments.update(({ [item.assignmentId]: _, ...rest }) => rest);
+        }
+      },
       error: () => this.error.set('Granskningen kunde inte sparas. Försök igen.'),
       complete: () => this.busyAssignmentId.set(null),
     });

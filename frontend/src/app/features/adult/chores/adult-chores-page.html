@@ -20,7 +20,8 @@
         id="adult-chores-success"
         tabindex="-1"
         role="status"
-        class="mt-4 rounded-lg border border-adult-border bg-adult-accent-soft px-4 py-3 text-sm font-medium text-adult-accent-dark"
+        class="mt-4 rounded-lg border border-adult-border bg-adult-accent-soft px-4 py-3 text-sm font-medium text-adult-accent-dark transition-opacity duration-[2000ms]"
+        [class.opacity-0]="successFading()"
       >
         {{ successMessage() }}
       </div>
@@ -170,18 +171,21 @@
               </span>
             }
           </label>
-          <label class="block text-sm font-semibold text-adult-text">
-            Datum
-            <input
-              id="assignment-due-date"
-              formControlName="dueDate"
-              type="date"
-              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
-            />
-            <span class="mt-1.5 block text-sm font-normal text-adult-text-secondary">
+          <div>
+            <label class="block text-sm font-semibold text-adult-text">
+              Datum
+              <input
+                id="assignment-due-date"
+                formControlName="dueDate"
+                type="date"
+                aria-describedby="assignment-due-date-help"
+                class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+              />
+            </label>
+            <span id="assignment-due-date-help" class="mt-1.5 block text-sm font-normal text-adult-text-secondary">
               Sysslan visas för barnet på det här datumet.
             </span>
-          </label>
+          </div>
           @if (children().length === 0) {
             <p class="rounded-lg bg-adult-points-bg p-3 text-sm text-adult-points-text">
               Lägg till ett aktivt barn innan du tilldelar en syssla.

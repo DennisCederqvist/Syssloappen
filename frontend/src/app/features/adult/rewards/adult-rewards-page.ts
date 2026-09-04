@@ -2,15 +2,28 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
 import { focusAfterRender } from '../../../shared/focus';
-import { UserHeader } from '../../../shared/user-header';
+import { AdultBadge } from '../ui/badge';
+import { AdultBottomNav } from '../ui/bottom-nav';
+import { AdultDangerOutlineButton, AdultPrimaryButton } from '../ui/buttons';
+import { AdultPageHeader } from '../ui/page-header';
+import { AdultSheet } from '../ui/sheet';
+import { AdultTile } from '../ui/tile';
 import { Reward } from './rewards.models';
 import { RewardsService } from './rewards.service';
 
 @Component({
   selector: 'app-adult-rewards-page',
-  imports: [AppBottomNav, ReactiveFormsModule, UserHeader],
+  imports: [
+    ReactiveFormsModule,
+    AdultBadge,
+    AdultBottomNav,
+    AdultDangerOutlineButton,
+    AdultPrimaryButton,
+    AdultPageHeader,
+    AdultSheet,
+    AdultTile,
+  ],
   templateUrl: './adult-rewards-page.html',
 })
 export class AdultRewardsPage implements OnInit {
@@ -29,13 +42,6 @@ export class AdultRewardsPage implements OnInit {
   readonly confirmingId = signal<number | null>(null);
   readonly openRewardMenuId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
-  readonly navItems: NavItem[] = [
-    { label: 'Hem', icon: '⌂', route: '/vuxen' },
-    { label: 'Sysslor', icon: '☷', route: '/vuxen/sysslor' },
-    { label: 'Belöningar', icon: '★', active: true, route: '/vuxen/belöningar' },
-    { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
-    { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
-  ];
   readonly rewardForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
     description: ['', Validators.maxLength(500)],

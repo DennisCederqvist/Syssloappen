@@ -68,20 +68,6 @@ export const routes: Routes = [
       import('./features/adult/rewards/adult-rewards-page').then((c) => c.AdultRewardsPage),
   },
   {
-    path: 'vuxen/onskningar',
-    canActivate: [adultGuard],
-    loadComponent: () =>
-      import('./features/adult/rewards/adult-reward-redemptions-page').then(
-        (c) => c.AdultRewardRedemptionsPage,
-      ),
-  },
-  {
-    path: 'vuxen/granska',
-    canActivate: [adultGuard],
-    loadComponent: () =>
-      import('./features/adult/review/adult-review-page').then((c) => c.AdultReviewPage),
-  },
-  {
     path: 'barn',
     canActivate: [childGuard],
     loadComponent: () => import('./features/child/child-home-page').then((c) => c.ChildHomePage),

@@ -33,6 +33,8 @@ export class AdultChoresPage implements OnInit {
   private readonly choresService = inject(ChoresService);
   private archiveUndoTimer: number | null = null;
   private archiveUndoClearTimer: number | null = null;
+  private successTimer: number | null = null;
+  private successClearTimer: number | null = null;
   private readonly childrenService = inject(ChildrenService);
   private readonly formBuilder = inject(FormBuilder);
 
@@ -59,6 +61,7 @@ export class AdultChoresPage implements OnInit {
   readonly assignmentError = signal('');
   readonly assignmentCancellationError = signal('');
   readonly successMessage = signal('');
+  readonly successFading = signal(false);
   readonly historyBusyId = signal<number | null>(null);
   readonly historyError = signal('');
   readonly lastArchivedId = signal<number | null>(null);
@@ -171,7 +174,7 @@ export class AdultChoresPage implements OnInit {
             [...chores, chore].sort((a, b) => a.title.localeCompare(b.title, 'sv')),
           );
           this.closeChoreForm();
-          this.successMessage.set(`${chore.title} är skapad och kan nu tilldelas.`);
+          this.showSuccess(`${chore.title} är skapad och kan nu tilldelas.`);
           this.openAssignmentForm(chore.id);
         },
         error: (error: HttpErrorResponse) =>
@@ -237,7 +240,7 @@ export class AdultChoresPage implements OnInit {
               .sort((a, b) => a.title.localeCompare(b.title, 'sv')),
           );
           this.closeEditChore();
-          this.successMessage.set(`${updated.title} är uppdaterad.`);
+          this.showSuccess(`${updated.title} är uppdaterad.`);
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
@@ -280,7 +283,7 @@ export class AdultChoresPage implements OnInit {
           if (this.editingChore()?.id === chore.id) this.closeEditChore();
           if (this.assignmentForm.controls.choreId.value === chore.id) this.closeAssignmentForm();
           this.confirmingDeactivationId.set(null);
-          this.successMessage.set(`${chore.title} är bortplockad från uppgiftsbanken.`);
+          this.showSuccess(`${chore.title} är bortplockad från uppgiftsbanken.`);
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
@@ -352,7 +355,7 @@ export class AdultChoresPage implements OnInit {
             ...assignments,
           ]);
           this.closeAssignmentForm();
-          this.successMessage.set(`${chore.title} är tilldelad till ${child.name}.`);
+          this.showSuccess(`${chore.title} är tilldelad till ${child.name}.`);
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
@@ -397,9 +400,7 @@ export class AdultChoresPage implements OnInit {
             assignments.filter((item) => item.assignmentId !== assignment.assignmentId),
           );
           this.confirmingAssignmentCancellationId.set(null);
-          this.successMessage.set(
-            `${assignment.choreTitle} är borttagen från ${assignment.childName}.`,
-          );
+          this.showSuccess(`${assignment.choreTitle} är borttagen från ${assignment.childName}.`);
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
@@ -458,6 +459,20 @@ export class AdultChoresPage implements OnInit {
       case 'Cancelled':
         return 'Borttagen';
     }
+  }
+
+  private showSuccess(message: string): void {
+    if (this.successTimer !== null) window.clearTimeout(this.successTimer);
+    if (this.successClearTimer !== null) window.clearTimeout(this.successClearTimer);
+    this.successFading.set(false);
+    this.successMessage.set(message);
+    this.successTimer = window.setTimeout(() => this.successFading.set(true), 3000);
+    this.successClearTimer = window.setTimeout(() => {
+      this.successMessage.set('');
+      this.successTimer = null;
+      this.successClearTimer = null;
+      this.successFading.set(false);
+    }, 5000);
   }
 
   private todayInputValue(): string {

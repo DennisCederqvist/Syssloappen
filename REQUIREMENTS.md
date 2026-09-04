@@ -183,6 +183,18 @@ så att vi båda kan administrera barn och sysslor.
 - Sista Adult kan inte lämna Householdet genom vanlig bortkoppling.
 - Permanent familjeradering är en separat, destruktiv backenddel med explicit bekräftelse.
 
+### Planerad implementationsordning
+
+Vuxenhanteringen byggs i tre små, gröna steg innan UI:t färdigställs. Ordningen är beslutad och ska inte hoppas över eller slås ihop:
+
+1. **Backend, del 1 – huvudägare och listning.** Lägg till en permanent huvudägare på `Household`. Backfilla befintliga Households säkert. Skapa en Adult-skyddad endpoint som listar Householdets vuxna med information om vem som är huvudägare och vem som är inbjuden. Lägg till integrationstester för Household-isolering och att huvudägaren identifieras korrekt. Ingen bortkoppling, inga återkallade sessioner, ingen e-postfrigöring och ingen familjeradering ingår i detta steg.
+2. **Backend, del 2 – säker bortkoppling.** Byggs först när del 1 är grön. Implementerar reglerna ovan under "Beslutad framtida vuxenhantering": normal bortkoppling med bevarad audit, återkallad åtkomst och frigjord e-post; skydd av huvudägaren mot bortkoppling; skydd mot att den sista Adult lämnar Householdet.
+3. **Frontend – "Hantera vuxna" och komplett "Bjud in vuxen".** Byggs först när del 1 och del 2 är gröna. Lägger till "Hantera vuxna" i Inställningar och kompletterar "Bjud in vuxen"-sidan med listan över Householdets vuxna samt tydlig information om vem som är huvudägare respektive inbjuden.
+
+Permanent familjeradering är ett eget, separat och uttryckligen destruktivt steg med explicit bekräftelse, och ligger utanför denna ordning.
+
+Detta arbete kräver backend- och datamodelländringar och ska köras som en egen arbetsdel, inte blandas in i en rent visuell/frontend-genomgång av Adult-vyn (se `docs/HANDOFF.md`, avsnittet "Aktuell arbetsdel").
+
 **Som användare**
 vill jag att min familjs information ska vara isolerad från andra familjer
 så att andra användare inte kan se eller ändra vår information.
