@@ -1,19 +1,32 @@
-import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
-import { AppBottomNav, NavItem } from '../../../shared/app-bottom-nav';
-import { UserHeader } from '../../../shared/user-header';
 import { focusAfterRender } from '../../../shared/focus';
 import { ChildSummary } from '../children/children.models';
 import { ChildrenService } from '../children/children.service';
+import { AdultBadge } from '../ui/badge';
+import { AdultBottomNav } from '../ui/bottom-nav';
+import { AdultDangerOutlineButton, AdultPrimaryButton, AdultSecondaryTintButton } from '../ui/buttons';
+import { AdultPageHeader } from '../ui/page-header';
+import { AdultSheet } from '../ui/sheet';
+import { AdultTile } from '../ui/tile';
 import { AdultAssignment, Chore } from './chores.models';
 import { ChoresService } from './chores.service';
 
 @Component({
   selector: 'app-adult-chores-page',
-  imports: [AppBottomNav, DatePipe, ReactiveFormsModule, UserHeader],
+  imports: [
+    ReactiveFormsModule,
+    AdultBadge,
+    AdultBottomNav,
+    AdultDangerOutlineButton,
+    AdultPrimaryButton,
+    AdultSecondaryTintButton,
+    AdultPageHeader,
+    AdultSheet,
+    AdultTile,
+  ],
   templateUrl: './adult-chores-page.html',
 })
 export class AdultChoresPage implements OnInit {
@@ -64,13 +77,6 @@ export class AdultChoresPage implements OnInit {
     .filter((assignment) => assignment.status === 'Approved' && assignment.adultArchivedAt));
   private assignmentReturnFocusId = 'open-assignment-trigger';
   private editChoreReturnFocusId = '';
-
-  readonly navItems: NavItem[] = [
-    { label: 'Hem', icon: '⌂', route: '/vuxen' },
-    { label: 'Sysslor', icon: '☷', active: true, route: '/vuxen/sysslor' },
-    { label: 'Barn', icon: '♧', route: '/vuxen/barn' },
-    { label: 'Granska', icon: '✓', route: '/vuxen/granska' },
-  ];
 
   toggleChoreMenu(choreId: number): void {
     this.openChoreMenuId.update((current) => current === choreId ? null : choreId);

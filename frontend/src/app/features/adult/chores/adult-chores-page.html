@@ -1,76 +1,51 @@
-<div class="page-enter min-h-dvh overflow-x-hidden bg-canvas pb-24 md:flex md:pb-0">
-  <app-bottom-nav [items]="navItems" />
-  <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-user-header eyebrow="Familjens plan" title="Sysslor och tilldelning" variant="adult" />
-
-    <section
-      class="mt-7 rounded-[1.75rem] bg-brand-600 p-5 text-white shadow-xl sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7"
-    >
-      <div>
-        <p class="text-sm font-extrabold text-brand-100">Små steg, tydliga mål</p>
-        <h2 class="mt-1 text-2xl font-black">Skapa Syssla</h2>
-        <p class="mt-2 max-w-2xl leading-7 text-brand-100">Tilldela när det passar.</p>
-      </div>
+<div class="page-enter min-h-dvh overflow-x-hidden bg-adult-bg pb-24 md:flex md:pb-0">
+  <app-adult-bottom-nav />
+  <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+    <app-adult-page-header title="Sysslor">
       <button
+        headerAction
         id="new-chore-trigger"
         type="button"
+        adultPrimaryButton
         (click)="openChoreForm()"
         [attr.aria-controls]="showChoreForm() ? 'new-chore-panel' : null"
         [attr.aria-expanded]="showChoreForm()"
-        class="mt-5 min-h-14 w-full shrink-0 rounded-2xl bg-white px-5 font-extrabold text-brand-600 shadow-lg sm:mt-0 sm:w-auto"
       >
         + Ny syssla
       </button>
-    </section>
+    </app-adult-page-header>
 
     @if (successMessage()) {
       <div
         id="adult-chores-success"
         tabindex="-1"
-        class="mt-5 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 font-bold text-green-900"
         role="status"
+        class="mt-4 rounded-lg border border-adult-border bg-adult-accent-soft px-4 py-3 text-sm font-medium text-adult-accent-dark"
       >
-        ✓ {{ successMessage() }}
+        {{ successMessage() }}
       </div>
     }
 
     @if (showChoreForm()) {
-      <section
-        id="new-chore-panel"
-        tabindex="-1"
-        class="mt-5 rounded-[1.75rem] bg-white p-5 shadow-lg ring-1 ring-line sm:p-7"
-        aria-labelledby="new-chore-title"
+      <app-adult-sheet
+        panelId="new-chore-panel"
+        headingId="new-chore-title"
+        title="Skapa syssla"
+        closeLabel="Stäng formuläret"
+        (close)="closeChoreForm()"
       >
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-sm font-extrabold text-brand-600">Ny uppgift</p>
-            <h2 id="new-chore-title" class="mt-1 text-2xl font-black">Skapa syssla</h2>
-          </div>
-          <button
-            type="button"
-            (click)="closeChoreForm()"
-            class="grid size-11 place-items-center rounded-xl border border-line text-xl text-muted"
-            aria-label="Stäng formuläret"
-          >
-            ×
-          </button>
-        </div>
         @if (choreError()) {
           <div
-            class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+            class="mb-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
             role="alert"
           >
             {{ choreError() }}
           </div>
         }
-        <form
-          [formGroup]="choreForm"
-          (ngSubmit)="createChore()"
-          class="mt-5 grid gap-5 sm:grid-cols-2"
-          novalidate
-        >
-          <label class="block font-bold"
-            >Titel<input
+        <form [formGroup]="choreForm" (ngSubmit)="createChore()" class="grid gap-4" novalidate>
+          <label class="block text-sm font-semibold text-adult-text">
+            Titel
+            <input
               id="new-chore-name"
               formControlName="title"
               type="text"
@@ -79,28 +54,29 @@
                 choreForm.controls.title.touched && choreForm.controls.title.invalid
               "
               aria-describedby="new-chore-name-error"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line px-4"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
             />
             @if (choreForm.controls.title.touched && choreForm.controls.title.invalid) {
-              <span id="new-chore-name-error" class="mt-2 block text-sm text-red-700"
-                >Skriv en titel med högst 100 tecken.</span
-              >
+              <span id="new-chore-name-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
+                Skriv en titel med högst 100 tecken.
+              </span>
             }
           </label>
-          <label class="block font-bold"
-            >Poäng<select
+          <label class="block text-sm font-semibold text-adult-text">
+            Poäng
+            <select
               formControlName="points"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
             >
               <option [ngValue]="5">5 poäng</option>
               <option [ngValue]="10">10 poäng</option>
               <option [ngValue]="15">15 poäng</option>
               <option [ngValue]="20">20 poäng</option>
-            </select></label
-          >
-          <label class="block font-bold sm:col-span-2"
-            >Beskrivning <span class="font-normal text-muted">(valfri)</span
-            ><textarea
+            </select>
+          </label>
+          <label class="block text-sm font-semibold text-adult-text">
+            Beskrivning <span class="font-normal text-adult-text-secondary">(valfri)</span>
+            <textarea
               id="new-chore-description"
               formControlName="description"
               rows="3"
@@ -109,181 +85,147 @@
                 choreForm.controls.description.touched && choreForm.controls.description.invalid
               "
               aria-describedby="new-chore-description-error"
-              class="mt-2 w-full rounded-2xl border border-line p-4"
+              class="mt-1.5 w-full rounded-lg border border-adult-border p-3 font-normal text-adult-text"
             ></textarea>
             @if (choreForm.controls.description.touched && choreForm.controls.description.invalid) {
-              <span id="new-chore-description-error" class="mt-2 block text-sm text-red-700"
-                >Beskrivningen får innehålla högst 500 tecken.</span
-              >
+              <span id="new-chore-description-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
+                Beskrivningen får innehålla högst 500 tecken.
+              </span>
             }
           </label>
-          <div class="flex flex-col-reverse gap-3 sm:col-span-2 sm:flex-row sm:justify-end">
+          <div class="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button
               type="button"
               (click)="closeChoreForm()"
-              class="min-h-13 rounded-2xl border border-line px-5 font-bold text-muted"
+              class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
             >
-              Avbryt</button
-            ><button
-              type="submit"
-              [disabled]="isCreatingChore()"
-              class="min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white disabled:opacity-60"
-            >
+              Avbryt
+            </button>
+            <button type="submit" adultPrimaryButton [disabled]="isCreatingChore()">
               {{ isCreatingChore() ? 'Skapar…' : 'Skapa syssla' }}
             </button>
           </div>
         </form>
-      </section>
+      </app-adult-sheet>
     }
 
     @if (showAssignmentForm()) {
-      <section
-        id="assignment-panel"
-        tabindex="-1"
-        class="mt-5 rounded-[1.75rem] bg-white p-5 shadow-lg ring-1 ring-brand-500/25 sm:p-7"
-        aria-labelledby="assign-title"
+      <app-adult-sheet
+        panelId="assignment-panel"
+        headingId="assign-title"
+        title="Tilldela syssla"
+        closeLabel="Stäng tilldelningen"
+        (close)="closeAssignmentForm()"
       >
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-sm font-extrabold text-brand-600">Nästa steg</p>
-            <h2 id="assign-title" class="mt-1 text-2xl font-black">Tilldela syssla</h2>
-          </div>
-          <button
-            type="button"
-            (click)="closeAssignmentForm()"
-            class="grid size-11 place-items-center rounded-xl border border-line text-xl text-muted"
-            aria-label="Stäng tilldelningen"
-          >
-            ×
-          </button>
-        </div>
         @if (assignmentError()) {
           <div
-            class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+            class="mb-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
             role="alert"
           >
             {{ assignmentError() }}
           </div>
         }
-        <form
-          [formGroup]="assignmentForm"
-          (ngSubmit)="createAssignment()"
-          class="mt-5 grid gap-5 sm:grid-cols-2"
-          novalidate
-        >
-          <label class="block font-bold"
-            >Syssla<select
+        <form [formGroup]="assignmentForm" (ngSubmit)="createAssignment()" class="grid gap-4" novalidate>
+          <label class="block text-sm font-semibold text-adult-text">
+            Syssla
+            <select
               id="assignment-chore"
               formControlName="choreId"
               [attr.aria-invalid]="
                 assignmentForm.controls.choreId.touched && assignmentForm.controls.choreId.invalid
               "
               aria-describedby="assignment-chore-error"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
             >
               <option [ngValue]="0">Välj syssla</option>
               @for (chore of chores(); track chore.id) {
                 <option [ngValue]="chore.id">{{ chore.title }} · {{ chore.points }} p</option>
               }
             </select>
-            @if (
-              assignmentForm.controls.choreId.touched && assignmentForm.controls.choreId.invalid
-            ) {
-              <span id="assignment-chore-error" class="mt-2 block text-sm text-red-700"
-                >Välj en syssla.</span
-              >
+            @if (assignmentForm.controls.choreId.touched && assignmentForm.controls.choreId.invalid) {
+              <span id="assignment-chore-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
+                Välj en syssla.
+              </span>
             }
           </label>
-          <label class="block font-bold"
-            >Barn<select
+          <label class="block text-sm font-semibold text-adult-text">
+            Barn
+            <select
               id="assignment-child"
               formControlName="childId"
               [attr.aria-invalid]="
                 assignmentForm.controls.childId.touched && assignmentForm.controls.childId.invalid
               "
               aria-describedby="assignment-child-error"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
             >
               <option [ngValue]="0">Välj barn</option>
               @for (child of children(); track child.id) {
                 <option [ngValue]="child.id">{{ child.name }}</option>
               }
             </select>
-            @if (
-              assignmentForm.controls.childId.touched && assignmentForm.controls.childId.invalid
-            ) {
-              <span id="assignment-child-error" class="mt-2 block text-sm text-red-700"
-                >Välj ett aktivt barn.</span
-              >
+            @if (assignmentForm.controls.childId.touched && assignmentForm.controls.childId.invalid) {
+              <span id="assignment-child-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
+                Välj ett aktivt barn.
+              </span>
             }
           </label>
-          <label class="block font-bold sm:col-span-2"
-            >Datum<input
+          <label class="block text-sm font-semibold text-adult-text">
+            Datum
+            <input
               id="assignment-due-date"
               formControlName="dueDate"
               type="date"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
             />
-            <span class="mt-2 block text-sm font-normal text-muted"
-              >Sysslan visas för barnet på det här datumet.</span
-            >
+            <span class="mt-1.5 block text-sm font-normal text-adult-text-secondary">
+              Sysslan visas för barnet på det här datumet.
+            </span>
           </label>
           @if (children().length === 0) {
-            <p class="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 sm:col-span-2">
+            <p class="rounded-lg bg-adult-points-bg p-3 text-sm text-adult-points-text">
               Lägg till ett aktivt barn innan du tilldelar en syssla.
             </p>
           }
-          <button
-            type="submit"
-            [disabled]="isAssigning() || children().length === 0"
-            class="min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white disabled:opacity-60 sm:col-span-2 sm:justify-self-end"
-          >
-            {{ isAssigning() ? 'Tilldelar…' : 'Tilldela sysslan' }}
-          </button>
+          <div class="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              (click)="closeAssignmentForm()"
+              class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
+            >
+              Avbryt
+            </button>
+            <button type="submit" adultPrimaryButton [disabled]="isAssigning() || children().length === 0">
+              {{ isAssigning() ? 'Tilldelar…' : 'Tilldela sysslan' }}
+            </button>
+          </div>
         </form>
-      </section>
+      </app-adult-sheet>
     }
 
     @if (editingChore(); as selectedChore) {
-      <section
-        id="edit-chore-panel"
-        tabindex="-1"
-        class="mt-5 rounded-[1.75rem] bg-white p-5 shadow-lg ring-1 ring-brand-500/25 sm:p-7"
-        aria-labelledby="edit-chore-title"
+      <app-adult-sheet
+        panelId="edit-chore-panel"
+        headingId="edit-chore-title"
+        title="Redigera syssla"
+        closeLabel="Stäng redigeringen"
+        (close)="closeEditChore()"
       >
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-sm font-extrabold text-brand-600">Uppgiftsbanken</p>
-            <h2 id="edit-chore-title" class="mt-1 text-2xl font-black">Redigera syssla</h2>
-            <p class="mt-1 text-sm text-muted">
-              Nya poäng gäller framtida tilldelningar. Tidigare poäng ändras inte.
-            </p>
-          </div>
-          <button
-            type="button"
-            (click)="closeEditChore()"
-            class="grid size-11 shrink-0 place-items-center rounded-xl border border-line text-xl text-muted"
-            aria-label="Stäng redigeringen"
-          >
-            ×
-          </button>
-        </div>
+        <p class="-mt-2 mb-4 text-sm text-adult-text-secondary">
+          Nya poäng gäller framtida tilldelningar. Tidigare poäng ändras inte.
+        </p>
         @if (editChoreError()) {
           <div
-            class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
+            class="mb-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
             role="alert"
           >
             {{ editChoreError() }}
           </div>
         }
-        <form
-          [formGroup]="editChoreForm"
-          (ngSubmit)="updateChore()"
-          class="mt-5 grid gap-5 sm:grid-cols-2"
-          novalidate
-        >
-          <label class="block font-bold"
-            >Titel<input
+        <form [formGroup]="editChoreForm" (ngSubmit)="updateChore()" class="grid gap-4" novalidate>
+          <label class="block text-sm font-semibold text-adult-text">
+            Titel
+            <input
               id="edit-chore-name"
               formControlName="title"
               type="text"
@@ -291,28 +233,29 @@
                 editChoreForm.controls.title.touched && editChoreForm.controls.title.invalid
               "
               aria-describedby="edit-chore-name-error"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line px-4"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
             />
             @if (editChoreForm.controls.title.touched && editChoreForm.controls.title.invalid) {
-              <span id="edit-chore-name-error" class="mt-2 block text-sm text-red-700"
-                >Skriv en titel med högst 100 tecken.</span
-              >
+              <span id="edit-chore-name-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
+                Skriv en titel med högst 100 tecken.
+              </span>
             }
           </label>
-          <label class="block font-bold"
-            >Poäng<select
+          <label class="block text-sm font-semibold text-adult-text">
+            Poäng
+            <select
               formControlName="points"
-              class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4"
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
             >
               <option [ngValue]="5">5 poäng</option>
               <option [ngValue]="10">10 poäng</option>
               <option [ngValue]="15">15 poäng</option>
               <option [ngValue]="20">20 poäng</option>
-            </select></label
-          >
-          <label class="block font-bold sm:col-span-2"
-            >Beskrivning <span class="font-normal text-muted">(valfri)</span
-            ><textarea
+            </select>
+          </label>
+          <label class="block text-sm font-semibold text-adult-text">
+            Beskrivning <span class="font-normal text-adult-text-secondary">(valfri)</span>
+            <textarea
               id="edit-chore-description"
               formControlName="description"
               rows="3"
@@ -321,265 +264,162 @@
                 editChoreForm.controls.description.invalid
               "
               aria-describedby="edit-chore-description-error"
-              class="mt-2 w-full rounded-2xl border border-line p-4"
+              class="mt-1.5 w-full rounded-lg border border-adult-border p-3 font-normal text-adult-text"
             ></textarea>
             @if (
               editChoreForm.controls.description.touched &&
               editChoreForm.controls.description.invalid
             ) {
-              <span id="edit-chore-description-error" class="mt-2 block text-sm text-red-700"
-                >Beskrivningen får innehålla högst 500 tecken.</span
-              >
+              <span id="edit-chore-description-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
+                Beskrivningen får innehålla högst 500 tecken.
+              </span>
             }
           </label>
-          <div class="flex flex-col-reverse gap-3 sm:col-span-2 sm:flex-row sm:justify-end">
+          <div class="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button
               type="button"
               (click)="closeEditChore()"
-              class="min-h-13 rounded-2xl border border-line px-5 font-bold text-muted"
+              class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
             >
-              Avbryt</button
-            ><button
-              type="submit"
-              [disabled]="isUpdatingChore()"
-              class="min-h-13 rounded-2xl bg-brand-500 px-6 font-extrabold text-white disabled:opacity-60"
-            >
+              Avbryt
+            </button>
+            <button type="submit" adultPrimaryButton [disabled]="isUpdatingChore()">
               {{ isUpdatingChore() ? 'Sparar…' : 'Spara ändringar' }}
             </button>
           </div>
         </form>
-      </section>
+
+        <div class="mt-6 border-t border-adult-border pt-4">
+          @if (confirmingDeactivationId() === selectedChore.id) {
+            <div
+              class="rounded-lg border border-adult-danger-border bg-adult-danger-bg p-3"
+              role="group"
+              [attr.aria-labelledby]="'chore-deactivation-question-' + selectedChore.id"
+            >
+              <p [id]="'chore-deactivation-question-' + selectedChore.id" class="text-sm font-semibold text-adult-danger-text">
+                Plocka bort sysslan?
+              </p>
+              @if (deactivationError()) {
+                <p class="mt-2 text-sm font-medium text-adult-danger-text" role="alert">
+                  {{ deactivationError() }}
+                </p>
+              }
+              <div class="mt-3 flex gap-2">
+                <button
+                  [id]="'cancel-chore-deactivation-' + selectedChore.id"
+                  type="button"
+                  (click)="cancelDeactivation()"
+                  [disabled]="deactivatingChoreId() === selectedChore.id"
+                  class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
+                >
+                  Avbryt
+                </button>
+                <button
+                  type="button"
+                  adultDangerOutlineButton
+                  class="flex-1"
+                  (click)="deactivateChore(selectedChore)"
+                  [disabled]="deactivatingChoreId() === selectedChore.id"
+                >
+                  {{ deactivatingChoreId() === selectedChore.id ? 'Plockar bort…' : 'Ja, plocka bort' }}
+                </button>
+              </div>
+            </div>
+          } @else {
+            <button
+              [id]="'deactivate-chore-' + selectedChore.id"
+              type="button"
+              adultDangerOutlineButton
+              (click)="requestDeactivation(selectedChore.id)"
+            >
+              Ta bort syssla
+            </button>
+          }
+        </div>
+      </app-adult-sheet>
     }
 
-    <section class="mt-7" aria-labelledby="chores-title">
-      <div class="mb-4 flex items-end justify-between gap-3">
-        <div>
-          <p class="text-sm font-bold text-brand-600">Uppgiftsbank</p>
-          <h2 id="chores-title" class="text-xl font-black">Familjens sysslor</h2>
-        </div>
-        @if (!isLoading()) {
-          <button
-            id="open-assignment-trigger"
-            type="button"
-            (click)="openAssignmentForm()"
-            [attr.aria-controls]="showAssignmentForm() ? 'assignment-panel' : null"
-            [attr.aria-expanded]="showAssignmentForm()"
-            [disabled]="chores().length === 0"
-            class="min-h-11 rounded-xl bg-white px-4 text-sm font-extrabold text-brand-600 ring-1 ring-line disabled:opacity-50"
-          >
-            Tilldela
-          </button>
-        }
-      </div>
+    <section class="mt-2" aria-labelledby="chores-title">
+      <h2 id="chores-title" class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">
+        Uppgiftsbank
+      </h2>
       @if (isLoading()) {
-        <div class="grid gap-3 sm:grid-cols-2" role="status">
-          <div class="h-32 animate-pulse rounded-3xl bg-white"></div>
+        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3" role="status">
+          <div class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-surface"></div>
           <span class="sr-only">Hämtar familjens sysslor och tilldelningar…</span>
-          <div class="h-32 animate-pulse rounded-3xl bg-white"></div>
+          <div class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-surface"></div>
         </div>
       } @else if (loadError()) {
-        <div class="rounded-3xl bg-red-50 p-5" role="alert">
-          <p class="font-bold text-red-800">{{ loadError() }}</p>
-          <button
-            type="button"
-            (click)="loadPage()"
-            class="mt-3 min-h-11 rounded-xl bg-white px-4 font-bold text-red-800"
-          >
+        <div class="mt-2 rounded-lg border border-adult-danger-border bg-adult-danger-bg p-4" role="alert">
+          <p class="text-sm font-medium text-adult-danger-text">{{ loadError() }}</p>
+          <button type="button" adultDangerOutlineButton class="mt-3" (click)="loadPage()">
             Försök igen
           </button>
         </div>
       } @else if (chores().length === 0) {
-        <div
-          class="rounded-3xl border-2 border-dashed border-brand-500/30 bg-white p-8 text-center"
-        >
-          <div class="text-5xl" aria-hidden="true">🧺</div>
-          <h3 class="mt-4 text-xl font-black">Inga sysslor ännu</h3>
-          <p class="mt-2 text-muted">Skapa en tydlig första uppgift för familjen.</p>
+        <div class="mt-2 rounded-lg border border-adult-border bg-adult-surface p-6 text-center">
+          <h3 class="text-[15px] font-semibold text-adult-text">Inga sysslor ännu</h3>
+          <p class="mt-1 text-sm text-adult-text-secondary">Skapa en tydlig första uppgift för familjen.</p>
         </div>
       } @else {
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
           @for (chore of chores(); track chore.id) {
-             <article class="relative w-full max-w-full overflow-visible rounded-3xl bg-white p-3 shadow-sm ring-1 ring-line">
-               <button
-                 type="button"
-                 (click)="toggleChoreMenu(chore.id)"
-                 class="absolute right-3 top-3 z-20 grid size-10 place-items-center rounded-full text-xl font-bold text-muted hover:bg-slate-50"
-                 [attr.aria-label]="'Fler val för ' + chore.title"
-               >
-                 ⋮
-               </button>
-               @if (openChoreMenuId() === chore.id) {
-                 <div class="absolute right-3 top-12 z-10 rounded-xl bg-white p-2 shadow-lg ring-1 ring-line"><button [id]="'deactivate-chore-' + chore.id" type="button" (click)="requestDeactivation(chore.id)" class="min-h-10 rounded-lg px-3 text-sm font-bold text-red-700">Ta bort</button></div>
-               }
-               <div class="flex items-start gap-3 pr-10">
-                 <div class="min-w-0 flex-1"><h3 class="truncate text-base font-black sm:text-lg">{{ chore.title }}</h3><p class="mt-0.5 truncate text-sm text-muted">{{ chore.description || 'Ingen extra beskrivning.' }}</p></div>
-                 <span class="shrink-0 rounded-full bg-amber-100 px-3 py-1 text-sm font-black text-amber-900">★ {{ chore.points }}</span>
-               </div>
-              @if (confirmingDeactivationId() === chore.id) {
-                <div
-                  class="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4"
-                  role="group"
-                  [attr.aria-labelledby]="'chore-deactivation-question-' + chore.id"
+            <app-adult-tile [title]="chore.title">
+              <button
+                tileAction
+                [id]="'edit-chore-' + chore.id"
+                type="button"
+                (click)="openEditChore(chore)"
+                [attr.aria-controls]="editingChore()?.id === chore.id ? 'edit-chore-panel' : null"
+                [attr.aria-expanded]="editingChore()?.id === chore.id"
+                [attr.aria-label]="'Redigera ' + chore.title"
+                class="grid min-h-11 min-w-11 shrink-0 -m-2 place-items-center rounded-lg text-adult-text-secondary transition hover:bg-adult-bg"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  class="size-4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
                 >
-                  <p
-                    [id]="'chore-deactivation-question-' + chore.id"
-                    class="text-sm font-bold text-red-900"
-                  >
-                    Plocka bort sysslan? <!-- Historiken sparas, men den kan inte tilldelas igen. -->
-                  </p>
-                  @if (deactivationError()) {
-                    <p class="mt-2 text-sm font-bold text-red-800" role="alert">
-                      {{ deactivationError() }}
-                    </p>
-                  }
-                  <div class="mt-3 grid grid-cols-2 gap-2">
-                    <button
-                      [id]="'cancel-chore-deactivation-' + chore.id"
-                      type="button"
-                      (click)="cancelDeactivation()"
-                      [disabled]="deactivatingChoreId() === chore.id"
-                      class="min-h-11 rounded-xl bg-white px-3 text-sm font-extrabold text-muted ring-1 ring-line disabled:opacity-60"
-                    >
-                      Avbryt
-                    </button>
-                    <button
-                      type="button"
-                      (click)="deactivateChore(chore)"
-                      [disabled]="deactivatingChoreId() === chore.id"
-                      class="min-h-11 rounded-xl bg-red-600 px-3 text-sm font-extrabold text-white disabled:opacity-60"
-                    >
-                      {{ deactivatingChoreId() === chore.id ? 'Plockar bort…' : 'Ja, plocka bort' }}
-                    </button>
-                  </div>
-                </div>
-              } @else {
-                 <div class="mt-1 grid grid-cols-2 divide-x divide-line border-t border-line pt-0.5">
-                  <button
-                    [id]="'edit-chore-' + chore.id"
-                    type="button"
-                    (click)="openEditChore(chore)"
-                    [attr.aria-controls]="
-                      editingChore()?.id === chore.id ? 'edit-chore-panel' : null
-                    "
-                    [attr.aria-expanded]="editingChore()?.id === chore.id"
-                     class="min-h-8 text-xs font-bold text-brand-600"
-                  >
-                    Redigera
-                  </button>
-                  <button
-                    [id]="'assign-chore-' + chore.id"
-                    type="button"
-                    (click)="openAssignmentForm(chore.id, 'assign-chore-' + chore.id)"
-                    [attr.aria-controls]="
-                      showAssignmentForm() && assignmentForm.controls.choreId.value === chore.id
-                        ? 'assignment-panel'
-                        : null
-                    "
-                    [attr.aria-expanded]="
-                      showAssignmentForm() && assignmentForm.controls.choreId.value === chore.id
-                    "
-                     class="min-h-8 text-xs font-bold text-brand-600"
-                  >
-                    Tilldela
-                  </button>
-                </div>
-              }
-            </article>
+                  <path d="M4 20l4.5-1 10-10a2.121 2.121 0 0 0-3-3l-10 10L4 20z" />
+                  <path d="M13 6l3 3" />
+                </svg>
+              </button>
+              <div class="mt-1 flex items-center justify-between gap-2">
+                <app-adult-badge variant="points" [value]="chore.points" />
+                <button
+                  [id]="'assign-chore-' + chore.id"
+                  type="button"
+                  adultSecondaryTintButton
+                  (click)="openAssignmentForm(chore.id, 'assign-chore-' + chore.id)"
+                  [attr.aria-controls]="
+                    showAssignmentForm() && assignmentForm.controls.choreId.value === chore.id
+                      ? 'assignment-panel'
+                      : null
+                  "
+                  [attr.aria-expanded]="
+                    showAssignmentForm() && assignmentForm.controls.choreId.value === chore.id
+                  "
+                >
+                  Tilldela
+                </button>
+              </div>
+            </app-adult-tile>
           }
+          <button
+            type="button"
+            (click)="openChoreForm()"
+            class="flex min-h-28 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-adult-border text-adult-text-secondary transition hover:border-adult-accent/40 hover:text-adult-accent-dark"
+          >
+            <span class="text-xl leading-none" aria-hidden="true">+</span>
+            <span class="text-sm font-medium">Ny syssla</span>
+          </button>
         </div>
       }
     </section>
-
-    @if (false && !isLoading() && activeAssignments().length > 0) {
-      <section class="mt-8" aria-labelledby="assigned-title">
-        <p class="text-sm font-bold text-brand-600">Aktuellt</p>
-        <h2 id="assigned-title" class="text-xl font-black">Aktuella tilldelningar</h2>
-        <div class="mt-4 grid gap-3">
-          @for (assignment of activeAssignments(); track assignment.assignmentId) {
-            <article class="relative w-full max-w-full rounded-3xl bg-white p-3 ring-1 ring-line">
-              <div class="flex items-start gap-3">
-                <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50">✓</div>
-                <div class="min-w-0 flex-1">
-                  <h3 class="font-black">{{ assignment.choreTitle }}</h3>
-                  <p class="mt-1 text-sm text-muted">
-                    {{ assignment.childName }} · {{ assignment.points }} poäng ·
-                    {{ assignment.dueDate | date: 'd MMM' }}
-                  </p>
-                </div>
-                <span
-                  class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700"
-                  >{{ assignmentStatusLabel(assignment.status) }}</span
-                >
-                @if (assignment.status !== 'Approved') {
-                  <button
-                    type="button"
-                    (click)="toggleAssignmentMenu(assignment.assignmentId)"
-                    class="z-20 grid size-10 shrink-0 place-items-center rounded-full text-xl text-muted hover:bg-slate-50"
-                    [attr.aria-label]="'Fler val för ' + assignment.choreTitle"
-                  >
-                    ⋮
-                  </button>
-                }
-              </div>
-              @if (openAssignmentMenuId() === assignment.assignmentId) { <div class="absolute right-3 top-12 z-30 rounded-xl bg-white p-2 shadow-lg ring-1 ring-line"><button [id]="'request-assignment-cancellation-' + assignment.assignmentId" type="button" (click)="requestAssignmentCancellation(assignment.assignmentId)" class="min-h-10 rounded-lg px-3 text-sm font-bold text-red-700">Ta bort</button></div> }
-              @if (confirmingAssignmentCancellationId() === assignment.assignmentId) {
-                <div
-                  class="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4"
-                  role="group"
-                  [attr.aria-labelledby]="
-                    'assignment-cancellation-question-' + assignment.assignmentId
-                  "
-                >
-                  <p
-                    [id]="'assignment-cancellation-question-' + assignment.assignmentId"
-                    class="text-sm font-bold text-red-900"
-                  >
-                    Ta bort {{ assignment.choreTitle }} från {{ assignment.childName }}? Historiken
-                    sparas, men uppgiften försvinner från barnets aktiva lista.
-                  </p>
-                  @if (assignmentCancellationError()) {
-                    <p class="mt-2 text-sm font-bold text-red-800" role="alert">
-                      {{ assignmentCancellationError() }}
-                    </p>
-                  }
-                  <div class="mt-3 grid grid-cols-2 gap-2 sm:max-w-md">
-                    <button
-                      [id]="'cancel-assignment-cancellation-' + assignment.assignmentId"
-                      type="button"
-                      (click)="cancelAssignmentCancellation()"
-                      [disabled]="cancellingAssignmentId() === assignment.assignmentId"
-                      class="min-h-11 rounded-xl bg-white px-3 text-sm font-extrabold text-muted ring-1 ring-line disabled:opacity-60"
-                    >
-                      Avbryt
-                    </button>
-                    <button
-                      type="button"
-                      (click)="cancelAssignment(assignment)"
-                      [disabled]="cancellingAssignmentId() === assignment.assignmentId"
-                      class="min-h-11 rounded-xl bg-red-600 px-3 text-sm font-extrabold text-white disabled:opacity-60"
-                    >
-                      {{
-                        cancellingAssignmentId() === assignment.assignmentId
-                          ? 'Tar bort…'
-                          : 'Ja, ta bort'
-                      }}
-                    </button>
-                  </div>
-                </div>
-              }
-            </article>
-          }
-        </div>
-      </section>
-    }
-    @if (false && !isLoading() && (completedAssignments().length > 0 || hiddenCompletedAssignments().length > 0)) {
-      <section class="mt-8" aria-labelledby="completed-title">
-        <div><p class="text-sm font-bold text-brand-600">Historik</p><h2 id="completed-title" class="text-xl font-black">Senaste godkända sysslor</h2><p class="mt-1 text-sm text-muted">De tio senaste visas här.</p></div>
-        @if (historyError()) { <p class="mt-3 font-bold text-red-700" role="alert">{{ historyError() }}</p> }
-        <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">@for (assignment of completedHistoryAssignments(); track assignment.assignmentId) { @if (assignment.assignmentId === lastArchivedId()) { <article class="flex items-center justify-between gap-3 rounded-3xl bg-brand-50 p-4 ring-1 ring-brand-100 transition-opacity duration-[2000ms]" [class.opacity-0]="archiveUndoFading()"><p class="font-bold text-brand-600">Historikkortet är dolt.</p><button type="button" (click)="restoreAssignment(assignment)" class="min-h-11 shrink-0 rounded-xl bg-white px-4 font-bold text-brand-600">Ångra</button></article> } @else { <article class="relative rounded-3xl bg-white p-5 ring-1 ring-line"><button type="button" (click)="archiveAssignment(assignment)" [disabled]="historyBusyId() !== null" [attr.aria-label]="'Dölj ' + assignment.choreTitle + ' ur historiken'" class="absolute right-3 top-3 grid size-11 place-items-center rounded-full text-xl text-muted hover:bg-brand-50">×</button><h3 class="pr-12 font-black">{{ assignment.choreTitle }}</h3><p class="mt-1 text-sm text-muted">{{ assignment.childName }} · {{ assignment.points }} poäng</p><p class="mt-3 font-bold text-emerald-800">Godkänd</p></article> } }</div>
-        @if (hiddenCompletedAssignments().length > 0) { <button type="button" (click)="showHiddenHistory.update(value => !value)" class="mt-4 min-h-11 rounded-xl bg-white px-4 font-bold text-brand-600 ring-1 ring-line">{{ showHiddenHistory() ? 'Dölj dolda' : 'Visa dolda (' + hiddenCompletedAssignments().length + ')' }}</button> }
-        @if (showHiddenHistory()) { <section class="mt-5 rounded-3xl bg-slate-50 p-5" aria-label="Dold historik"><h3 class="text-lg font-black">Dolda godkända sysslor</h3><div class="mt-3 grid gap-3 sm:grid-cols-2">@for (assignment of hiddenCompletedAssignments(); track assignment.assignmentId) { <article class="flex items-center justify-between gap-3 rounded-2xl bg-white p-4 ring-1 ring-line"><div class="min-w-0"><p class="font-bold">{{ assignment.choreTitle }}</p><p class="text-sm text-muted">{{ assignment.childName }}</p></div><button type="button" (click)="restoreAssignment(assignment)" [disabled]="historyBusyId() !== null" class="min-h-11 shrink-0 rounded-xl bg-brand-50 px-4 font-bold text-brand-600">Återställ</button></article> }</div></section> }
-      </section>
-    }
   </main>
 </div>

@@ -1,16 +1,122 @@
-<div class="page-enter min-h-dvh bg-canvas pb-24 md:flex md:pb-0">
-  <app-bottom-nav [items]="navItems" />
-  <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-user-header eyebrow="Vuxenöversikt" [title]="'Hej ' + displayName()" variant="adult" />
-    <section class="mt-7 rounded-[1.75rem] bg-brand-600 p-6 text-white shadow-xl shadow-brand-600/10 sm:p-8"><h2 class="text-2xl font-black sm:text-3xl">Välkommen till Syssloappen</h2><p class="mt-2 max-w-xl leading-7 text-brand-100">Här ser du det som väntar på din uppmärksamhet i familjen.</p></section>
-    <section class="mt-7" aria-labelledby="overview-title">
-      <p class="text-sm font-bold text-brand-600">Översikt</p>
-      <h2 id="overview-title" class="sr-only">Det som väntar</h2>
-      <div class="mt-4 grid gap-3">@for (child of childOverviews(); track child.id) { <a [routerLink]="['/vuxen/barn', child.id]" class="flex items-center gap-4 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-line"><span class="grid size-14 shrink-0 place-items-center rounded-full bg-brand-50 text-xl font-black text-brand-600">{{ child.name.slice(0, 1) }}</span><span class="shrink-0 font-black">{{ child.name }}</span><span class="h-2 min-w-10 flex-1 overflow-hidden rounded-full bg-slate-100"><span class="block h-full rounded-full bg-brand-500" [style.width.%]="child.total ? child.completed / child.total * 100 : 0"></span></span><span class="shrink-0 text-sm font-bold text-muted">{{ child.total ? child.completed + ' / ' + child.total + ' klara' : 'Inga sysslor idag' }}</span></a> }</div>
+<div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
+  <app-adult-bottom-nav />
+  <main class="mx-auto w-full max-w-3xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+    <app-adult-page-header
+      [title]="'Välkommen, ' + displayName() + '!'"
+      subtitle="Här är läget i familjen idag."
+    />
+
+    <section class="mt-6" aria-labelledby="children-title">
+      <h2 id="children-title" class="text-[15px] font-semibold text-adult-text">Barn</h2>
+      <div class="mt-2 grid grid-cols-2 gap-2">
+        @for (child of childOverviews(); track child.id) {
+          <app-adult-tile [title]="child.name" [avatarLabel]="child.name.slice(0, 1)" [routerLink]="['/vuxen/barn', child.id]">
+            <span class="block h-1.5 w-full overflow-hidden rounded-full bg-adult-accent-soft">
+              <span
+                class="block h-full rounded-full bg-adult-accent"
+                [style.width.%]="child.total ? (child.completed / child.total) * 100 : 0"
+              ></span>
+            </span>
+            <span class="mt-1.5 block text-xs font-medium text-adult-text-secondary">
+              {{ child.total ? child.completed + ' / ' + child.total + ' klara' : 'Inga sysslor idag' }}
+            </span>
+          </app-adult-tile>
+        }
+      </div>
     </section>
-    <section class="mt-8" aria-labelledby="pending-title"><h2 id="pending-title" class="text-xl font-black">Behöver godkännas</h2><div class="mt-4 grid gap-3">@for (item of pendingAssignments(); track item.assignmentId) { <article class="flex flex-wrap items-center gap-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-line"><div class="basis-full min-w-0 sm:basis-auto sm:flex-1"><p class="text-sm font-bold text-brand-600">{{ item.childName }}</p><h3 class="font-black">{{ item.choreTitle }}</h3></div><button type="button" (click)="approve(item)" [disabled]="busyAssignmentId() !== null" class="min-h-11 flex-1 rounded-xl bg-emerald-100 px-4 font-bold text-emerald-800 sm:flex-none">Godkänn</button><button type="button" (click)="needsRedo(item)" [disabled]="busyAssignmentId() !== null" class="min-h-11 flex-1 rounded-xl bg-red-100 px-4 font-bold text-red-800 sm:flex-none">Försök igen</button></article> } @empty { <p class="rounded-3xl bg-white p-5 text-muted ring-1 ring-line">Inget väntar på granskning.</p> }</div></section>
-    <section class="mt-8" aria-labelledby="reward-requests-title"><h2 id="reward-requests-title" class="text-xl font-black">Belöningsönskningar</h2><div class="mt-4 grid gap-3">@for (item of activeRewardRedemptions(); track item.id) { <article class="flex flex-wrap items-center gap-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-line"><div class="basis-full min-w-0 sm:basis-auto sm:flex-1"><p class="text-sm font-bold text-brand-600">{{ item.childName }}</p><h3 class="font-black">{{ item.rewardName }}</h3><p class="mt-1 text-sm text-muted">{{ item.pointsCost }} poäng · {{ item.status === 'Requested' ? 'Väntar på svar' : 'Godkänd – lämna ut' }}</p></div>@if (item.status === 'Requested') { <button type="button" (click)="changeRewardRedemption(item, 'cancel')" [disabled]="busyRewardRedemptionId() !== null" class="min-h-11 flex-1 rounded-xl bg-red-100 px-4 font-bold text-red-800 sm:flex-none">Avslå</button><button type="button" (click)="changeRewardRedemption(item, 'approve')" [disabled]="busyRewardRedemptionId() !== null" class="min-h-11 flex-1 rounded-xl bg-emerald-100 px-4 font-bold text-emerald-800 sm:flex-none">Godkänn</button> } @else { <button type="button" (click)="changeRewardRedemption(item, 'deliver')" [disabled]="busyRewardRedemptionId() !== null" class="min-h-11 w-full rounded-xl bg-brand-600 px-4 font-bold text-white sm:w-auto">Markera som utlämnad</button> }</article> } @empty { <p class="rounded-3xl bg-white p-5 text-muted ring-1 ring-line">Inga aktiva belöningsönskningar.</p> }</div></section>
-    @if (loadError()) { <p class="mt-4 font-bold text-red-700" role="alert">{{ loadError() }}</p> }
-    <p class="mt-8 text-center text-xs text-muted">Skyddad vuxenvy · familj och behörighet kontrolleras alltid.</p>
+
+    <section class="mt-6" aria-labelledby="pending-title">
+      <div class="flex items-center gap-2">
+        <h2 id="pending-title" class="text-[15px] font-semibold text-adult-text">Behöver godkännas</h2>
+        @if (pendingAssignments().length) {
+          <app-adult-badge variant="count" [value]="pendingAssignments().length" />
+        }
+      </div>
+      <div class="mt-2 grid gap-2">
+        @for (item of pendingAssignments(); track item.assignmentId) {
+          <app-adult-approval-card [title]="item.choreTitle" [meta]="item.childName + ' · ' + item.points + ' poäng'">
+            <button
+              type="button"
+              adultPrimaryButton
+              class="flex-1"
+              [disabled]="busyAssignmentId() !== null"
+              (click)="approve(item)"
+            >
+              Godkänn
+            </button>
+            <button
+              type="button"
+              adultDangerOutlineButton
+              class="flex-1"
+              [disabled]="busyAssignmentId() !== null"
+              (click)="needsRedo(item)"
+            >
+              Avslå
+            </button>
+          </app-adult-approval-card>
+        } @empty {
+          <p class="rounded-lg border border-adult-border bg-adult-surface p-3 text-sm text-adult-text-secondary">
+            Inget väntar på granskning.
+          </p>
+        }
+      </div>
+    </section>
+
+    <section class="mt-6" aria-labelledby="reward-requests-title">
+      <div class="flex items-center gap-2">
+        <h2 id="reward-requests-title" class="text-[15px] font-semibold text-adult-text">Belöningsönskningar</h2>
+        @if (activeRewardRedemptions().length) {
+          <app-adult-badge variant="count" [value]="activeRewardRedemptions().length" />
+        }
+      </div>
+      <div class="mt-2 grid gap-2">
+        @for (item of activeRewardRedemptions(); track item.id) {
+          <app-adult-approval-card
+            [title]="item.rewardName"
+            [meta]="item.childName"
+            [badgeValue]="item.status === 'Requested' ? item.pointsCost : null"
+          >
+            @if (item.status === 'Requested') {
+              <button
+                type="button"
+                adultPrimaryButton
+                class="flex-1"
+                [disabled]="busyRewardRedemptionId() !== null"
+                (click)="changeRewardRedemption(item, 'approve')"
+              >
+                Godkänn
+              </button>
+              <button
+                type="button"
+                adultDangerOutlineButton
+                class="flex-1"
+                [disabled]="busyRewardRedemptionId() !== null"
+                (click)="changeRewardRedemption(item, 'cancel')"
+              >
+                Avslå
+              </button>
+            } @else {
+              <button
+                type="button"
+                adultPrimaryButton
+                class="w-full"
+                [disabled]="busyRewardRedemptionId() !== null"
+                (click)="changeRewardRedemption(item, 'deliver')"
+              >
+                Markera som utlämnad
+              </button>
+            }
+          </app-adult-approval-card>
+        } @empty {
+          <p class="rounded-lg border border-adult-border bg-adult-surface p-3 text-sm text-adult-text-secondary">
+            Inga aktiva belöningsönskningar.
+          </p>
+        }
+      </div>
+    </section>
+
+    @if (loadError()) {
+      <p class="mt-4 text-sm font-medium text-adult-danger-text" role="alert">{{ loadError() }}</p>
+    }
   </main>
 </div>

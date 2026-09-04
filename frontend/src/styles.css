@@ -12,6 +12,23 @@
   --color-brand-600: #06685f;
   --color-lilac: #6d55ad;
   --color-coral: #ed7e68;
+
+  /* Adult-view design system (docs/adult-view-redesign/adult-view-design-spec.md).
+     Kept separate from the tokens above, which the child view still relies on. */
+  --color-adult-accent: #0d5c4f;
+  --color-adult-accent-dark: #0a4a40;
+  --color-adult-accent-soft: #e2efec;
+  --color-adult-bg: #f6f7f7;
+  --color-adult-surface: #ffffff;
+  --color-adult-border: #e6e8e7;
+  --color-adult-text: #14181a;
+  --color-adult-text-secondary: #6b7370;
+  --color-adult-nav-muted: #8b938f;
+  --color-adult-danger-bg: #fdf3f1;
+  --color-adult-danger-border: #e6b3ac;
+  --color-adult-danger-text: #b5433a;
+  --color-adult-points-bg: #fbf1dd;
+  --color-adult-points-text: #92650f;
 }
 
 :root {

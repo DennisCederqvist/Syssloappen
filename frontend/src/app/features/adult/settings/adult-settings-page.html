@@ -1,16 +1,32 @@
-<div class="page-enter min-h-dvh bg-canvas pb-24 md:flex md:pb-0">
-  <app-bottom-nav [items]="[]" />
-  <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-user-header eyebrow="Familjen" title="Inställningar" variant="adult" />
-    <section class="mt-7 grid gap-3" aria-label="Tillgängliga familjeinställningar">
+<div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
+  <app-adult-bottom-nav />
+  <main class="mx-auto w-full max-w-3xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+    <app-adult-page-header title="Inställningar" />
+
+    <nav class="mt-6 grid gap-2" aria-label="Tillgängliga familjeinställningar">
       <a
         routerLink="/vuxen/installningar/barn"
-        class="rounded-3xl bg-white p-5 font-black ring-1 ring-line"
+        class="rounded-lg border border-adult-border bg-adult-surface p-3 text-[15px] font-semibold text-adult-text"
         >Barn och konton</a
       >
-      <a routerLink="/vuxen/bjud-in" class="rounded-3xl bg-white p-5 font-black ring-1 ring-line"
+      <a
+        routerLink="/vuxen/bjud-in"
+        class="rounded-lg border border-adult-border bg-adult-surface p-3 text-[15px] font-semibold text-adult-text"
         >Bjud in vuxen</a
       >
-    </section>
+      <a
+        routerLink="/vuxen/historik"
+        class="rounded-lg border border-adult-border bg-adult-surface p-3 text-[15px] font-semibold text-adult-text"
+        >Historik</a
+      >
+    </nav>
+
+    <button
+      type="button"
+      (click)="logout()"
+      class="mt-6 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-4 text-sm font-medium text-adult-text-secondary transition hover:text-adult-text"
+    >
+      Logga ut
+    </button>
   </main>
 </div>
