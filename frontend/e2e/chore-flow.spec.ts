@@ -113,17 +113,17 @@ async function createChildAndGetPairingCode(page: Page, runId: string, childName
   await page.goto('/vuxen/barn');
   await page.getByRole('button', { name: '+ Lägg till barn' }).click();
   await expect(page.locator('#create-child-panel')).toBeFocused();
+  await expect(page.getByRole('heading', { name: 'Lägg till ett barn' })).toBeVisible();
   await page.getByLabel('Barnets namn').fill(childName);
   await page.getByLabel('Användarnamn').fill(`e2e-${runId}`);
-  await page.getByLabel(/^Lösenord/).fill(password);
+  await page.getByLabel('Lösenord', { exact: true }).fill(password);
   await page.getByLabel('Upprepa lösenordet').fill(password);
   await page.getByRole('button', { name: 'Skapa barnkonto' }).click();
 
   await expect(page.getByRole('heading', { name: `${childName} är tillagd` })).toBeVisible();
   await page.getByRole('button', { name: 'Koppla enhet' }).first().click();
 
-  const pairingSection = page.locator('section[aria-labelledby="pairing-code-title"]');
-  await expect(pairingSection).toBeVisible();
+  const pairingSection = page.locator('#pairing-code-panel');
   await expect(pairingSection).toBeFocused();
   await expectResponsiveAndAccessible(page);
   const sectionText = await pairingSection.innerText();
@@ -202,6 +202,6 @@ test('hela syssleflödet fungerar mellan Adult och Child', async ({ browser }) =
   await expect(adultReview).toBeHidden();
 
   await childPage.reload();
-  await expect(childChore).toContainText('Godkänd');
+  await expect(childChore).toContainText('Godkänt');
   await expect(pointsSection.getByLabel('10 poäng')).toBeVisible();
 });
