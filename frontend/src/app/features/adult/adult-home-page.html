@@ -1,6 +1,6 @@
 <div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
   <app-adult-bottom-nav />
-  <main class="mx-auto w-full max-w-3xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
     <app-adult-page-header
       [title]="'Välkommen, ' + displayName() + '!'"
       subtitle="Här är läget i familjen idag."
@@ -32,7 +32,7 @@
           <app-adult-badge variant="count" [value]="pendingAssignments().length" />
         }
       </div>
-      <div class="mt-2 grid gap-2">
+      <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         @for (item of pendingAssignments(); track item.assignmentId) {
           <app-adult-approval-card [title]="item.choreTitle" [meta]="item.childName + ' · ' + item.points + ' poäng'">
             @if (rejectingAssignmentId() === item.assignmentId) {
@@ -93,7 +93,7 @@
             }
           </app-adult-approval-card>
         } @empty {
-          <p class="rounded-lg border border-adult-border bg-adult-surface p-3 text-sm text-adult-text-secondary">
+          <p class="rounded-lg border border-adult-border bg-adult-surface p-3 text-sm text-adult-text-secondary sm:col-span-2 lg:col-span-3">
             Inget väntar på granskning.
           </p>
         }
@@ -107,7 +107,7 @@
           <app-adult-badge variant="count" [value]="activeRewardRedemptions().length" />
         }
       </div>
-      <div class="mt-2 grid gap-2">
+      <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         @for (item of activeRewardRedemptions(); track item.id) {
           <app-adult-approval-card
             [title]="item.rewardName"
@@ -146,7 +146,7 @@
             }
           </app-adult-approval-card>
         } @empty {
-          <p class="rounded-lg border border-adult-border bg-adult-surface p-3 text-sm text-adult-text-secondary">
+          <p class="rounded-lg border border-adult-border bg-adult-surface p-3 text-sm text-adult-text-secondary sm:col-span-2 lg:col-span-3">
             Inga aktiva belöningsönskningar.
           </p>
         }

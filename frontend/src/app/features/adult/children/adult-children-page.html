@@ -71,276 +71,257 @@
       </div>
     }
 
-    <!--
-      Koppla enhet (engångskod) and Visa enheter (device sessions) are left with
-      their pre-redesign styling for now — the design spec treats device-pairing
-      as its own, later redesign step. Functionality is unchanged.
-    -->
     @if (pairingCode(); as pairing) {
-      <section
-        id="pairing-code-panel"
-        tabindex="-1"
-        class="mt-5 overflow-hidden rounded-[1.75rem] bg-white shadow-xl ring-1 ring-brand-500/25"
-        aria-labelledby="pairing-code-title"
-        aria-live="polite"
+      <app-adult-sheet
+        panelId="pairing-code-panel"
+        headingId="pairing-code-title"
+        [title]="'Koppla ' + pairing.childName + 's enhet'"
+        closeLabel="Stäng engångskoden"
+        (close)="closePairingCode()"
       >
-        <div class="bg-brand-600 p-5 text-white sm:p-6">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-sm font-extrabold text-brand-100">
-                Koppla {{ pairing.childName }}s enhet
-              </p>
-              <h2 id="pairing-code-title" class="mt-1 text-2xl font-black">Engångskoden är klar</h2>
-            </div>
-            <button
-              type="button"
-              (click)="closePairingCode()"
-              class="grid size-11 shrink-0 place-items-center rounded-xl bg-white/10 text-xl"
-              aria-label="Stäng engångskoden"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-        <div class="p-5 sm:p-6">
-          <div class="rounded-3xl bg-brand-50 p-5 text-center ring-1 ring-brand-500/20">
-            <p class="text-xs font-extrabold tracking-wider text-brand-600 uppercase">
-              Kod för barnets enhet
-            </p>
-            <p class="mt-3 break-all text-3xl font-black tracking-[0.2em] text-ink sm:text-4xl">
-              {{ pairing.code }}
-            </p>
-            <p class="mt-3 text-sm font-bold text-muted">
-              Gäller till {{ pairing.expiresAt | date: 'HH:mm' }}
-            </p>
-            <button
-              type="button"
-              (click)="copyPairingCode()"
-              class="mt-4 min-h-11 rounded-xl bg-white px-4 text-sm font-extrabold text-brand-600 shadow-sm ring-1 ring-line"
-            >
-              {{ pairingCodeCopied() ? 'Kopierad ✓' : 'Kopiera koden' }}
-            </button>
-          </div>
-          <div class="mt-5 grid gap-3 sm:grid-cols-3">
-            <div class="rounded-2xl bg-canvas p-4">
-              <span
-                class="grid size-8 place-items-center rounded-xl bg-brand-100 text-sm font-black text-brand-600"
-                >1</span
-              >
-              <p class="mt-3 text-sm font-bold">Öppna Syssloappen på barnets enhet.</p>
-            </div>
-            <div class="rounded-2xl bg-canvas p-4">
-              <span
-                class="grid size-8 place-items-center rounded-xl bg-brand-100 text-sm font-black text-brand-600"
-                >2</span
-              >
-              <p class="mt-3 text-sm font-bold">Välj Barn och sedan Engångskod.</p>
-            </div>
-            <div class="rounded-2xl bg-canvas p-4">
-              <span
-                class="grid size-8 place-items-center rounded-xl bg-brand-100 text-sm font-black text-brand-600"
-                >3</span
-              >
-              <p class="mt-3 text-sm font-bold">Skriv koden innan den går ut.</p>
-            </div>
-          </div>
-          <p class="mt-5 rounded-2xl bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-            <strong>Säker kod:</strong> Den kan bara användas en gång och sparas inte i klartext.
-            Skapa en ny kod om tiden hinner gå ut.
+        <div class="rounded-lg border border-adult-border bg-adult-bg p-5 text-center">
+          <p class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">
+            Kod för barnets enhet
           </p>
-        </div>
-      </section>
-    }
-
-    @if (deviceSessionsChild(); as selectedChild) {
-      <section
-        id="device-sessions-panel"
-        tabindex="-1"
-        class="mt-5 overflow-hidden rounded-[1.75rem] bg-white shadow-xl ring-1 ring-line"
-        aria-labelledby="device-sessions-title"
-      >
-        <div class="flex items-start justify-between gap-4 border-b border-line p-5 sm:p-6">
-          <div>
-            <p class="text-sm font-extrabold text-brand-600">Trygg enhetsåtkomst</p>
-            <h2 id="device-sessions-title" class="mt-1 text-2xl font-black">
-              {{ selectedChild.name }}s enheter
-            </h2>
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-muted">
-              Här ser du tidigare kopplingar. Logga ut en enhet direkt om den har tappats bort eller
-              inte längre används.
-            </p>
-          </div>
-          <button
-            type="button"
-            (click)="closeDeviceSessions()"
-            class="grid size-11 shrink-0 place-items-center rounded-xl border border-line text-xl text-muted"
-            aria-label="Stäng listan med kopplade enheter"
-          >
-            ×
+          <p class="mt-3 text-3xl font-semibold tracking-[0.2em] text-adult-text">
+            {{ pairing.code }}
+          </p>
+          <p class="mt-3 text-sm text-adult-text-secondary">
+            Gäller till {{ pairing.expiresAt | date: 'HH:mm' }}
+          </p>
+          <button type="button" adultSecondaryTintButton class="mt-4" (click)="copyPairingCode()">
+            {{ pairingCodeCopied() ? 'Kopierad ✓' : 'Kopiera koden' }}
           </button>
         </div>
 
-        <div class="p-5 sm:p-6">
-          @if (deviceSessionsLoading()) {
-            <div class="grid gap-3" role="status">
-              <div class="h-32 animate-pulse rounded-2xl bg-canvas"></div>
-              <span class="sr-only">Hämtar kopplade enheter…</span>
-              <div class="h-32 animate-pulse rounded-2xl bg-canvas"></div>
-            </div>
-          } @else if (deviceSessionsError()) {
-            <div class="rounded-2xl border border-red-200 bg-red-50 p-4" role="alert">
-              <p class="font-bold text-red-800">{{ deviceSessionsError() }}</p>
-              <button
-                type="button"
-                (click)="retryDeviceSessions()"
-                class="mt-3 min-h-11 rounded-xl bg-white px-4 font-extrabold text-red-800 ring-1 ring-red-200"
-              >
-                Försök igen
-              </button>
-            </div>
-          } @else if (deviceSessions().length === 0) {
-            <div
-              class="rounded-3xl border-2 border-dashed border-brand-500/25 bg-brand-50 p-6 text-center"
+        <div class="mt-4 grid gap-2 sm:grid-cols-3">
+          <div class="rounded-lg border border-adult-border bg-adult-surface p-3">
+            <span
+              class="grid size-7 place-items-center rounded-full bg-adult-accent-soft text-sm font-semibold text-adult-accent-dark"
+              aria-hidden="true"
+              >1</span
             >
-              <div
-                class="mx-auto grid size-14 place-items-center rounded-2xl bg-white text-2xl shadow-sm"
-                aria-hidden="true"
-              >
-                📱
-              </div>
-              <h3 class="mt-4 text-lg font-black">Inga enheter är kopplade</h3>
-              <p class="mt-1 text-sm leading-6 text-muted">
-                Skapa en engångskod från barnkortet för att koppla barnets mobil eller surfplatta.
-              </p>
-            </div>
-          } @else {
-            @if (revocationError()) {
-              <div
-                class="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800"
-                role="alert"
-              >
-                {{ revocationError() }}
-              </div>
-            }
-
-            <div class="grid gap-3 lg:grid-cols-2">
-              @for (session of deviceSessions(); track session.sessionId; let index = $index) {
-                <article class="rounded-3xl bg-canvas p-4 ring-1 ring-line">
-                  <div class="flex items-start gap-3">
-                    <div
-                      class="grid size-12 shrink-0 place-items-center rounded-2xl bg-white text-2xl shadow-sm"
-                      aria-hidden="true"
-                    >
-                      {{ index % 2 === 0 ? '📱' : '▣' }}
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="flex flex-wrap items-center justify-between gap-2">
-                        <h3 class="font-black">Kopplad enhet {{ index + 1 }}</h3>
-                        @if (session.revokedAt) {
-                          <span
-                            class="rounded-full bg-red-100 px-3 py-1 text-xs font-extrabold text-red-800"
-                            >Utloggad</span
-                          >
-                        } @else if (isSessionExpired(session)) {
-                          <span
-                            class="rounded-full bg-slate-200 px-3 py-1 text-xs font-extrabold text-slate-700"
-                            >Utgången</span
-                          >
-                        } @else {
-                          <span
-                            class="rounded-full bg-green-100 px-3 py-1 text-xs font-extrabold text-green-800"
-                            >Aktiv</span
-                          >
-                        }
-                      </div>
-                      <dl class="mt-3 grid gap-2 text-sm">
-                        <div class="flex items-baseline justify-between gap-4">
-                          <dt class="text-muted">Senast använd</dt>
-                          <dd class="text-right font-bold">
-                            {{ session.lastSeenAt | date: 'd MMM HH:mm' }}
-                          </dd>
-                        </div>
-                        <div class="flex items-baseline justify-between gap-4">
-                          <dt class="text-muted">Kopplad</dt>
-                          <dd class="text-right font-bold">
-                            {{ session.createdAt | date: 'd MMM HH:mm' }}
-                          </dd>
-                        </div>
-                        <div class="flex items-baseline justify-between gap-4">
-                          <dt class="text-muted">Aktiv till</dt>
-                          <dd class="text-right font-bold">
-                            {{ session.expiresAt | date: 'd MMM HH:mm' }}
-                          </dd>
-                        </div>
-                        <div class="flex items-baseline justify-between gap-4">
-                          <dt class="text-muted">Längst giltig till</dt>
-                          <dd class="text-right font-bold">
-                            {{ session.absoluteExpiresAt | date: 'd MMM HH:mm' }}
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-                  </div>
-
-                  @if (!session.revokedAt && !isSessionExpired(session)) {
-                    @if (confirmingRevocation() === session.sessionId) {
-                      <div
-                        class="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4"
-                        role="group"
-                        [attr.aria-labelledby]="'revocation-question-' + session.sessionId"
-                      >
-                        <p
-                          [id]="'revocation-question-' + session.sessionId"
-                          class="text-sm font-bold text-red-900"
-                        >
-                          Barnet loggas ut direkt på den här enheten. Fortsätta?
-                        </p>
-                        <div class="mt-3 grid grid-cols-2 gap-2">
-                          <button
-                            [id]="'cancel-revocation-' + session.sessionId"
-                            type="button"
-                            (click)="cancelRevocation()"
-                            [disabled]="revokingSession() === session.sessionId"
-                            class="min-h-11 rounded-xl bg-white px-3 text-sm font-extrabold text-muted ring-1 ring-line disabled:opacity-60"
-                          >
-                            Avbryt
-                          </button>
-                          <button
-                            type="button"
-                            (click)="revokeDeviceSession(session)"
-                            [disabled]="revokingSession() === session.sessionId"
-                            class="min-h-11 rounded-xl bg-red-600 px-3 text-sm font-extrabold text-white disabled:cursor-wait disabled:opacity-60"
-                          >
-                            {{
-                              revokingSession() === session.sessionId
-                                ? 'Loggar ut…'
-                                : 'Ja, logga ut'
-                            }}
-                          </button>
-                        </div>
-                      </div>
-                    } @else {
-                      <button
-                        [id]="'request-revocation-' + session.sessionId"
-                        type="button"
-                        (click)="requestRevocation(session.sessionId)"
-                        class="mt-4 min-h-11 w-full rounded-xl bg-white px-4 text-sm font-extrabold text-red-700 ring-1 ring-red-200 transition hover:bg-red-50"
-                      >
-                        Logga ut enheten
-                      </button>
-                    }
-                  }
-                </article>
-              }
-            </div>
-
-            <p class="mt-5 rounded-2xl bg-brand-50 px-4 py-3 text-sm leading-6 text-brand-600">
-              Aktiva barnsessioner förnyas säkert vid användning, men gäller aldrig längre än 30
-              dagar från inloggningen.
-            </p>
-          }
+            <p class="mt-2 text-sm text-adult-text">Öppna Syssloappen på barnets enhet.</p>
+          </div>
+          <div class="rounded-lg border border-adult-border bg-adult-surface p-3">
+            <span
+              class="grid size-7 place-items-center rounded-full bg-adult-accent-soft text-sm font-semibold text-adult-accent-dark"
+              aria-hidden="true"
+              >2</span
+            >
+            <p class="mt-2 text-sm text-adult-text">Välj Barn och sedan Engångskod.</p>
+          </div>
+          <div class="rounded-lg border border-adult-border bg-adult-surface p-3">
+            <span
+              class="grid size-7 place-items-center rounded-full bg-adult-accent-soft text-sm font-semibold text-adult-accent-dark"
+              aria-hidden="true"
+              >3</span
+            >
+            <p class="mt-2 text-sm text-adult-text">Skriv koden innan den går ut.</p>
+          </div>
         </div>
-      </section>
+
+        <p
+          class="mt-4 rounded-lg border border-adult-border bg-adult-points-bg px-4 py-3 text-sm leading-6 text-adult-points-text"
+        >
+          <strong>Säker kod:</strong> Den kan bara användas en gång och sparas inte i klartext.
+          Skapa en ny kod om tiden hinner gå ut.
+        </p>
+      </app-adult-sheet>
+    }
+
+    @if (deviceSessionsChild(); as selectedChild) {
+      <app-adult-sheet
+        panelId="device-sessions-panel"
+        headingId="device-sessions-title"
+        [title]="selectedChild.name + 's enheter'"
+        closeLabel="Stäng listan med kopplade enheter"
+        (close)="closeDeviceSessions()"
+      >
+        <p class="-mt-2 mb-4 text-sm text-adult-text-secondary">
+          Här ser du tidigare kopplingar. Logga ut en enhet direkt om den har tappats bort eller
+          inte längre används.
+        </p>
+
+        @if (deviceSessionsLoading()) {
+          <div class="grid gap-3" role="status">
+            <div class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-bg"></div>
+            <span class="sr-only">Hämtar kopplade enheter…</span>
+            <div class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-bg"></div>
+          </div>
+        } @else if (deviceSessionsError()) {
+          <div class="rounded-lg border border-adult-danger-border bg-adult-danger-bg p-4" role="alert">
+            <p class="text-sm font-medium text-adult-danger-text">{{ deviceSessionsError() }}</p>
+            <button type="button" adultDangerOutlineButton class="mt-3" (click)="retryDeviceSessions()">
+              Försök igen
+            </button>
+          </div>
+        } @else if (deviceSessions().length === 0) {
+          <div class="rounded-lg border border-adult-border bg-adult-bg p-6 text-center">
+            <div
+              class="mx-auto grid size-11 place-items-center rounded-full bg-adult-accent-soft text-adult-accent-dark"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                class="size-5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="7" y="2" width="10" height="20" rx="2" />
+                <line x1="11" y1="18" x2="13" y2="18" />
+              </svg>
+            </div>
+            <h3 class="mt-3 text-[15px] font-semibold text-adult-text">Inga enheter är kopplade</h3>
+            <p class="mt-1 text-sm text-adult-text-secondary">
+              Skapa en engångskod från barnkortet för att koppla barnets mobil eller surfplatta.
+            </p>
+          </div>
+        } @else {
+          @if (revocationError()) {
+            <div
+              class="mb-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+              role="alert"
+            >
+              {{ revocationError() }}
+            </div>
+          }
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            @for (session of deviceSessions(); track session.sessionId; let index = $index) {
+              <article class="rounded-lg border border-adult-border bg-adult-surface p-3">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="grid size-9 shrink-0 place-items-center rounded-full bg-adult-accent-soft text-adult-accent-dark"
+                    aria-hidden="true"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      class="size-4"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="7" y="2" width="10" height="20" rx="2" />
+                      <line x1="11" y1="18" x2="13" y2="18" />
+                    </svg>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                      <h3 class="text-[15px] font-semibold text-adult-text">
+                        Kopplad enhet {{ index + 1 }}
+                      </h3>
+                      @if (session.revokedAt) {
+                        <span
+                          class="rounded-full border border-adult-danger-border bg-adult-danger-bg px-2 py-0.5 text-xs font-semibold text-adult-danger-text"
+                          >Utloggad</span
+                        >
+                      } @else if (isSessionExpired(session)) {
+                        <span
+                          class="rounded-full border border-adult-border bg-adult-bg px-2 py-0.5 text-xs font-semibold text-adult-text-secondary"
+                          >Utgången</span
+                        >
+                      } @else {
+                        <span
+                          class="rounded-full border border-adult-accent/25 bg-adult-accent-soft px-2 py-0.5 text-xs font-semibold text-adult-accent-dark"
+                          >Aktiv</span
+                        >
+                      }
+                    </div>
+                    <dl class="mt-2 grid gap-1.5 text-sm">
+                      <div class="flex items-baseline justify-between gap-4">
+                        <dt class="text-adult-text-secondary">Senast använd</dt>
+                        <dd class="text-right font-medium text-adult-text">
+                          {{ session.lastSeenAt | date: 'd MMM HH:mm' }}
+                        </dd>
+                      </div>
+                      <div class="flex items-baseline justify-between gap-4">
+                        <dt class="text-adult-text-secondary">Kopplad</dt>
+                        <dd class="text-right font-medium text-adult-text">
+                          {{ session.createdAt | date: 'd MMM HH:mm' }}
+                        </dd>
+                      </div>
+                      <div class="flex items-baseline justify-between gap-4">
+                        <dt class="text-adult-text-secondary">Aktiv till</dt>
+                        <dd class="text-right font-medium text-adult-text">
+                          {{ session.expiresAt | date: 'd MMM HH:mm' }}
+                        </dd>
+                      </div>
+                      <div class="flex items-baseline justify-between gap-4">
+                        <dt class="text-adult-text-secondary">Längst giltig till</dt>
+                        <dd class="text-right font-medium text-adult-text">
+                          {{ session.absoluteExpiresAt | date: 'd MMM HH:mm' }}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+
+                @if (!session.revokedAt && !isSessionExpired(session)) {
+                  @if (confirmingRevocation() === session.sessionId) {
+                    <div
+                      class="mt-3 rounded-lg border border-adult-danger-border bg-adult-danger-bg p-3"
+                      role="group"
+                      [attr.aria-labelledby]="'revocation-question-' + session.sessionId"
+                    >
+                      <p
+                        [id]="'revocation-question-' + session.sessionId"
+                        class="text-sm font-semibold text-adult-danger-text"
+                      >
+                        Barnet loggas ut direkt på den här enheten. Fortsätta?
+                      </p>
+                      <div class="mt-3 flex gap-2">
+                        <button
+                          [id]="'cancel-revocation-' + session.sessionId"
+                          type="button"
+                          (click)="cancelRevocation()"
+                          [disabled]="revokingSession() === session.sessionId"
+                          class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
+                        >
+                          Avbryt
+                        </button>
+                        <button
+                          type="button"
+                          adultDangerOutlineButton
+                          class="flex-1"
+                          (click)="revokeDeviceSession(session)"
+                          [disabled]="revokingSession() === session.sessionId"
+                        >
+                          {{
+                            revokingSession() === session.sessionId ? 'Loggar ut…' : 'Ja, logga ut'
+                          }}
+                        </button>
+                      </div>
+                    </div>
+                  } @else {
+                    <button
+                      [id]="'request-revocation-' + session.sessionId"
+                      type="button"
+                      adultDangerOutlineButton
+                      class="mt-3 w-full"
+                      (click)="requestRevocation(session.sessionId)"
+                    >
+                      Logga ut enheten
+                    </button>
+                  }
+                }
+              </article>
+            }
+          </div>
+
+          <p
+            class="mt-4 rounded-lg border border-adult-border bg-adult-bg px-4 py-3 text-sm leading-6 text-adult-text-secondary"
+          >
+            Aktiva barnsessioner förnyas säkert vid användning, men gäller aldrig längre än 30 dagar
+            från inloggningen.
+          </p>
+        }
+      </app-adult-sheet>
     }
 
     @if (editingChild(); as selectedChild) {
