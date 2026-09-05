@@ -167,7 +167,11 @@
         <h2 id="waiting-title" class="mt-1 text-2xl font-black">Väntar på svar</h2>
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
           @for (assignment of pendingAssignments(); track assignment.assignmentId) {
-            <article class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line sm:p-6">
+            <article
+              [id]="'child-assignment-' + assignment.assignmentId"
+              tabindex="-1"
+              class="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-line sm:p-6"
+            >
               <div class="flex items-start justify-between gap-3">
                 <h3 class="text-xl font-black">{{ assignment.title }}</h3>
                 <span

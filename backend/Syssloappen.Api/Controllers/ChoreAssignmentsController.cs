@@ -56,7 +56,10 @@ public sealed class ChoreAssignmentsController(
         }
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
-        var today = DateOnly.FromDateTime(now);
+        // "Today" for calendar-date comparisons uses local time, matching the
+        // browser's date picker default; AssignedAt above stays UTC like every
+        // other timestamp, since it is not a calendar-day comparison.
+        var today = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
         var dueDate = request.DueDate ?? today;
 
         if (dueDate < today)
@@ -211,7 +214,8 @@ public sealed class ChoreAssignmentsController(
 
     private async Task MoveUnfinishedAssignmentsToToday(int householdId)
     {
-        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        // Local time, to match the calendar-date "today" used when assigning.
+        var today = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
 
         // An unfinished chore carries forward into the next day. Submitted,
         // approved and cancelled chores retain their original dates and audit trail.

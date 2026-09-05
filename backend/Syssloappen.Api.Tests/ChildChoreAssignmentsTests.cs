@@ -104,7 +104,7 @@ public sealed class ChildChoreAssignmentsTests : IDisposable
             adultClient,
             futureChore.Id,
             child.Id,
-            DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1));
+            DateOnly.FromDateTime(DateTime.Now).AddDays(1));
 
         using (var scope = factory.Services.CreateScope())
         {
@@ -118,7 +118,7 @@ public sealed class ChildChoreAssignmentsTests : IDisposable
                 ChildId = child.Id,
                 AssignedByUserId = adult.Id,
                 AssignedAt = DateTime.UtcNow.AddDays(-1),
-                DueDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1)
+                DueDate = DateOnly.FromDateTime(DateTime.Now).AddDays(-1)
             });
             await dbContext.SaveChangesAsync();
         }
@@ -129,7 +129,7 @@ public sealed class ChildChoreAssignmentsTests : IDisposable
 
         Assert.Contains(assignments!, item => item.AssignmentId == todayAssignment.Id);
         var carriedForwardAssignment = Assert.Single(assignments!, item => item.Title == "Tidigare syssla");
-        Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), carriedForwardAssignment.DueDate);
+        Assert.Equal(DateOnly.FromDateTime(DateTime.Now), carriedForwardAssignment.DueDate);
         Assert.DoesNotContain(assignments!, item => item.AssignmentId == futureAssignment.Id);
 
         using var verificationScope = factory.Services.CreateScope();
@@ -137,7 +137,7 @@ public sealed class ChildChoreAssignmentsTests : IDisposable
         var storedCarriedForwardAssignment = await verificationDbContext.ChoreAssignments
             .AsNoTracking()
             .SingleAsync(item => item.Id == carriedForwardAssignment.AssignmentId);
-        Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), storedCarriedForwardAssignment.DueDate);
+        Assert.Equal(DateOnly.FromDateTime(DateTime.Now), storedCarriedForwardAssignment.DueDate);
     }
 
     [Fact]

@@ -13,6 +13,7 @@ import { finalize, Observable } from 'rxjs';
 import { CurrentUser, RegisterAdultResponse } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { focusAfterRender } from '../../shared/focus';
+import { AdultPrimaryButton, AdultSecondaryTintButton } from '../adult/ui/buttons';
 
 type LoginMode = 'adult' | 'child';
 type AdultView = 'login' | 'register';
@@ -26,7 +27,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, AdultPrimaryButton, AdultSecondaryTintButton],
   templateUrl: './login-page.html',
 })
 export class LoginPage {

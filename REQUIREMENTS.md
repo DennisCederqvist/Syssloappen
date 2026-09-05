@@ -956,6 +956,17 @@ PWA-arbetet bör göras **efter att webbversionens kärnfunktionalitet fungerar*
 
 ---
 
+## Publik landningssida
+
+En publik marknadsföringssida (inte inloggad, inte del av `/vuxen` eller `/barn`) är beslutad som en framtida, separat arbetsdel — inte kravställd i detalj än och ska inte byggas förrän ett separat produktbeslut tas.
+
+- Syftet är att sälja in appen som ett roligt, "gamifierat" sätt att göra tråkiga sysslor roligare, till skillnad från den lugna, "tool-like" adult-vyn.
+- Sidan ska medvetet vara lekfull i ton och design (ljusa/varma färger, rundade formspråk, illustrationer), i linje med barnvyns känsla snarare än adult-designspecen i `docs/adult-view-redesign/adult-view-design-spec.md`.
+- Referensmockuper finns sparade i `docs/adult-view-redesign/landing page tablet.png` och `docs/adult-view-redesign/landing page phone.png`.
+- Ska inte blandas ihop med inloggningssidan (`/login`), som följer adult-designspecen och är en separat, redan pågående arbetsdel.
+
+---
+
 ## QR-kod för barnets enhetskoppling
 
 Den Adult-styrda enhetskopplingen med engångskod ingår i barnloginens kärnflöde. Som en framtida användarvänlig förbättring ska samma kopplingsflöde även kunna startas genom att barnets enhet skannar en QR-kod i stället för att den vuxna skriver in engångskoden manuellt.

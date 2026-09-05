@@ -48,7 +48,8 @@ public sealed class ChildChoreAssignmentsController(
 
         // Repeating every ownership condition in the SQL query protects the private
         // Child view even if inconsistent assignment data were ever introduced.
-        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        // Local time, to match the calendar-date "today" used when assigning.
+        var today = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
         var assignments = await dbContext.ChoreAssignments
             .AsNoTracking()
             .Where(assignment =>
@@ -81,7 +82,8 @@ public sealed class ChildChoreAssignmentsController(
 
     private async Task MoveUnfinishedAssignmentsToToday(int childId, int householdId)
     {
-        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        // Local time, to match the calendar-date "today" used when assigning.
+        var today = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
 
         // Only chores the child can still perform roll into today. A submitted
         // chore is waiting for review, while approved and cancelled chores are history.

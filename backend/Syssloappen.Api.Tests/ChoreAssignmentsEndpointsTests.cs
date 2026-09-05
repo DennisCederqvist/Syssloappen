@@ -96,7 +96,8 @@ public sealed class ChoreAssignmentsEndpointsTests : IDisposable
         Assert.Equal(child.Id, stored.ChildId);
         Assert.Equal(created.Id, stored.Id);
         Assert.Equal(created.AssignedAt, stored.AssignedAt);
-        Assert.Equal(DateOnly.FromDateTime(created.AssignedAt), created.DueDate);
+        // DueDate defaults to the local calendar date, not the UTC AssignedAt timestamp.
+        Assert.Equal(DateOnly.FromDateTime(DateTime.Now), created.DueDate);
         Assert.Equal(created.DueDate, stored.DueDate);
     }
 
@@ -135,7 +136,7 @@ public sealed class ChoreAssignmentsEndpointsTests : IDisposable
             .Content.ReadFromJsonAsync<ChoreAssignmentResponse>();
         Assert.NotNull(created);
 
-        var yesterday = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
+        var yesterday = DateOnly.FromDateTime(DateTime.Now).AddDays(-1);
         using (var setupScope = factory.Services.CreateScope())
         {
             var dbContext = setupScope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -148,7 +149,7 @@ public sealed class ChoreAssignmentsEndpointsTests : IDisposable
             "/api/chore-assignments");
 
         var carriedForwardAssignment = Assert.Single(assignments!, item => item.AssignmentId == created.Id);
-        Assert.Equal(DateOnly.FromDateTime(DateTime.UtcNow), carriedForwardAssignment.DueDate);
+        Assert.Equal(DateOnly.FromDateTime(DateTime.Now), carriedForwardAssignment.DueDate);
     }
 
     [Fact]
