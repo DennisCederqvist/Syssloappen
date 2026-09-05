@@ -163,12 +163,12 @@ så att vi båda kan administrera barn och sysslor.
 
 ### Acceptance Criteria
 
-- [ ] Endast en Adult får bjuda in en annan Adult.
-- [ ] Den nya vuxna ska efter accepterad inbjudan tillhöra samma Household.
-- [ ] Den nya vuxna ska kunna administrera barn i detta Household.
-- [ ] Den nya vuxna ska kunna skapa och tilldela sysslor.
-- [ ] En användare från ett annat Household ska inte automatiskt få åtkomst.
-- [ ] En inbjudan ska inte kunna ge tillgång till ett annat Household än det som skapade inbjudan.
+- [x] Endast en Adult får bjuda in en annan Adult.
+- [x] Den nya vuxna ska efter accepterad inbjudan tillhöra samma Household.
+- [x] Den nya vuxna ska kunna administrera barn i detta Household.
+- [x] Den nya vuxna ska kunna skapa och tilldela sysslor.
+- [x] En användare från ett annat Household ska inte automatiskt få åtkomst.
+- [x] En inbjudan ska inte kunna ge tillgång till ett annat Household än det som skapade inbjudan.
 
 ---
 

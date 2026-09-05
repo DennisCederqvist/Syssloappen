@@ -498,7 +498,7 @@ Adult-flödet för sysslor och tilldelningar är användartestat och mergat till
 
 Produktbeslutet är att en `Chore` är en återanvändbar mall i Householdets uppgiftsbank, inte en engångsuppgift. En Adult skapar exempelvis `Bädda sängen` en gång och kan sedan skapa flera separata `ChoreAssignment`-rader för samma eller olika barn. Efter ny skapning får UI:t gärna leda direkt till en valfri tilldelning, men mallen finns kvar för framtida användning. Varje tilldelning fryser poängvärdet som gällde vid tilldelningstillfället.
 
-US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041, Adult-granskningen för US-050/US-051, det browserbaserade E2E-testet samt responsivitets- och tillgänglighetsgenomgången är implementerade, verifierade, användargodkända och mergade. US-011 är implementerad, automatiskt verifierad och redo för användartest på `feature/adult-household-invitation`.
+US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-040/US-041, Adult-granskningen för US-050/US-051, det browserbaserade E2E-testet, responsivitets- och tillgänglighetsgenomgången samt US-011 är implementerade, verifierade, användargodkända och mergade till `main` (US-011 i merge-commit `65b0eec`).
 
 ## US-011 - Adult-inbjudan
 
@@ -510,7 +510,7 @@ US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-0
 - Fyra nya backendtester och två frontendtester täcker behörighet, Household-isolering, engångsanvändning, utgång och manipulerade klientfält.
 - Hela backendsviten är grön med 110 tester. Frontendsviten är grön med 57 tester och Angular-produktionsbygget är godkänt.
 - Manuell testväg: logga in som Adult, öppna `/vuxen/bjud-in`, skapa och kopiera kod, öppna `/acceptera-inbjudan` i privat fönster, registrera den andra vuxna och logga in med det nya kontot. Kontrollera därefter att båda vuxna ser samma barn och kan skapa, tilldela och granska sysslor.
-- US-011 ska inte markeras som klar eller mergas till `main` före användarens manuella godkännande.
+- US-011 är mergad till `main` (`65b0eec`) och användargodkänd; `REQUIREMENTS.md`:s sex kriterier är markerade `[x]`.
 
 ## Kända kvarvarande saker
 
