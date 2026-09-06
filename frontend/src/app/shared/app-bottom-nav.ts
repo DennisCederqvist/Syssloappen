@@ -139,7 +139,7 @@ export class AppBottomNav {
     const currentUrl = decodeURIComponent(this.router.url.split(/[?#]/, 1)[0]);
     const navigation = isChild
       ? [
-          { label: 'Idag', icon: '⌂', route: '/barn' },
+          { label: 'Sysslor', icon: '📋', route: '/barn' },
           { label: 'Belöningar', icon: '★', route: '/barn/beloningar' },
           { label: 'Önskningar', icon: '♡', route: '/barn/onskningar' },
         ]

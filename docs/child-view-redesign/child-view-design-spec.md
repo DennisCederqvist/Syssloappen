@@ -12,9 +12,15 @@ tablet layout as the primary breakpoint to match.
 
 ## Status
 
-"Idag" (`child-home-page`) is rebuilt on the new system. "Belöningar" and
-"Önskningar" still use the old ad-hoc styling + the shared `AppBottomNav` —
-bringing them in line with this spec is the next step, not yet done.
+"Idag" (`child-home-page`) and "Belöningar" (`child-rewards-page`) are
+rebuilt on the new system. "Önskningar" still uses the old ad-hoc styling +
+the shared `AppBottomNav` — bringing it in line with this spec is the next
+step, not yet done.
+
+The nav's first item is "Sysslor" (not "Idag") with a clipboard-checkmark
+icon (not a house) — renamed/re-iconed everywhere, including the legacy
+`AppBottomNav` still serving Önskningar, so the label is consistent across
+the whole child view even before every page is restyled.
 
 ## Why
 
@@ -81,6 +87,17 @@ separate from the (now legacy) tokens the child view used to share with it.
   the "Jag är klar!" CTA. Also covers `NeedsRedo` (still actionable) with an
   adult-comment banner.
 - `ChildStatusCard` — `PendingApproval` (waiting on review, no CTA).
+- `ChildRewardCard` — same tilted/wobbling pastel-card shape as
+  `ChildTaskCard`, plus an image-placeholder tile (dashed border, generic
+  gift icon) above the name/description. Rewards will eventually get a
+  parent-uploaded photo so a child who can't read yet still recognizes what
+  they're picking — that upload feature doesn't exist yet, this is just
+  where the photo will go. The "Önska belöning" CTA disables (dimmed, not
+  hidden) when the child can't afford it or a request is already in flight.
+- `palette.ts` / `card-motion.ts` — the rotating 5-color palette and the
+  random-tilt-plus-random-wobble scheduler are shared, not duplicated per
+  card type. Any new child card type should reuse both rather than
+  re-implementing them.
 
 A celebratory approval animation (confetti + "Bra jobbat!") was prototyped
 and removed again — there's no live push signal for "an adult just approved

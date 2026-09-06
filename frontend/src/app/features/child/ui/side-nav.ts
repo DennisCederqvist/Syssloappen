@@ -4,12 +4,12 @@ import { Router, RouterLink } from '@angular/router';
 interface ChildNavItem {
   label: string;
   route: string;
-  icon: 'home' | 'star' | 'heart' | 'gear';
+  icon: 'tasks' | 'star' | 'heart' | 'gear';
   pinned?: boolean;
 }
 
 const NAV_ITEMS: ChildNavItem[] = [
-  { label: 'Idag', route: '/barn', icon: 'home' },
+  { label: 'Sysslor', route: '/barn', icon: 'tasks' },
   { label: 'Belöningar', route: '/barn/beloningar', icon: 'star' },
   { label: 'Önskningar', route: '/barn/onskningar', icon: 'heart' },
   { label: 'Inställningar', route: '/barn/installningar', icon: 'gear', pinned: true },
@@ -58,9 +58,12 @@ const NAV_ITEMS: ChildNavItem[] = [
               aria-hidden="true"
             >
               @switch (item.icon) {
-                @case ('home') {
-                  <path d="M4 11.5 12 4l8 7.5" />
-                  <path d="M6 10v9a1 1 0 0 0 1 1h3v-5h4v5h3a1 1 0 0 0 1-1v-9" />
+                @case ('tasks') {
+                  <rect x="9" y="3" width="6" height="3.5" rx="1" />
+                  <path
+                    d="M9 4.75H7.5A1.5 1.5 0 0 0 6 6.25v13.5A1.5 1.5 0 0 0 7.5 21.25h9a1.5 1.5 0 0 0 1.5-1.5V6.25a1.5 1.5 0 0 0-1.5-1.5H15"
+                  />
+                  <path d="M9 13.2l2.2 2.2L15.5 11" />
                 }
                 @case ('star') {
                   <path

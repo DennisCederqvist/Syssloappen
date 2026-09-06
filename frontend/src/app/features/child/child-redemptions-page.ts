@@ -25,7 +25,7 @@ export class ChildRedemptionsPage implements OnInit {
       .slice(0, 5),
   );
   readonly navItems: NavItem[] = [
-    { label: 'Idag', icon: 'H', route: '/barn' },
+    { label: 'Sysslor', icon: 'H', route: '/barn' },
     { label: 'Belöningar', icon: '*', route: '/barn/beloningar' },
     { label: 'Önskningar', icon: '+', active: true, route: '/barn/onskningar' },
   ];

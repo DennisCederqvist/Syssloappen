@@ -4,21 +4,14 @@ import { finalize, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { focusAfterRender } from '../../shared/focus';
 import { vibrateOnTap } from '../../shared/haptics';
+import { ChildCardMotion } from './ui/card-motion';
+import { CHILD_CARD_PALETTES } from './ui/palette';
 import { ChildPageHeader } from './ui/page-header';
 import { ChildSideNav } from './ui/side-nav';
 import { ChildStatusCard } from './ui/status-card';
 import { ChildTaskCard, ChildTaskCardPalette } from './ui/task-card';
 import { ChildChoreAssignment } from './child-chores.models';
 import { ChildChoresService } from './child-chores.service';
-
-const PALETTES: ChildTaskCardPalette[] = ['blue', 'pink', 'yellow', 'peach', 'mint'];
-
-// One card wobbles at a time, at a random moment — feels alive rather than a
-// mechanical loop. 3–7s between events averages about one wobble every 5s;
-// short enough to catch the eye now and then, long enough not to be twitchy.
-const MIN_WOBBLE_INTERVAL_MS = 3000;
-const MAX_WOBBLE_INTERVAL_MS = 7000;
-const WOBBLE_EVENT_MS = 900;
 
 @Component({
   selector: 'app-child-home-page',
@@ -28,15 +21,12 @@ const WOBBLE_EVENT_MS = 900;
 export class ChildHomePage implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly childChoresService = inject(ChildChoresService);
-  private wobbleTimeout?: ReturnType<typeof setTimeout>;
-  private wobbleClearTimeout?: ReturnType<typeof setTimeout>;
-  private lastWobbledAssignmentId: number | null = null;
-  // Cached so each card keeps the same random tilt across re-renders instead
-  // of re-rolling (and visibly jittering) on every change-detection pass.
-  private readonly tiltByAssignmentId = new Map<number, number>();
+  private readonly motion = new ChildCardMotion(() =>
+    this.actionableAssignments().map((assignment) => assignment.assignmentId),
+  );
 
   readonly childName = computed(() => this.auth.user()?.name || 'där');
-  readonly wobblingAssignmentId = signal<number | null>(null);
+  readonly wobblingAssignmentId = this.motion.wobblingId;
   readonly assignments = signal<ChildChoreAssignment[]>([]);
   readonly availablePoints = signal(0);
   readonly isLoading = signal(true);
@@ -59,37 +49,11 @@ export class ChildHomePage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadPage();
-    this.scheduleNextWobble();
+    this.motion.start();
   }
 
   ngOnDestroy(): void {
-    clearTimeout(this.wobbleTimeout);
-    clearTimeout(this.wobbleClearTimeout);
-  }
-
-  private scheduleNextWobble(): void {
-    const delayMs =
-      MIN_WOBBLE_INTERVAL_MS + Math.random() * (MAX_WOBBLE_INTERVAL_MS - MIN_WOBBLE_INTERVAL_MS);
-    this.wobbleTimeout = setTimeout(() => this.triggerRandomWobble(), delayMs);
-  }
-
-  private triggerRandomWobble(): void {
-    const candidates = this.actionableAssignments();
-    if (candidates.length > 0) {
-      // Avoid picking the same card twice in a row when there's a choice.
-      const pool =
-        candidates.length > 1
-          ? candidates.filter((a) => a.assignmentId !== this.lastWobbledAssignmentId)
-          : candidates;
-      const chosen = pool[Math.floor(Math.random() * pool.length)];
-      this.lastWobbledAssignmentId = chosen.assignmentId;
-      this.wobblingAssignmentId.set(chosen.assignmentId);
-      this.wobbleClearTimeout = setTimeout(
-        () => this.wobblingAssignmentId.set(null),
-        WOBBLE_EVENT_MS,
-      );
-    }
-    this.scheduleNextWobble();
+    this.motion.stop();
   }
 
   loadPage(): void {
@@ -167,19 +131,10 @@ export class ChildHomePage implements OnInit, OnDestroy {
   }
 
   paletteFor(index: number): ChildTaskCardPalette {
-    return PALETTES[index % PALETTES.length];
+    return CHILD_CARD_PALETTES[index % CHILD_CARD_PALETTES.length];
   }
 
-  // Random per card (not per position) so a 2-column grid doesn't end up
-  // with every left card leaning one way and every right card the other —
-  // that read as a mirrored, forced pattern rather than a scattered pile.
   tiltFor(assignmentId: number): number {
-    let tilt = this.tiltByAssignmentId.get(assignmentId);
-    if (tilt === undefined) {
-      const magnitude = 1.5 + Math.random() * 1.5;
-      tilt = Math.random() < 0.5 ? -magnitude : magnitude;
-      this.tiltByAssignmentId.set(assignmentId, tilt);
-    }
-    return tilt;
+    return this.motion.tiltFor(assignmentId);
   }
 }

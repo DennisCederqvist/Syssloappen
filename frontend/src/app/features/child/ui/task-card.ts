@@ -1,14 +1,7 @@
 import { Component, input, output } from '@angular/core';
+import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
 
-export type ChildTaskCardPalette = 'blue' | 'pink' | 'yellow' | 'peach' | 'mint';
-
-const PALETTE_CLASSES: Record<ChildTaskCardPalette, string> = {
-  blue: 'bg-child-card-blue shadow-[4px_6px_0_var(--color-child-card-blue-shadow)]',
-  pink: 'bg-child-card-pink shadow-[4px_6px_0_var(--color-child-card-pink-shadow)]',
-  yellow: 'bg-child-card-yellow shadow-[4px_6px_0_var(--color-child-card-yellow-shadow)]',
-  peach: 'bg-child-card-peach shadow-[4px_6px_0_var(--color-child-card-peach-shadow)]',
-  mint: 'bg-child-card-mint shadow-[4px_6px_0_var(--color-child-card-mint-shadow)]',
-};
+export type ChildTaskCardPalette = ChildCardPalette;
 
 /** A single "today's chore" card: permanently tilted a couple degrees,
  * matching docs/barnvy mockup.png. The tilt itself is a plain inline style
@@ -99,6 +92,6 @@ export class ChildTaskCard {
   readonly done = output<void>();
 
   paletteClasses(): string {
-    return PALETTE_CLASSES[this.palette()];
+    return CHILD_CARD_PALETTE_CLASSES[this.palette()];
   }
 }

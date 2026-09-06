@@ -1,31 +1,42 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { finalize } from 'rxjs';
-import { AppBottomNav, NavItem } from '../../shared/app-bottom-nav';
-import { UserHeader } from '../../shared/user-header';
+import { AuthService } from '../../core/auth/auth.service';
+import { ChildCardMotion } from './ui/card-motion';
+import { CHILD_CARD_PALETTES, ChildCardPalette } from './ui/palette';
+import { ChildPageHeader } from './ui/page-header';
+import { ChildRewardCard } from './ui/reward-card';
+import { ChildSideNav } from './ui/side-nav';
 import { ChildReward } from './child-chores.models';
 import { ChildChoresService } from './child-chores.service';
 
 @Component({
   selector: 'app-child-rewards-page',
-  imports: [AppBottomNav, UserHeader],
+  imports: [ChildSideNav, ChildPageHeader, ChildRewardCard],
   templateUrl: './child-rewards-page.html',
 })
-export class ChildRewardsPage implements OnInit {
+export class ChildRewardsPage implements OnInit, OnDestroy {
+  private readonly auth = inject(AuthService);
   private readonly service = inject(ChildChoresService);
+  private readonly motion = new ChildCardMotion(() => this.rewards().map((reward) => reward.id));
+
+  readonly childName = computed(() => this.auth.user()?.name || 'där');
+  readonly wobblingRewardId = this.motion.wobblingId;
   readonly rewards = signal<ChildReward[]>([]);
   readonly availablePoints = signal(0);
   readonly loading = signal(true);
   readonly error = signal('');
   readonly busyId = signal<number | null>(null);
-  readonly navItems: NavItem[] = [
-    { label: 'Idag', icon: 'H', route: '/barn' },
-    { label: 'Belöningar', icon: '*', active: true, route: '/barn/beloningar' },
-    { label: 'Önskningar', icon: '+', route: '/barn/onskningar' },
-  ];
+
   ngOnInit(): void {
     this.load();
+    this.motion.start();
   }
+
+  ngOnDestroy(): void {
+    this.motion.stop();
+  }
+
   load(): void {
     this.loading.set(true);
     this.error.set('');
@@ -40,6 +51,7 @@ export class ChildRewardsPage implements OnInit {
         error: () => this.error.set('Belöningarna kunde inte hämtas. Försök igen.'),
       });
   }
+
   request(reward: ChildReward): void {
     if (this.busyId() !== null) return;
     this.busyId.set(reward.id);
@@ -59,5 +71,17 @@ export class ChildRewardsPage implements OnInit {
               : 'Belöningen kunde inte önskas. Försök igen.',
           ),
       });
+  }
+
+  canAfford(reward: ChildReward): boolean {
+    return this.availablePoints() >= reward.pointsCost;
+  }
+
+  paletteFor(index: number): ChildCardPalette {
+    return CHILD_CARD_PALETTES[index % CHILD_CARD_PALETTES.length];
+  }
+
+  tiltFor(rewardId: number): number {
+    return this.motion.tiltFor(rewardId);
   }
 }
