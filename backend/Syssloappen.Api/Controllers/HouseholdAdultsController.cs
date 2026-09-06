@@ -44,7 +44,7 @@ public sealed class HouseholdAdultsController(
             where user.HouseholdId == currentUser.HouseholdId
                 && role.Name == RoleNames.Adult
                 && user.DisconnectedAt == null
-            orderby user.NormalizedEmail
+            orderby user.Id == household.OwnerUserId descending, user.NormalizedEmail
             select new HouseholdAdultResponse(user.Id, user.Email!, user.Id == household.OwnerUserId))
             .ToListAsync();
 

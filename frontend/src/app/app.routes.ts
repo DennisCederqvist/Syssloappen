@@ -34,7 +34,10 @@ export const routes: Routes = [
   {
     path: 'vuxen/barn/:childId',
     canActivate: [adultGuard],
-    loadComponent: () => import('./features/adult/children/adult-child-profile-page').then((c) => c.AdultChildProfilePage),
+    loadComponent: () =>
+      import('./features/adult/children/adult-child-profile-page').then(
+        (c) => c.AdultChildProfilePage,
+      ),
   },
   {
     path: 'vuxen/installningar/barn',
@@ -47,6 +50,14 @@ export const routes: Routes = [
     canActivate: [adultGuard],
     loadComponent: () =>
       import('./features/adult/settings/adult-settings-page').then((c) => c.AdultSettingsPage),
+  },
+  {
+    path: 'vuxen/installningar/vuxna',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/household/adult-manage-adults-page').then(
+        (c) => c.AdultManageAdultsPage,
+      ),
   },
   {
     path: 'vuxen/historik',
@@ -75,22 +86,26 @@ export const routes: Routes = [
   {
     path: 'barn/beloningar',
     canActivate: [childGuard],
-    loadComponent: () => import('./features/child/child-rewards-page').then((c) => c.ChildRewardsPage),
+    loadComponent: () =>
+      import('./features/child/child-rewards-page').then((c) => c.ChildRewardsPage),
   },
   {
     path: 'barn/onskningar',
     canActivate: [childGuard],
-    loadComponent: () => import('./features/child/child-redemptions-page').then((c) => c.ChildRedemptionsPage),
+    loadComponent: () =>
+      import('./features/child/child-redemptions-page').then((c) => c.ChildRedemptionsPage),
   },
   {
     path: 'barn/beloningar',
     canActivate: [childGuard],
-    loadComponent: () => import('./features/child/child-rewards-page').then((c) => c.ChildRewardsPage),
+    loadComponent: () =>
+      import('./features/child/child-rewards-page').then((c) => c.ChildRewardsPage),
   },
   {
     path: 'barn/onskningar',
     canActivate: [childGuard],
-    loadComponent: () => import('./features/child/child-redemptions-page').then((c) => c.ChildRedemptionsPage),
+    loadComponent: () =>
+      import('./features/child/child-redemptions-page').then((c) => c.ChildRedemptionsPage),
   },
   { path: '**', redirectTo: '' },
 ];

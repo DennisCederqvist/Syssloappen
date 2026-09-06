@@ -17,10 +17,19 @@
 
     <div class="mt-6 rounded-lg border border-adult-border bg-adult-surface p-5">
       @if (invitation(); as result) {
-        <div class="rounded-lg border border-adult-border bg-adult-accent-soft p-5 text-center" aria-live="polite">
-          <p class="text-xs font-semibold tracking-wider text-adult-accent-dark uppercase">Engångskod</p>
-          <p class="mt-2 text-3xl font-semibold tracking-[0.14em] text-adult-text">{{ result.code }}</p>
-          <p class="mt-2 text-sm text-adult-text-secondary">Giltig till {{ result.expiresAt | date: 'short' }}</p>
+        <div
+          class="rounded-lg border border-adult-border bg-adult-accent-soft p-5 text-center"
+          aria-live="polite"
+        >
+          <p class="text-xs font-semibold tracking-wider text-adult-accent-dark uppercase">
+            Engångskod
+          </p>
+          <p class="mt-2 text-3xl font-semibold tracking-[0.14em] text-adult-text">
+            {{ result.code }}
+          </p>
+          <p class="mt-2 text-sm text-adult-text-secondary">
+            Giltig till {{ result.expiresAt | date: 'short' }}
+          </p>
           <button type="button" adultSecondaryTintButton class="mt-4" (click)="copyCode()">
             {{ copied() ? 'Kopierad' : 'Kopiera kod' }}
           </button>
@@ -43,5 +52,57 @@
         </button>
       }
     </div>
+
+    <section class="mt-6" aria-labelledby="household-adults-title">
+      <div class="flex items-center justify-between gap-2">
+        <h2 id="household-adults-title" class="text-[15px] font-semibold text-adult-text">
+          Familjens vuxna
+        </h2>
+        <a
+          routerLink="/vuxen/installningar/vuxna"
+          class="text-sm font-semibold text-adult-accent underline"
+        >
+          Hantera
+        </a>
+      </div>
+
+      @if (isLoadingAdults()) {
+        <div
+          class="mt-2 h-16 animate-pulse rounded-lg border border-adult-border bg-adult-surface"
+          role="status"
+        >
+          <span class="sr-only">Hämtar familjens vuxna…</span>
+        </div>
+      } @else {
+        <div class="mt-2 grid gap-2">
+          @for (adult of adults(); track adult.id) {
+            <div
+              class="flex items-center gap-3 rounded-lg border border-adult-border bg-adult-surface p-3"
+            >
+              <span
+                class="grid size-9 shrink-0 place-items-center rounded-full bg-adult-accent-soft text-sm font-semibold text-adult-accent-dark"
+                aria-hidden="true"
+              >
+                {{ adult.email.slice(0, 1).toUpperCase() }}
+              </span>
+              <span class="min-w-0 flex-1 truncate text-[15px] font-medium text-adult-text">{{
+                adult.email
+              }}</span>
+              @if (adult.isOwner) {
+                <span
+                  class="shrink-0 rounded-full border border-adult-accent/25 bg-adult-accent-soft px-2 py-0.5 text-xs font-semibold text-adult-accent-dark"
+                  >Huvudägare</span
+                >
+              } @else {
+                <span
+                  class="shrink-0 rounded-full border border-adult-border bg-adult-bg px-2 py-0.5 text-xs font-semibold text-adult-text-secondary"
+                  >Inbjuden</span
+                >
+              }
+            </div>
+          }
+        </div>
+      }
+    </section>
   </main>
 </div>

@@ -57,7 +57,9 @@ export class AuthService {
     return this.http.post<HouseholdInvitation>('/api/household/invitations', {});
   }
 
-  registerInvitedAdult(request: RegisterInvitedAdultRequest): Observable<RegisterInvitedAdultResponse> {
+  registerInvitedAdult(
+    request: RegisterInvitedAdultRequest,
+  ): Observable<RegisterInvitedAdultResponse> {
     return this.http.post<RegisterInvitedAdultResponse>('/api/auth/register/invited', request);
   }
 
@@ -80,6 +82,14 @@ export class AuthService {
         this.sessionChecked = true;
       }),
     );
+  }
+
+  /** For when the backend session is already known to be invalid (e.g. the user
+   * just disconnected themselves from their household) — clears local state
+   * without a round-trip to a logout endpoint that would likely 401 anyway. */
+  forgetSession(): void {
+    this.userState.set(null);
+    this.sessionChecked = true;
   }
 
   homeFor(role: UserRole): string {
