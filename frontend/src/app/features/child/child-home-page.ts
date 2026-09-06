@@ -31,6 +31,9 @@ export class ChildHomePage implements OnInit, OnDestroy {
   private wobbleTimeout?: ReturnType<typeof setTimeout>;
   private wobbleClearTimeout?: ReturnType<typeof setTimeout>;
   private lastWobbledAssignmentId: number | null = null;
+  // Cached so each card keeps the same random tilt across re-renders instead
+  // of re-rolling (and visibly jittering) on every change-detection pass.
+  private readonly tiltByAssignmentId = new Map<number, number>();
 
   readonly childName = computed(() => this.auth.user()?.name || 'där');
   readonly wobblingAssignmentId = signal<number | null>(null);
@@ -167,7 +170,16 @@ export class ChildHomePage implements OnInit, OnDestroy {
     return PALETTES[index % PALETTES.length];
   }
 
-  tiltFor(index: number): number {
-    return index % 2 === 0 ? -2 : 2;
+  // Random per card (not per position) so a 2-column grid doesn't end up
+  // with every left card leaning one way and every right card the other —
+  // that read as a mirrored, forced pattern rather than a scattered pile.
+  tiltFor(assignmentId: number): number {
+    let tilt = this.tiltByAssignmentId.get(assignmentId);
+    if (tilt === undefined) {
+      const magnitude = 1.5 + Math.random() * 1.5;
+      tilt = Math.random() < 0.5 ? -magnitude : magnitude;
+      this.tiltByAssignmentId.set(assignmentId, tilt);
+    }
+    return tilt;
   }
 }

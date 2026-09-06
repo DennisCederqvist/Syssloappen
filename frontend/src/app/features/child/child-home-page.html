@@ -79,7 +79,7 @@
               [reviewComment]="assignment.status === 'NeedsRedo' ? assignment.reviewComment : null"
               [points]="assignment.points"
               [palette]="paletteFor(i)"
-              [tiltDeg]="tiltFor(i)"
+              [tiltDeg]="tiltFor(assignment.assignmentId)"
               [wobbling]="wobblingAssignmentId() === assignment.assignmentId"
               [submitting]="isSubmitting(assignment.assignmentId)"
               [errorMessage]="submissionErrors()[assignment.assignmentId] || null"

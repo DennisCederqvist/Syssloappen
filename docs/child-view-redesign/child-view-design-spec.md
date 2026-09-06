@@ -33,17 +33,17 @@ or "level up" language anywhere.
 
 ## Color
 
-| Token                                                  | Value                 | Use                                                              |
-| ------------------------------------------------------ | --------------------- | ---------------------------------------------------------------- |
-| `child-nav-bg`                                         | `#f4f8ff`             | Sidebar/bottom-nav background (page itself stays white)          |
-| `child-bg`                                             | `#ffffff`             | Page background                                                  |
-| `child-text`                                           | `#1f2a37`             | Headings, card titles                                            |
-| `child-text-secondary`                                 | `#4d5561`             | Body/meta text, subtitles (AA contrast against every card color) |
-| `child-accent`                                         | `#0b6e5a`             | Active nav icon/label (AA contrast against white/nav-bg)         |
-| `child-star-fill` / `child-star-stroke`                | `#ffc93c` / `#c99400` | Every star icon (points)                                         |
-| `child-cta-from` / `child-cta-to`                      | `#7fe0c8` / `#4fc9a8` | "Jag är klar!" button gradient                                   |
-| `child-cta-shadow`                                     | `#3aa88d`             | That button's offset shadow                                      |
-| `child-card-{blue,pink,yellow,peach,mint}` + `-shadow` | see `styles.css`      | Rotating task-card palette                                       |
+| Token                                                  | Value                 | Use                                                                                                                                                                        |
+| ------------------------------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `child-nav-bg`                                         | `#f4f8ff`             | Sidebar/bottom-nav background                                                                                                                                              |
+| `child-bg`                                             | `#f2ede1`             | Page background — a warm off-white/bone, not pure white, so white cards/badges (points pill, motivation banner) read as distinct surfaces instead of melting into the page |
+| `child-text`                                           | `#1f2a37`             | Headings, card titles                                                                                                                                                      |
+| `child-text-secondary`                                 | `#4d5561`             | Body/meta text, subtitles (AA contrast against every card color)                                                                                                           |
+| `child-accent`                                         | `#0b6e5a`             | Active nav icon/label (AA contrast against white/nav-bg)                                                                                                                   |
+| `child-star-fill` / `child-star-stroke`                | `#ffc93c` / `#c99400` | Every star icon (points)                                                                                                                                                   |
+| `child-cta-from` / `child-cta-to`                      | `#7fe0c8` / `#4fc9a8` | "Jag är klar!" button gradient                                                                                                                                             |
+| `child-cta-shadow`                                     | `#3aa88d`             | That button's offset shadow                                                                                                                                                |
+| `child-card-{blue,pink,yellow,peach,mint}` + `-shadow` | see `styles.css`      | Rotating task-card palette                                                                                                                                                 |
 
 All defined as `@theme` tokens in `frontend/src/styles.css`, kept separate
 from the adult tokens the same way the adult redesign kept its tokens
@@ -56,13 +56,17 @@ separate from the (now legacy) tokens the child view used to share with it.
 - Every shadow simulates a light source from the top-left: offset
   **down-and-right** (`4px 6px 0 <color>`, not `0 6px 0`). Applies to every
   card and button in the child view, not just task cards.
-- Task cards get a permanent tilt (`--tilt`, roughly ±2°, alternating per
-  card, applied as a plain inline `rotate` style) plus an idle "wobble" — a
-  one-shot `child-card-wobble` CSS animation (`styles.css`, ~0.9s, two quick
-  flicks off-rest and back) that a JS scheduler in `child-home-page.ts`
-  triggers on a **random card at a random interval** (3–7s apart, averaging
-  about one wobble every 5s) rather than a fixed per-card loop — it's meant
-  to feel alive, not like a mechanical wave sweeping across the cards.
+- Task cards get a permanent tilt: a random magnitude (1.5–3°) and random
+  sign per card, cached per assignment id in `child-home-page.ts` and applied
+  as a plain inline `rotate` style. Deliberately random rather than
+  alternating by grid position — alternating made every left-column card
+  lean one way and every right-column card lean the other, which read as a
+  mirrored, forced pattern rather than a scattered pile.
+- Plus an idle "wobble" — a one-shot `child-card-wobble` CSS animation
+  (`styles.css`, ~0.9s, two quick flicks off-rest and back) that a JS
+  scheduler in `child-home-page.ts` triggers on a **random card at a random
+  interval** (3–7s apart, averaging about one wobble every 5s) rather than a
+  fixed per-card loop — it's meant to feel alive, not mechanical.
 - No XP/leveling language. "Points" only.
 
 ## Components (`frontend/src/app/features/child/ui/`)
