@@ -7,7 +7,7 @@ using Syssloappen.Api.Data;
 
 namespace Syssloappen.Api.Authentication;
 
-public sealed class ChildSessionCookieEvents(
+public sealed class SessionCookieEvents(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
     TimeProvider timeProvider) : CookieAuthenticationEvents
@@ -15,6 +15,12 @@ public sealed class ChildSessionCookieEvents(
     public override async Task ValidatePrincipal(CookieValidatePrincipalContext context)
     {
         var principal = context.Principal;
+
+        if (principal?.IsInRole(RoleNames.Adult) == true)
+        {
+            await ValidateAdultAsync(context);
+            return;
+        }
 
         if (principal?.IsInRole(RoleNames.Child) != true)
         {
@@ -82,6 +88,29 @@ public sealed class ChildSessionCookieEvents(
         }
 
         await dbContext.SaveChangesAsync();
+    }
+
+    private async Task ValidateAdultAsync(CookieValidatePrincipalContext context)
+    {
+        var userId = context.Principal!.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            await RejectAsync(context);
+            return;
+        }
+
+        var user = await dbContext.Users.AsNoTracking()
+            .SingleOrDefaultAsync(candidate => candidate.Id == userId);
+
+        // A disconnected Adult's cookie is rejected on their very next request, even
+        // though it was validly issued before the disconnection happened.
+        if (user is null
+            || user.DisconnectedAt is not null
+            || !await userManager.IsInRoleAsync(user, RoleNames.Adult))
+        {
+            await RejectAsync(context);
+        }
     }
 
     public override Task RedirectToLogin(RedirectContext<CookieAuthenticationOptions> context)

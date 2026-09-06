@@ -26,10 +26,11 @@ builder.Services.ConfigureApplicationCookie(options =>
         ? CookieSecurePolicy.SameAsRequest
         : CookieSecurePolicy.Always;
     options.SlidingExpiration = false;
-    // Custom events validate Child sessions and return API status codes instead of redirects.
-    options.EventsType = typeof(ChildSessionCookieEvents);
+    // Custom events validate Adult and Child sessions and return API status codes
+    // instead of redirects.
+    options.EventsType = typeof(SessionCookieEvents);
 });
-builder.Services.AddScoped<ChildSessionCookieEvents>();
+builder.Services.AddScoped<SessionCookieEvents>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
