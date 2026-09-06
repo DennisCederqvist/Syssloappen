@@ -238,6 +238,13 @@ public sealed class AuthController(
         var roles = await userManager.GetRolesAsync(user);
         var role = roles.SingleOrDefault() ?? string.Empty;
 
+        // A Child's display name lives on ChildProfile, not ApplicationUser, so it
+        // must be looked up separately — otherwise a session restore (e.g. a tablet
+        // reload) would lose the name that pairing originally provided.
+        var childProfile = role == RoleNames.Child
+            ? await dbContext.ChildProfiles.SingleOrDefaultAsync(child => child.UserId == user.Id)
+            : null;
+
         return new CurrentUserResponse(
             user.Id,
             user.Email,
@@ -246,7 +253,9 @@ public sealed class AuthController(
             user.FirstName,
             user.LastName,
             user.Nickname,
-            user.Nickname ?? user.FirstName);
+            user.Nickname ?? user.FirstName,
+            childProfile?.Id,
+            childProfile?.Name);
     }
 
     // Optional profile fields are trimmed and stored as null rather than empty, so a

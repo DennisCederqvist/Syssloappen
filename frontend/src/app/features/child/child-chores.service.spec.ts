@@ -42,6 +42,8 @@ describe('ChildChoresService', () => {
     service.requestReward(17, '85e3d637-9016-4401-a4c1-0e974844b027').subscribe();
     const request = http.expectOne('/api/child/reward-redemptions');
     expect(request.request.body).toEqual({ rewardId: 17 });
-    expect(request.request.headers.get('Idempotency-Key')).toBe('85e3d637-9016-4401-a4c1-0e974844b027');
+    expect(request.request.headers.get('Idempotency-Key')).toBe(
+      '85e3d637-9016-4401-a4c1-0e974844b027',
+    );
   });
 });

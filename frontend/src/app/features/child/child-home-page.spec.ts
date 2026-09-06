@@ -76,7 +76,7 @@ describe('ChildHomePage', () => {
     ]);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Behöver göras om');
+    expect(fixture.nativeElement.textContent).toContain('Kommentar från en vuxen');
     expect(fixture.nativeElement.textContent).toContain('Glöm inte vattnet.');
     expect(
       fixture.nativeElement.querySelector('button[aria-label="Rapportera Mata katten som klar"]'),
@@ -100,7 +100,9 @@ describe('ChildHomePage', () => {
     expect(component.assignments()[0].status).toBe('PendingApproval');
     expect(component.assignments()[0].reviewComment).toBeNull();
     expect(component.isSubmitting(7)).toBe(false);
-    expect(fixture.nativeElement.textContent).toContain('Väntar på godkännande');
+    expect(fixture.nativeElement.textContent).toContain(
+      'En vuxen tittar på uppgiften innan poängen delas ut',
+    );
   });
 
   it('does not offer submission for pending or approved assignments', () => {

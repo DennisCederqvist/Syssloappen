@@ -23,8 +23,16 @@ export interface SubmittedChildChoreAssignment {
   submittedAt: string;
 }
 
-export interface ChildReward { id: number; name: string; description: string | null; pointsCost: number; }
-export interface ChildRewards { availablePoints: number; rewards: ChildReward[]; }
+export interface ChildReward {
+  id: number;
+  name: string;
+  description: string | null;
+  pointsCost: number;
+}
+export interface ChildRewards {
+  availablePoints: number;
+  rewards: ChildReward[];
+}
 export type RewardRedemptionStatus = 'Requested' | 'Approved' | 'Cancelled' | 'Delivered';
 
 export interface RewardRedemption {

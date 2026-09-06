@@ -1,20 +1,31 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
-import { AppBottomNav, NavItem } from '../../shared/app-bottom-nav';
-import { UserHeader } from '../../shared/user-header';
+import { AuthService } from '../../core/auth/auth.service';
 import { focusAfterRender } from '../../shared/focus';
-import { ChildChoreAssignment, ChildChoreStatus } from './child-chores.models';
+import { vibrateOnTap } from '../../shared/haptics';
+import { ChildCelebration } from './ui/celebration';
+import { ChildPageHeader } from './ui/page-header';
+import { ChildSideNav } from './ui/side-nav';
+import { ChildStatusCard } from './ui/status-card';
+import { ChildTaskCard, ChildTaskCardPalette } from './ui/task-card';
+import { ChildChoreAssignment } from './child-chores.models';
 import { ChildChoresService } from './child-chores.service';
+
+const PALETTES: ChildTaskCardPalette[] = ['blue', 'pink', 'yellow', 'peach', 'mint'];
+const WOBBLE_DELAYS_S = [0, 4, 6, 7, 10, 13];
 
 @Component({
   selector: 'app-child-home-page',
-  imports: [AppBottomNav, UserHeader],
+  imports: [ChildSideNav, ChildPageHeader, ChildTaskCard, ChildStatusCard, ChildCelebration],
   templateUrl: './child-home-page.html',
 })
 export class ChildHomePage implements OnInit {
+  private readonly auth = inject(AuthService);
   private readonly childChoresService = inject(ChildChoresService);
+  private readonly celebration = viewChild.required(ChildCelebration);
 
+  readonly childName = computed(() => this.auth.user()?.name || 'där');
   readonly assignments = signal<ChildChoreAssignment[]>([]);
   readonly availablePoints = signal(0);
   readonly isLoading = signal(true);
@@ -27,18 +38,13 @@ export class ChildHomePage implements OnInit {
   readonly pendingAssignments = computed(() =>
     this.assignments().filter((assignment) => assignment.status === 'PendingApproval'),
   );
-  readonly recentlyApprovedAssignments = computed(() =>
-    this.assignments()
-      .filter((assignment) => assignment.status === 'Approved')
-      .slice(0, 5),
-  );
 
-  readonly navItems: NavItem[] = [
-    { label: 'Idag', icon: '⌂', active: true, route: '/barn' },
-    { label: 'Belöningar', icon: '★', route: '/barn/beloningar' },
-    { label: 'Önskningar', icon: '♡', route: '/barn/onskningar' },
-    { label: 'Profil', icon: '☺' },
-  ];
+  readonly motivationMessage = computed(() => {
+    const remaining = this.actionableAssignments().length;
+    if (remaining === 0) return 'Du är klar med allt för idag — bra jobbat!';
+    if (remaining === 1) return 'Du har 1 syssla kvar idag — du fixar det!';
+    return `Du har ${remaining} sysslor kvar idag — du fixar det!`;
+  });
 
   ngOnInit(): void {
     this.loadPage();
@@ -64,6 +70,7 @@ export class ChildHomePage implements OnInit {
   submitAssignment(assignment: ChildChoreAssignment): void {
     if (!this.canSubmit(assignment) || this.isSubmitting(assignment.assignmentId)) return;
 
+    vibrateOnTap();
     this.submittingAssignmentIds.update((ids) => new Set(ids).add(assignment.assignmentId));
     this.submissionErrors.update(({ [assignment.assignmentId]: _, ...errors }) => errors);
 
@@ -109,6 +116,10 @@ export class ChildHomePage implements OnInit {
       });
   }
 
+  playCelebrationDemo(): void {
+    this.celebration().play();
+  }
+
   canSubmit(assignment: ChildChoreAssignment): boolean {
     return assignment.status === 'Assigned' || assignment.status === 'NeedsRedo';
   }
@@ -117,16 +128,15 @@ export class ChildHomePage implements OnInit {
     return this.submittingAssignmentIds().has(assignmentId);
   }
 
-  statusLabel(status: ChildChoreStatus): string {
-    switch (status) {
-      case 'Assigned':
-        return 'Att göra';
-      case 'PendingApproval':
-        return 'Väntar på godkännande';
-      case 'NeedsRedo':
-        return 'Behöver göras om';
-      case 'Approved':
-        return 'Godkänd';
-    }
+  paletteFor(index: number): ChildTaskCardPalette {
+    return PALETTES[index % PALETTES.length];
+  }
+
+  tiltFor(index: number): number {
+    return index % 2 === 0 ? -2 : 2;
+  }
+
+  wobbleDelayFor(index: number): number {
+    return WOBBLE_DELAYS_S[index % WOBBLE_DELAYS_S.length];
   }
 }

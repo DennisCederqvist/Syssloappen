@@ -29,6 +29,35 @@
   --color-adult-danger-text: #b5433a;
   --color-adult-points-bg: #fbf1dd;
   --color-adult-points-text: #92650f;
+
+  /* Child-view design system (docs/child-view-redesign/child-view-design-spec.md).
+     Bubbly/playful, deliberately separate from the calmer adult tokens above. */
+  --font-display: 'Fredoka', 'Segoe UI', sans-serif;
+  --font-child-sans: 'Inter', 'Segoe UI', sans-serif;
+  --color-child-nav-bg: #f4f8ff;
+  --color-child-bg: #ffffff;
+  --color-child-text: #1f2a37;
+  --color-child-text-secondary: #4d5561;
+  --color-child-accent: #0b6e5a;
+  --color-child-avatar-a-bg: #7fe0c8;
+  --color-child-avatar-a-icon: #0f6e5c;
+  --color-child-avatar-b-bg: #ffd9a0;
+  --color-child-avatar-b-icon: #8a5a1f;
+  --color-child-star-fill: #ffc93c;
+  --color-child-star-stroke: #c99400;
+  --color-child-cta-from: #7fe0c8;
+  --color-child-cta-to: #4fc9a8;
+  --color-child-cta-shadow: #3aa88d;
+  --color-child-card-blue: #eaf6ff;
+  --color-child-card-blue-shadow: #cbe6f7;
+  --color-child-card-pink: #ffe3e3;
+  --color-child-card-pink-shadow: #f0c4c4;
+  --color-child-card-yellow: #fff3d6;
+  --color-child-card-yellow-shadow: #f0dfab;
+  --color-child-card-peach: #fff1de;
+  --color-child-card-peach-shadow: #f0dcc0;
+  --color-child-card-mint: #e2efec;
+  --color-child-card-mint-shadow: #c9ded8;
 }
 
 :root {
@@ -87,6 +116,31 @@ a {
   }
   @keyframes page-enter {
     from {
+      opacity: 0;
+    }
+  }
+
+  /* Child task-card idle wobble: rests at its permanent --tilt, flicks a couple
+     degrees off and back once per ~14s cycle. Staggered per-card via
+     animation-delay so cards don't wobble in sync. */
+  @keyframes child-card-wobble {
+    0%,
+    88%,
+    100% {
+      rotate: var(--tilt, 0deg);
+    }
+    94% {
+      rotate: calc(var(--tilt, 0deg) + 1.6deg);
+    }
+  }
+
+  @keyframes child-confetti-piece {
+    0% {
+      transform: translate(0, 0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--dx), var(--dy)) rotate(var(--spin));
       opacity: 0;
     }
   }

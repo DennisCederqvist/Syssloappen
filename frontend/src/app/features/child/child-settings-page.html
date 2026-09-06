@@ -1,0 +1,47 @@
+<div class="page-enter min-h-dvh bg-child-bg pb-28 md:flex md:pb-0">
+  <app-child-side-nav />
+
+  <main class="mx-auto w-full max-w-5xl flex-1 px-5 py-6 sm:px-8 md:py-8">
+    <app-child-page-header
+      [name]="childName()"
+      subtitle="Inställningar"
+      [points]="availablePoints()"
+    />
+
+    <section class="mt-7" aria-labelledby="history-title">
+      <h2 id="history-title" class="font-display text-xl font-semibold text-child-text">
+        Senast godkända
+      </h2>
+
+      @if (isLoading()) {
+        <div
+          class="mt-4 flex min-h-32 items-center justify-center rounded-[30px] bg-white p-6 text-center shadow-[4px_6px_0_rgba(0,0,0,0.04)]"
+          role="status"
+        >
+          <p class="font-semibold text-child-text-secondary">Hämtar din historik…</p>
+        </div>
+      } @else if (loadError()) {
+        <p class="mt-4 font-semibold text-red-700" role="alert">{{ loadError() }}</p>
+      } @else if (recentlyApprovedAssignments().length === 0) {
+        <p class="mt-4 text-child-text-secondary">
+          Inga godkända sysslor än — de dyker upp här när en vuxen har sagt bra jobbat!
+        </p>
+      } @else {
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          @for (assignment of recentlyApprovedAssignments(); track assignment.assignmentId) {
+            <article
+              class="rounded-[30px] bg-child-card-mint p-5 shadow-[4px_6px_0_var(--color-child-card-mint-shadow)]"
+            >
+              <h3 class="font-display text-lg font-semibold text-child-text">
+                {{ assignment.title }}
+              </h3>
+              <p class="mt-2 font-semibold text-child-text">
+                Godkänt! {{ assignment.points }} poäng är tillagda i ditt saldo.
+              </p>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </main>
+</div>

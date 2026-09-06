@@ -8,4 +8,6 @@ public sealed record CurrentUserResponse(
     string? FirstName,
     string? LastName,
     string? Nickname,
-    string? DisplayName);
+    string? DisplayName,
+    int? ChildId,
+    string? Name);

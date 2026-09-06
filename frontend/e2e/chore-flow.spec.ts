@@ -170,13 +170,14 @@ test('hela syssleflödet fungerar mellan Adult och Child', async ({ browser }) =
   await childPage.getByRole('button', { name: 'Koppla min enhet' }).click();
   await expect(childPage).toHaveURL(/\/barn$/);
 
-  const pointsSection = childPage.locator('section[aria-labelledby="points-title"]');
   const childChore = childPage.getByRole('article').filter({ hasText: choreTitle });
+  // Scoped to the header landmark: a task card's own points badge can otherwise
+  // false-match too (e.g. "10 poäng" contains the substring "0 poäng").
+  const childPointsPill = childPage.locator('header').getByLabel(/^\d+ poäng$/);
   await expectResponsiveAndAccessible(childPage);
-  await expect(childChore).toContainText('Att göra');
-  await expect(pointsSection.getByLabel('0 poäng')).toBeVisible();
+  await expect(childPointsPill).toHaveText(/^0$/);
   await childPage.getByRole('button', { name: `Rapportera ${choreTitle} som klar` }).click();
-  await expect(childChore).toContainText('Väntar på godkännande');
+  await expect(childChore).toContainText('En vuxen tittar på uppgiften');
 
   await adultPage.goto('/vuxen');
   const pendingReviewSection = adultPage.locator('section[aria-labelledby="pending-title"]');
@@ -189,19 +190,26 @@ test('hela syssleflödet fungerar mellan Adult och Child', async ({ browser }) =
   await expect(adultReview).toBeHidden();
 
   await childPage.reload();
-  await expect(childChore).toContainText('Behöver göras om');
+  await expect(childChore).toContainText('Kommentar från en vuxen');
   await expect(childChore).toContainText(redoComment);
   await childPage.getByRole('button', { name: `Rapportera ${choreTitle} som klar` }).click();
-  await expect(childChore).toContainText('Väntar på godkännande');
+  await expect(childChore).toContainText('En vuxen tittar på uppgiften');
   await expect(childChore).toBeFocused();
-  await expect(pointsSection.getByLabel('0 poäng')).toBeVisible();
+  await expect(childPointsPill).toHaveText(/^0$/);
 
   await adultPage.reload();
   await expect(adultReview).toBeVisible();
   await adultReview.getByRole('button', { name: 'Godkänn' }).click();
   await expect(adultReview).toBeHidden();
 
+  // Approved assignments move off "Idag" entirely (moved to Inställningar) —
+  // the chore card disappears from the child's home screen once approved.
   await childPage.reload();
-  await expect(childChore).toContainText('Godkänt');
-  await expect(pointsSection.getByLabel('10 poäng')).toBeVisible();
+  await expect(childChore).toHaveCount(0);
+  await expect(childPointsPill).toHaveText(/^10$/);
+
+  await childPage.goto('/barn/installningar');
+  await expectResponsiveAndAccessible(childPage);
+  const historyCard = childPage.getByRole('article').filter({ hasText: choreTitle });
+  await expect(historyCard).toContainText('Godkänt');
 });

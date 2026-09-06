@@ -89,16 +89,10 @@ export const routes: Routes = [
       import('./features/child/child-redemptions-page').then((c) => c.ChildRedemptionsPage),
   },
   {
-    path: 'barn/beloningar',
+    path: 'barn/installningar',
     canActivate: [childGuard],
     loadComponent: () =>
-      import('./features/child/child-rewards-page').then((c) => c.ChildRewardsPage),
-  },
-  {
-    path: 'barn/onskningar',
-    canActivate: [childGuard],
-    loadComponent: () =>
-      import('./features/child/child-redemptions-page').then((c) => c.ChildRedemptionsPage),
+      import('./features/child/child-settings-page').then((c) => c.ChildSettingsPage),
   },
   { path: '**', redirectTo: '' },
 ];

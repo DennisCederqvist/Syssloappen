@@ -1,7 +1,7 @@
 <div class="page-enter min-h-dvh bg-canvas pb-24 md:flex md:pb-0">
   <app-bottom-nav [items]="navItems" />
   <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-5 sm:px-7 md:py-8">
-    <app-user-header eyebrow="Mina önskningar" title="Status på belöningar" variant="child" />
+    <app-user-header eyebrow="Mina önskningar" title="Status på belöningar" />
     @if (loading()) {
       <p class="mt-7 font-bold text-muted" role="status">Hämtar…</p>
     } @else if (error()) {
