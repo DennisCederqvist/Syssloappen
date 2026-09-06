@@ -250,7 +250,7 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
     }
 
     [Fact]
-    public async Task Registering_with_a_first_name_uses_it_as_the_display_name()
+    public async Task Registering_with_both_a_nickname_and_a_first_name_prefers_the_nickname()
     {
         using var client = CreateClient();
         var response = await client.PostAsJsonAsync("/api/auth/register", new
@@ -270,7 +270,8 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
         Assert.Equal("Anna", me!.FirstName);
         Assert.Equal("Andersson", me.LastName);
         Assert.Equal("annaa", me.Nickname);
-        Assert.Equal("Anna", me.DisplayName);
+        // Nickname wins over first name whenever both are set.
+        Assert.Equal("annaa", me.DisplayName);
     }
 
     [Fact]
@@ -291,6 +292,26 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
 
         Assert.Null(me!.FirstName);
         Assert.Equal("zappelicus", me.DisplayName);
+    }
+
+    [Fact]
+    public async Task Registering_with_only_a_first_name_falls_back_to_it_as_the_display_name()
+    {
+        using var client = CreateClient();
+        var response = await client.PostAsJsonAsync("/api/auth/register", new
+        {
+            HouseholdName = "Familjen Förnamn",
+            Email = "firstname.owner@example.test",
+            Password,
+            FirstName = "Kim"
+        });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        await Login(client, "firstname.owner@example.test");
+        var me = await client.GetFromJsonAsync<CurrentUserResponse>("/api/auth/me");
+
+        Assert.Null(me!.Nickname);
+        Assert.Equal("Kim", me.DisplayName);
     }
 
     [Fact]
@@ -319,12 +340,13 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
         });
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         var updated = (await updateResponse.Content.ReadFromJsonAsync<HouseholdAdultResponse>())!;
-        Assert.Equal("Eva", updated.DisplayName);
+        // Nickname wins over first name whenever both are set.
+        Assert.Equal("evae", updated.DisplayName);
 
         var listResponse = await client.GetAsync("/api/household/adults");
         var adults = (await listResponse.Content.ReadFromJsonAsync<List<HouseholdAdultResponse>>())!;
         var self = Assert.Single(adults);
-        Assert.Equal("Eva", self.DisplayName);
+        Assert.Equal("evae", self.DisplayName);
     }
 
     [Fact]

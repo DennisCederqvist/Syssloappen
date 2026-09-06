@@ -246,7 +246,7 @@ public sealed class AuthController(
             user.FirstName,
             user.LastName,
             user.Nickname,
-            user.FirstName ?? user.Nickname);
+            user.Nickname ?? user.FirstName);
     }
 
     // Optional profile fields are trimmed and stored as null rather than empty, so a

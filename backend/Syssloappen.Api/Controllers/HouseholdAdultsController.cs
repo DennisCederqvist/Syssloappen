@@ -49,7 +49,7 @@ public sealed class HouseholdAdultsController(
                 user.Id,
                 user.Email!,
                 user.Id == household.OwnerUserId,
-                user.FirstName ?? user.Nickname))
+                user.Nickname ?? user.FirstName))
             .ToListAsync();
 
         return Ok(adults);
@@ -164,7 +164,7 @@ public sealed class HouseholdAdultsController(
             currentUser.Id,
             currentUser.Email!,
             currentUser.Id == household.OwnerUserId,
-            currentUser.FirstName ?? currentUser.Nickname));
+            currentUser.Nickname ?? currentUser.FirstName));
     }
 
     [HttpPost("me/change-password")]

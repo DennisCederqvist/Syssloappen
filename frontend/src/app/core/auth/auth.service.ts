@@ -106,7 +106,7 @@ export class AuthService {
       firstName: fields.firstName ?? null,
       lastName: fields.lastName ?? null,
       nickname: fields.nickname ?? null,
-      displayName: fields.firstName || fields.nickname || null,
+      displayName: fields.nickname || fields.firstName || null,
     });
   }
 
