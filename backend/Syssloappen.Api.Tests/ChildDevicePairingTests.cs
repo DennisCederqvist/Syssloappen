@@ -119,6 +119,10 @@ public sealed class ChildDevicePairingTests : IDisposable
         Assert.Equal(RoleNames.Child, currentUser.Role);
         Assert.Equal(adult.HouseholdId, currentUser.HouseholdId);
         Assert.Null(currentUser.Email);
+        // A session restore (e.g. a tablet reload) must still know the child's
+        // name — only pairing used to provide it, /me previously returned null.
+        Assert.Equal(child.Id, currentUser.ChildId);
+        Assert.Equal(child.Name, currentUser.Name);
 
         var reuseResponse = await Pair(reuseClient, code.Code);
 
