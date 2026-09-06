@@ -249,6 +249,160 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Registering_with_a_first_name_uses_it_as_the_display_name()
+    {
+        using var client = CreateClient();
+        var response = await client.PostAsJsonAsync("/api/auth/register", new
+        {
+            HouseholdName = "Familjen Namngiven",
+            Email = "named.owner@example.test",
+            Password,
+            FirstName = "Anna",
+            LastName = "Andersson",
+            Nickname = "annaa"
+        });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        await Login(client, "named.owner@example.test");
+        var me = await client.GetFromJsonAsync<CurrentUserResponse>("/api/auth/me");
+
+        Assert.Equal("Anna", me!.FirstName);
+        Assert.Equal("Andersson", me.LastName);
+        Assert.Equal("annaa", me.Nickname);
+        Assert.Equal("Anna", me.DisplayName);
+    }
+
+    [Fact]
+    public async Task Registering_with_only_a_nickname_uses_it_as_the_display_name()
+    {
+        using var client = CreateClient();
+        var response = await client.PostAsJsonAsync("/api/auth/register", new
+        {
+            HouseholdName = "Familjen Smek",
+            Email = "nickname.owner@example.test",
+            Password,
+            Nickname = "zappelicus"
+        });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        await Login(client, "nickname.owner@example.test");
+        var me = await client.GetFromJsonAsync<CurrentUserResponse>("/api/auth/me");
+
+        Assert.Null(me!.FirstName);
+        Assert.Equal("zappelicus", me.DisplayName);
+    }
+
+    [Fact]
+    public async Task Registering_without_any_name_fields_leaves_display_name_null()
+    {
+        using var client = CreateClient();
+        await Register(client, "Familjen Anonym", "no.name@example.test");
+        await Login(client, "no.name@example.test");
+        var me = await client.GetFromJsonAsync<CurrentUserResponse>("/api/auth/me");
+
+        Assert.Null(me!.DisplayName);
+    }
+
+    [Fact]
+    public async Task Adult_can_update_their_own_profile_and_it_is_reflected_in_the_household_list()
+    {
+        using var client = CreateClient();
+        await Register(client, "Familjen Redigera", "editor@example.test");
+        await Login(client, "editor@example.test");
+
+        var updateResponse = await client.PutAsJsonAsync("/api/household/adults/me", new UpdateAdultProfileRequest
+        {
+            FirstName = "Eva",
+            LastName = "Ek",
+            Nickname = "evae"
+        });
+        Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
+        var updated = (await updateResponse.Content.ReadFromJsonAsync<HouseholdAdultResponse>())!;
+        Assert.Equal("Eva", updated.DisplayName);
+
+        var listResponse = await client.GetAsync("/api/household/adults");
+        var adults = (await listResponse.Content.ReadFromJsonAsync<List<HouseholdAdultResponse>>())!;
+        var self = Assert.Single(adults);
+        Assert.Equal("Eva", self.DisplayName);
+    }
+
+    [Fact]
+    public async Task Blank_profile_fields_clear_previously_set_values()
+    {
+        using var client = CreateClient();
+        await Register(client, "Familjen Rensa", "clearer@example.test");
+        await Login(client, "clearer@example.test");
+
+        await client.PutAsJsonAsync("/api/household/adults/me", new UpdateAdultProfileRequest
+        {
+            FirstName = "Temp"
+        });
+
+        var clearResponse = await client.PutAsJsonAsync(
+            "/api/household/adults/me",
+            new UpdateAdultProfileRequest());
+        Assert.Equal(HttpStatusCode.OK, clearResponse.StatusCode);
+        var cleared = (await clearResponse.Content.ReadFromJsonAsync<HouseholdAdultResponse>())!;
+        Assert.Null(cleared.DisplayName);
+    }
+
+    [Fact]
+    public async Task Adult_can_change_their_own_password_and_then_log_in_with_the_new_one()
+    {
+        using var client = CreateClient();
+        await Register(client, "Familjen Lösenord", "password.owner@example.test");
+        await Login(client, "password.owner@example.test");
+
+        var changeResponse = await client.PostAsJsonAsync(
+            "/api/household/adults/me/change-password",
+            new ChangeAdultPasswordRequest { CurrentPassword = Password, NewPassword = "NewPassword2" });
+        Assert.Equal(HttpStatusCode.NoContent, changeResponse.StatusCode);
+
+        using var freshClient = CreateClient();
+        var oldPasswordLogin = await freshClient.PostAsJsonAsync("/api/auth/login", new LoginRequest
+        {
+            Email = "password.owner@example.test",
+            Password = Password
+        });
+        Assert.Equal(HttpStatusCode.Unauthorized, oldPasswordLogin.StatusCode);
+
+        var newPasswordLogin = await freshClient.PostAsJsonAsync("/api/auth/login", new LoginRequest
+        {
+            Email = "password.owner@example.test",
+            Password = "NewPassword2"
+        });
+        Assert.Equal(HttpStatusCode.OK, newPasswordLogin.StatusCode);
+    }
+
+    [Fact]
+    public async Task Changing_password_with_the_wrong_current_password_fails()
+    {
+        using var client = CreateClient();
+        await Register(client, "Familjen Fel", "wrongpass@example.test");
+        await Login(client, "wrongpass@example.test");
+
+        var response = await client.PostAsJsonAsync(
+            "/api/household/adults/me/change-password",
+            new ChangeAdultPasswordRequest { CurrentPassword = "WrongPassword1", NewPassword = "NewPassword2" });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Anonymous_user_cannot_update_profile_or_change_password()
+    {
+        using var client = CreateClient();
+        var updateResponse = await client.PutAsJsonAsync(
+            "/api/household/adults/me",
+            new UpdateAdultProfileRequest { FirstName = "Nej" });
+        Assert.Equal(HttpStatusCode.Unauthorized, updateResponse.StatusCode);
+
+        var passwordResponse = await client.PostAsJsonAsync(
+            "/api/household/adults/me/change-password",
+            new ChangeAdultPasswordRequest { CurrentPassword = "x", NewPassword = "NewPassword2" });
+        Assert.Equal(HttpStatusCode.Unauthorized, passwordResponse.StatusCode);
+    }
+
     public void Dispose() => factory.Dispose();
 
     private HttpClient CreateClient() => factory.CreateClient(new WebApplicationFactoryClientOptions

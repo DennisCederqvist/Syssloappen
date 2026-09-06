@@ -1,7 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HouseholdAdult } from './household.models';
+import {
+  ChangeAdultPasswordRequest,
+  HouseholdAdult,
+  UpdateAdultProfileRequest,
+} from './household.models';
 
 @Injectable({ providedIn: 'root' })
 export class HouseholdAdultsService {
@@ -13,5 +17,13 @@ export class HouseholdAdultsService {
 
   disconnect(userId: string): Observable<void> {
     return this.http.delete<void>(`/api/household/adults/${userId}`);
+  }
+
+  updateOwnProfile(request: UpdateAdultProfileRequest): Observable<HouseholdAdult> {
+    return this.http.put<HouseholdAdult>('/api/household/adults/me', request);
+  }
+
+  changeOwnPassword(request: ChangeAdultPasswordRequest): Observable<void> {
+    return this.http.post<void>('/api/household/adults/me/change-password', request);
   }
 }

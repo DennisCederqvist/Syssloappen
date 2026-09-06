@@ -88,6 +88,15 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(user => user.NormalizedChildUserName)
                 .HasMaxLength(50);
 
+            entity.Property(user => user.FirstName)
+                .HasMaxLength(100);
+
+            entity.Property(user => user.LastName)
+                .HasMaxLength(100);
+
+            entity.Property(user => user.Nickname)
+                .HasMaxLength(50);
+
             // PostgreSQL and SQLite allow several null values in a unique index, so
             // Adult users can omit these child-only fields.
             entity.HasIndex(user => new { user.HouseholdId, user.NormalizedChildUserName })

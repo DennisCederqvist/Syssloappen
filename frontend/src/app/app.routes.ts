@@ -23,14 +23,7 @@ export const routes: Routes = [
     canActivate: [adultGuard],
     loadComponent: () => import('./features/adult/adult-home-page').then((c) => c.AdultHomePage),
   },
-  {
-    path: 'vuxen/bjud-in',
-    canActivate: [adultGuard],
-    loadComponent: () =>
-      import('./features/adult/invitation/adult-invitation-page').then(
-        (c) => c.AdultInvitationPage,
-      ),
-  },
+  { path: 'vuxen/bjud-in', pathMatch: 'full', redirectTo: 'vuxen/installningar/vuxna' },
   {
     path: 'vuxen/barn/:childId',
     canActivate: [adultGuard],

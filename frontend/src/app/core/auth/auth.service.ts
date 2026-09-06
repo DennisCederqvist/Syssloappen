@@ -92,6 +92,24 @@ export class AuthService {
     this.sessionChecked = true;
   }
 
+  /** Reflects a just-saved profile edit locally (e.g. Hem's greeting) without a
+   * round-trip back to /api/auth/me. */
+  updateOwnDisplayFields(fields: {
+    firstName?: string | null;
+    lastName?: string | null;
+    nickname?: string | null;
+  }): void {
+    const current = this.userState();
+    if (!current) return;
+    this.userState.set({
+      ...current,
+      firstName: fields.firstName ?? null,
+      lastName: fields.lastName ?? null,
+      nickname: fields.nickname ?? null,
+      displayName: fields.firstName || fields.nickname || null,
+    });
+  }
+
   homeFor(role: UserRole): string {
     return role === 'Adult' ? '/vuxen' : '/barn';
   }

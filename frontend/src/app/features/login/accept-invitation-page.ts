@@ -20,6 +20,9 @@ export class AcceptInvitationPage {
   readonly form = this.formBuilder.nonNullable.group({
     invitationCode: ['', [Validators.required, Validators.minLength(9), Validators.maxLength(9)]],
     email: ['', [Validators.required, Validators.email]],
+    firstName: ['', Validators.maxLength(100)],
+    lastName: ['', Validators.maxLength(100)],
+    nickname: ['', Validators.maxLength(50)],
     password: [
       '',
       [Validators.required, Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/)],
@@ -33,8 +36,17 @@ export class AcceptInvitationPage {
     }
     this.isSubmitting.set(true);
     this.errorMessage.set('');
+    const { invitationCode, email, password, firstName, lastName, nickname } =
+      this.form.getRawValue();
     this.auth
-      .registerInvitedAdult(this.form.getRawValue())
+      .registerInvitedAdult({
+        invitationCode,
+        email,
+        password,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        nickname: nickname || undefined,
+      })
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => this.success.set(true),

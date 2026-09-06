@@ -8,6 +8,10 @@ export interface CurrentUser {
   userName?: string;
   role: UserRole;
   householdId: number;
+  firstName?: string | null;
+  lastName?: string | null;
+  nickname?: string | null;
+  displayName?: string | null;
 }
 
 export interface AdultLoginRequest {
@@ -18,11 +22,17 @@ export interface RegisterAdultRequest {
   householdName: string;
   email: string;
   password: string;
+  firstName?: string;
+  lastName?: string;
+  nickname?: string;
 }
 export interface RegisterInvitedAdultRequest {
   invitationCode: string;
   email: string;
   password: string;
+  firstName?: string;
+  lastName?: string;
+  nickname?: string;
 }
 export interface RegisterInvitedAdultResponse {
   email: string;

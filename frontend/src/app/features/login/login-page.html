@@ -322,6 +322,42 @@
                 }
               </label>
               <label class="block text-sm font-semibold text-adult-text">
+                Förnamn <span class="font-normal text-adult-text-secondary">(valfritt)</span>
+                <input
+                  id="registration-first-name"
+                  formControlName="firstName"
+                  type="text"
+                  autocomplete="given-name"
+                  placeholder="Till exempel Anna"
+                  class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+                />
+              </label>
+              <label class="block text-sm font-semibold text-adult-text">
+                Efternamn <span class="font-normal text-adult-text-secondary">(valfritt)</span>
+                <input
+                  id="registration-last-name"
+                  formControlName="lastName"
+                  type="text"
+                  autocomplete="family-name"
+                  placeholder="Till exempel Andersson"
+                  class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+                />
+              </label>
+              <label class="block text-sm font-semibold text-adult-text">
+                Användarnamn <span class="font-normal text-adult-text-secondary">(valfritt)</span>
+                <input
+                  id="registration-nickname"
+                  formControlName="nickname"
+                  type="text"
+                  autocomplete="nickname"
+                  placeholder="Till exempel annaa"
+                  class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+                />
+                <span class="mt-1.5 block text-xs font-normal text-adult-text-secondary">
+                  Visas t.ex. på Hem om du inte anger ett förnamn.
+                </span>
+              </label>
+              <label class="block text-sm font-semibold text-adult-text">
                 Välj lösenord
                 <input
                   id="registration-password"

@@ -45,7 +45,11 @@ public sealed class HouseholdAdultsController(
                 && role.Name == RoleNames.Adult
                 && user.DisconnectedAt == null
             orderby user.Id == household.OwnerUserId descending, user.NormalizedEmail
-            select new HouseholdAdultResponse(user.Id, user.Email!, user.Id == household.OwnerUserId))
+            select new HouseholdAdultResponse(
+                user.Id,
+                user.Email!,
+                user.Id == household.OwnerUserId,
+                user.FirstName ?? user.Nickname))
             .ToListAsync();
 
         return Ok(adults);
@@ -130,5 +134,75 @@ public sealed class HouseholdAdultsController(
         await dbContext.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    [HttpPut("me")]
+    [ProducesResponseType<HouseholdAdultResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<HouseholdAdultResponse>> UpdateOwnProfile(UpdateAdultProfileRequest request)
+    {
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        var household = await dbContext.Households
+            .AsNoTracking()
+            .SingleAsync(candidate => candidate.Id == currentUser.HouseholdId);
+
+        // A blank field clears the previous value rather than being ignored — the Adult
+        // is always editing their complete profile, not applying a partial patch.
+        currentUser.FirstName = NormalizeOptional(request.FirstName);
+        currentUser.LastName = NormalizeOptional(request.LastName);
+        currentUser.Nickname = NormalizeOptional(request.Nickname);
+        await userManager.UpdateAsync(currentUser);
+
+        return Ok(new HouseholdAdultResponse(
+            currentUser.Id,
+            currentUser.Email!,
+            currentUser.Id == household.OwnerUserId,
+            currentUser.FirstName ?? currentUser.Nickname));
+    }
+
+    [HttpPost("me/change-password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ChangeOwnPassword(ChangeAdultPasswordRequest request)
+    {
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await userManager.ChangePasswordAsync(
+            currentUser,
+            request.CurrentPassword,
+            request.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors
+                .GroupBy(error => error.Code)
+                .ToDictionary(group => group.Key, group => group.Select(error => error.Description).ToArray());
+            return ValidationProblem(new ValidationProblemDetails(errors)
+            {
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        return NoContent();
+    }
+
+    private static string? NormalizeOptional(string? value)
+    {
+        var trimmed = value?.Trim();
+        return string.IsNullOrEmpty(trimmed) ? null : trimmed;
     }
 }
