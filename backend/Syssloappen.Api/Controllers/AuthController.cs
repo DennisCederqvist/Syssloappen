@@ -48,7 +48,10 @@ public sealed class AuthController(
         {
             UserName = email,
             Email = email,
-            HouseholdId = household.Id
+            HouseholdId = household.Id,
+            FirstName = NormalizeOptional(request.FirstName),
+            LastName = NormalizeOptional(request.LastName),
+            Nickname = NormalizeOptional(request.Nickname)
         };
 
         var createUserResult = await userManager.CreateAsync(user, request.Password);
@@ -66,6 +69,12 @@ public sealed class AuthController(
             await transaction.RollbackAsync();
             return ValidationProblem(ToValidationProblem(addRoleResult));
         }
+
+        // The registering Adult becomes the permanent household owner. This can only
+        // be set now that the user row exists, since Household.OwnerUserId and
+        // ApplicationUser.HouseholdId reference each other.
+        household.OwnerUserId = user.Id;
+        await dbContext.SaveChangesAsync();
 
         await transaction.CommitAsync();
 
@@ -102,7 +111,10 @@ public sealed class AuthController(
         {
             UserName = email,
             Email = email,
-            HouseholdId = invitation.HouseholdId
+            HouseholdId = invitation.HouseholdId,
+            FirstName = NormalizeOptional(request.FirstName),
+            LastName = NormalizeOptional(request.LastName),
+            Nickname = NormalizeOptional(request.Nickname)
         };
         var createUserResult = await userManager.CreateAsync(user, request.Password);
 
@@ -154,7 +166,15 @@ public sealed class AuthController(
         }
 
         var response = await BuildCurrentUserResponseAsync(user);
-        return Ok(new LoginResponse(response.UserId, response.Email!, response.Role, response.HouseholdId));
+        return Ok(new LoginResponse(
+            response.UserId,
+            response.Email!,
+            response.Role,
+            response.HouseholdId,
+            response.FirstName,
+            response.LastName,
+            response.Nickname,
+            response.DisplayName));
     }
 
     [Authorize]
@@ -218,7 +238,23 @@ public sealed class AuthController(
         var roles = await userManager.GetRolesAsync(user);
         var role = roles.SingleOrDefault() ?? string.Empty;
 
-        return new CurrentUserResponse(user.Id, user.Email, role, user.HouseholdId);
+        return new CurrentUserResponse(
+            user.Id,
+            user.Email,
+            role,
+            user.HouseholdId,
+            user.FirstName,
+            user.LastName,
+            user.Nickname,
+            user.Nickname ?? user.FirstName);
+    }
+
+    // Optional profile fields are trimmed and stored as null rather than empty, so a
+    // blank value behaves identically to never having been provided.
+    private static string? NormalizeOptional(string? value)
+    {
+        var trimmed = value?.Trim();
+        return string.IsNullOrEmpty(trimmed) ? null : trimmed;
     }
 
     private UnauthorizedObjectResult InvalidCredentials() => Unauthorized(

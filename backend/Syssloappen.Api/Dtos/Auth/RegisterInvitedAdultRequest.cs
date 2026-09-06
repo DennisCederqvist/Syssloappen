@@ -15,4 +15,13 @@ public sealed class RegisterInvitedAdultRequest
     [Required]
     [StringLength(100, MinimumLength = 8)]
     public string Password { get; init; } = string.Empty;
+
+    [StringLength(100)]
+    public string? FirstName { get; init; }
+
+    [StringLength(100)]
+    public string? LastName { get; init; }
+
+    [StringLength(50)]
+    public string? Nickname { get; init; }
 }

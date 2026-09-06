@@ -48,6 +48,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.HasIndex(household => household.FamilyCodeHash)
                 .IsUnique();
+
+            entity.HasOne(household => household.OwnerUser)
+                .WithMany()
+                .HasForeignKey(household => household.OwnerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<HouseholdInvitation>(entity =>
@@ -81,6 +86,15 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasMaxLength(50);
 
             entity.Property(user => user.NormalizedChildUserName)
+                .HasMaxLength(50);
+
+            entity.Property(user => user.FirstName)
+                .HasMaxLength(100);
+
+            entity.Property(user => user.LastName)
+                .HasMaxLength(100);
+
+            entity.Property(user => user.Nickname)
                 .HasMaxLength(50);
 
             // PostgreSQL and SQLite allow several null values in a unique index, so

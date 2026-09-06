@@ -50,6 +50,9 @@ export class LoginPage {
     {
       householdName: ['', [Validators.required, Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email]],
+      firstName: ['', Validators.maxLength(100)],
+      lastName: ['', Validators.maxLength(100)],
+      nickname: ['', Validators.maxLength(50)],
       password: [
         '',
         [
@@ -107,11 +110,19 @@ export class LoginPage {
       return;
     }
 
-    const { householdName, email, password } = this.registrationForm.getRawValue();
+    const { householdName, email, password, firstName, lastName, nickname } =
+      this.registrationForm.getRawValue();
     this.isSubmitting.set(true);
     this.errorMessage.set('');
     this.auth
-      .registerAdult({ householdName, email, password })
+      .registerAdult({
+        householdName,
+        email,
+        password,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        nickname: nickname || undefined,
+      })
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: (result) => this.registrationResult.set(result),

@@ -1,0 +1,385 @@
+<div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
+  <app-adult-bottom-nav />
+  <main class="mx-auto w-full max-w-2xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+    <app-adult-page-header
+      title="Hantera vuxna"
+      subtitle="Bjud in fler vuxna och se vem som just nu har tillgång till familjen."
+    />
+
+    @if (invitationError()) {
+      <div
+        class="mt-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+        role="alert"
+      >
+        {{ invitationError() }}
+      </div>
+    }
+
+    <div class="mt-4 rounded-lg border border-adult-border bg-adult-surface p-5">
+      @if (invitation(); as result) {
+        <div
+          class="rounded-lg border border-adult-border bg-adult-accent-soft p-5 text-center"
+          aria-live="polite"
+        >
+          <p class="text-xs font-semibold tracking-wider text-adult-accent-dark uppercase">
+            Engångskod
+          </p>
+          <p class="mt-2 text-3xl font-semibold tracking-[0.14em] text-adult-text">
+            {{ result.code }}
+          </p>
+          <p class="mt-2 text-sm text-adult-text-secondary">
+            Giltig till {{ result.expiresAt | date: 'short' }}
+          </p>
+          <button
+            type="button"
+            adultSecondaryTintButton
+            class="mt-4"
+            (click)="copyInvitationCode()"
+          >
+            {{ invitationCopied() ? 'Kopierad' : 'Kopiera kod' }}
+          </button>
+        </div>
+      } @else {
+        <button
+          type="button"
+          adultPrimaryButton
+          class="w-full"
+          [disabled]="isCreatingInvitation()"
+          (click)="createInvitation()"
+        >
+          {{ isCreatingInvitation() ? 'Skapar kod…' : '+ Bjud in vuxen' }}
+        </button>
+      }
+    </div>
+
+    @if (isLoading()) {
+      <div class="mt-4 grid gap-2" role="status">
+        <div
+          class="h-16 animate-pulse rounded-lg border border-adult-border bg-adult-surface"
+        ></div>
+        <span class="sr-only">Hämtar vuxna…</span>
+        <div
+          class="h-16 animate-pulse rounded-lg border border-adult-border bg-adult-surface"
+        ></div>
+      </div>
+    } @else if (loadError()) {
+      <div
+        class="mt-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg p-4"
+        role="alert"
+      >
+        <p class="text-sm font-medium text-adult-danger-text">{{ loadError() }}</p>
+        <button type="button" adultDangerOutlineButton class="mt-3" (click)="load()">
+          Försök igen
+        </button>
+      </div>
+    } @else {
+      <div class="mt-6 grid gap-2">
+        @for (adult of adults(); track adult.id) {
+          <button
+            [id]="'adult-card-' + adult.id"
+            type="button"
+            (click)="openAdult(adult)"
+            [attr.aria-controls]="selectedAdult()?.id === adult.id ? 'adult-detail-panel' : null"
+            [attr.aria-expanded]="selectedAdult()?.id === adult.id"
+            class="flex items-center gap-3 rounded-lg border border-adult-border bg-adult-surface p-3 text-left transition hover:border-adult-accent/40"
+          >
+            <span
+              class="grid size-9 shrink-0 place-items-center rounded-full bg-adult-accent-soft text-sm font-semibold text-adult-accent-dark"
+              aria-hidden="true"
+            >
+              {{ (adult.displayName || adult.email).slice(0, 1).toUpperCase() }}
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-[15px] font-semibold text-adult-text">
+                {{ adult.displayName || adult.email }}
+              </span>
+              @if (adult.id === ownUserId) {
+                <span class="block text-xs text-adult-text-secondary">Det här är du</span>
+              }
+            </span>
+            @if (adult.isOwner) {
+              <span
+                class="shrink-0 rounded-full border border-adult-accent/25 bg-adult-accent-soft px-2 py-0.5 text-xs font-semibold text-adult-accent-dark"
+                >Huvudägare</span
+              >
+            } @else {
+              <span
+                class="shrink-0 rounded-full border border-adult-border bg-adult-bg px-2 py-0.5 text-xs font-semibold text-adult-text-secondary"
+                >Inbjuden</span
+              >
+            }
+            <svg
+              viewBox="0 0 24 24"
+              class="size-4 shrink-0 text-adult-text-secondary"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        }
+      </div>
+    }
+
+    @if (selectedAdult(); as adult) {
+      <app-adult-sheet
+        panelId="adult-detail-panel"
+        headingId="adult-detail-title"
+        [title]="adult.displayName || adult.email"
+        closeLabel="Stäng"
+        (close)="closeAdult()"
+      >
+        <p class="-mt-2 mb-4 text-sm text-adult-text-secondary">{{ adult.email }}</p>
+
+        @if (adult.id === ownUserId) {
+          @if (profileSuccess()) {
+            <div
+              class="mb-4 rounded-lg border border-adult-border bg-adult-accent-soft px-4 py-3 text-sm font-medium text-adult-accent-dark"
+              role="status"
+            >
+              {{ profileSuccess() }}
+            </div>
+          }
+          @if (profileError()) {
+            <div
+              class="mb-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+              role="alert"
+            >
+              {{ profileError() }}
+            </div>
+          }
+          <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="grid gap-4" novalidate>
+            <label class="block text-sm font-semibold text-adult-text">
+              Förnamn
+              <input
+                id="profile-first-name"
+                formControlName="firstName"
+                type="text"
+                autocomplete="given-name"
+                class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+              />
+            </label>
+            <label class="block text-sm font-semibold text-adult-text">
+              Efternamn
+              <input
+                id="profile-last-name"
+                formControlName="lastName"
+                type="text"
+                autocomplete="family-name"
+                class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+              />
+            </label>
+            <label class="block text-sm font-semibold text-adult-text">
+              Användarnamn
+              <input
+                id="profile-nickname"
+                formControlName="nickname"
+                type="text"
+                autocomplete="nickname"
+                class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+              />
+            </label>
+            <button type="submit" adultPrimaryButton [disabled]="isSavingProfile()">
+              {{ isSavingProfile() ? 'Sparar…' : 'Spara' }}
+            </button>
+          </form>
+
+          <div class="mt-6 border-t border-adult-border pt-4">
+            <h3 class="text-sm font-semibold text-adult-text">Byt lösenord</h3>
+            @if (passwordSuccess()) {
+              <div
+                class="mt-3 rounded-lg border border-adult-border bg-adult-accent-soft px-4 py-3 text-sm font-medium text-adult-accent-dark"
+                role="status"
+              >
+                {{ passwordSuccess() }}
+              </div>
+            }
+            @if (passwordError()) {
+              <div
+                class="mt-3 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+                role="alert"
+              >
+                {{ passwordError() }}
+              </div>
+            }
+            <form
+              [formGroup]="passwordForm"
+              (ngSubmit)="changePassword()"
+              class="mt-3 grid gap-4"
+              novalidate
+            >
+              <label class="block text-sm font-semibold text-adult-text">
+                Nuvarande lösenord
+                <input
+                  id="current-password"
+                  formControlName="currentPassword"
+                  type="password"
+                  autocomplete="current-password"
+                  class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+                />
+              </label>
+              <label class="block text-sm font-semibold text-adult-text">
+                Nytt lösenord
+                <input
+                  id="new-password"
+                  formControlName="newPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  aria-describedby="new-password-help"
+                  class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+                />
+              </label>
+              <span id="new-password-help" class="-mt-2.5 block text-xs text-adult-text-secondary">
+                Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.
+              </span>
+              <label class="block text-sm font-semibold text-adult-text">
+                Upprepa nytt lösenord
+                <input
+                  id="confirm-new-password"
+                  formControlName="confirmNewPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  [attr.aria-invalid]="
+                    passwordForm.controls.confirmNewPassword.touched &&
+                    passwordForm.hasError('passwordMismatch')
+                  "
+                  aria-describedby="confirm-new-password-error"
+                  class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+                />
+                @if (
+                  passwordForm.controls.confirmNewPassword.touched &&
+                  passwordForm.hasError('passwordMismatch')
+                ) {
+                  <span
+                    id="confirm-new-password-error"
+                    class="mt-1.5 block text-sm font-normal text-adult-danger-text"
+                  >
+                    Lösenorden är inte lika.
+                  </span>
+                }
+              </label>
+              <button type="submit" adultSecondaryTintButton [disabled]="isChangingPassword()">
+                {{ isChangingPassword() ? 'Ändrar…' : 'Byt lösenord' }}
+              </button>
+            </form>
+          </div>
+
+          @if (!adult.isOwner) {
+            <div class="mt-6 border-t border-adult-border pt-4">
+              @if (disconnectError()) {
+                <div
+                  class="mb-3 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+                  role="alert"
+                >
+                  {{ disconnectError() }}
+                </div>
+              }
+              @if (confirmingDisconnect()) {
+                <div
+                  class="rounded-lg border border-adult-danger-border bg-adult-danger-bg p-3"
+                  role="group"
+                  aria-labelledby="leave-question"
+                >
+                  <p id="leave-question" class="text-sm font-semibold text-adult-danger-text">
+                    Du loggas ut direkt och tappar tillgång till familjen. Fortsätta?
+                  </p>
+                  <div class="mt-3 flex gap-2">
+                    <button
+                      id="cancel-disconnect"
+                      type="button"
+                      (click)="cancelDisconnect()"
+                      [disabled]="isDisconnecting()"
+                      class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
+                    >
+                      Avbryt
+                    </button>
+                    <button
+                      type="button"
+                      adultDangerOutlineButton
+                      class="flex-1"
+                      [disabled]="isDisconnecting()"
+                      (click)="disconnect()"
+                    >
+                      {{ isDisconnecting() ? 'Lämnar…' : 'Ja, lämna familjen' }}
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <button
+                  id="request-disconnect"
+                  type="button"
+                  adultDangerOutlineButton
+                  class="w-full"
+                  (click)="requestDisconnect()"
+                >
+                  Lämna familjen
+                </button>
+              }
+            </div>
+          }
+        } @else if (adult.isOwner) {
+          <p
+            class="rounded-lg border border-adult-border bg-adult-bg p-3 text-sm text-adult-text-secondary"
+          >
+            {{ adult.displayName || adult.email }} skapade familjen och kan inte kopplas bort.
+          </p>
+        } @else {
+          @if (disconnectError()) {
+            <div
+              class="mb-3 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+              role="alert"
+            >
+              {{ disconnectError() }}
+            </div>
+          }
+          @if (confirmingDisconnect()) {
+            <div
+              class="rounded-lg border border-adult-danger-border bg-adult-danger-bg p-3"
+              role="group"
+              aria-labelledby="disconnect-question"
+            >
+              <p id="disconnect-question" class="text-sm font-semibold text-adult-danger-text">
+                {{ adult.displayName || adult.email }} loggas ut direkt och tappar tillgång till
+                familjen. Fortsätta?
+              </p>
+              <div class="mt-3 flex gap-2">
+                <button
+                  id="cancel-disconnect"
+                  type="button"
+                  (click)="cancelDisconnect()"
+                  [disabled]="isDisconnecting()"
+                  class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
+                >
+                  Avbryt
+                </button>
+                <button
+                  type="button"
+                  adultDangerOutlineButton
+                  class="flex-1"
+                  [disabled]="isDisconnecting()"
+                  (click)="disconnect()"
+                >
+                  {{ isDisconnecting() ? 'Kopplar bort…' : 'Ja, koppla bort' }}
+                </button>
+              </div>
+            </div>
+          } @else {
+            <button
+              id="request-disconnect"
+              type="button"
+              adultDangerOutlineButton
+              class="w-full"
+              (click)="requestDisconnect()"
+            >
+              Koppla bort
+            </button>
+          }
+        }
+      </app-adult-sheet>
+    }
+  </main>
+</div>

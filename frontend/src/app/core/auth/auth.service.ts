@@ -57,7 +57,9 @@ export class AuthService {
     return this.http.post<HouseholdInvitation>('/api/household/invitations', {});
   }
 
-  registerInvitedAdult(request: RegisterInvitedAdultRequest): Observable<RegisterInvitedAdultResponse> {
+  registerInvitedAdult(
+    request: RegisterInvitedAdultRequest,
+  ): Observable<RegisterInvitedAdultResponse> {
     return this.http.post<RegisterInvitedAdultResponse>('/api/auth/register/invited', request);
   }
 
@@ -80,6 +82,32 @@ export class AuthService {
         this.sessionChecked = true;
       }),
     );
+  }
+
+  /** For when the backend session is already known to be invalid (e.g. the user
+   * just disconnected themselves from their household) — clears local state
+   * without a round-trip to a logout endpoint that would likely 401 anyway. */
+  forgetSession(): void {
+    this.userState.set(null);
+    this.sessionChecked = true;
+  }
+
+  /** Reflects a just-saved profile edit locally (e.g. Hem's greeting) without a
+   * round-trip back to /api/auth/me. */
+  updateOwnDisplayFields(fields: {
+    firstName?: string | null;
+    lastName?: string | null;
+    nickname?: string | null;
+  }): void {
+    const current = this.userState();
+    if (!current) return;
+    this.userState.set({
+      ...current,
+      firstName: fields.firstName ?? null,
+      lastName: fields.lastName ?? null,
+      nickname: fields.nickname ?? null,
+      displayName: fields.nickname || fields.firstName || null,
+    });
   }
 
   homeFor(role: UserRole): string {
