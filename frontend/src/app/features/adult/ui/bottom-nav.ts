@@ -14,8 +14,8 @@ const NAV_ITEMS: AdultNavItem[] = [
   { label: 'Inställningar', route: '/vuxen/installningar', icon: 'gear' },
 ];
 
-/** The 4-item adult tab bar: Hem, Sysslor, Belöningar, Inställningar. Adult-only —
- * the child view keeps using the shared AppBottomNav untouched. */
+/** The 4-item adult tab bar: Hem, Sysslor, Belöningar, Inställningar.
+ * Adult-only — the child view has its own ChildSideNav. */
 @Component({
   selector: 'app-adult-bottom-nav',
   imports: [RouterLink],

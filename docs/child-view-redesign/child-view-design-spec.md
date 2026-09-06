@@ -12,15 +12,18 @@ tablet layout as the primary breakpoint to match.
 
 ## Status
 
-"Idag" (`child-home-page`) and "Belöningar" (`child-rewards-page`) are
-rebuilt on the new system. "Önskningar" still uses the old ad-hoc styling +
-the shared `AppBottomNav` — bringing it in line with this spec is the next
-step, not yet done.
+All three main child pages — "Idag", "Belöningar", "Önskningar" — are
+rebuilt on the new system. The old shared `AppBottomNav` and `UserHeader`
+components are gone entirely (deleted once nothing used them any more); the
+child view's nav is `ChildSideNav` everywhere, no exceptions.
 
 The nav's first item is "Sysslor" (not "Idag") with a clipboard-checkmark
-icon (not a house) — renamed/re-iconed everywhere, including the legacy
-`AppBottomNav` still serving Önskningar, so the label is consistent across
-the whole child view even before every page is restyled.
+icon (not a house).
+
+Remaining: "Inställningar" is still a thin placeholder (just "Senast
+godkända"), and reward image upload on the **adult** side (creating/editing
+a `Reward`) hasn't been built — see the `ChildRewardCard`/
+`ChildRedemptionCard` note below.
 
 ## Why
 
@@ -92,8 +95,19 @@ separate from the (now legacy) tokens the child view used to share with it.
   gift icon) above the name/description. Rewards will eventually get a
   parent-uploaded photo so a child who can't read yet still recognizes what
   they're picking — that upload feature doesn't exist yet, this is just
-  where the photo will go. The "Önska belöning" CTA disables (dimmed, not
-  hidden) when the child can't afford it or a request is already in flight.
+  where the photo will go (**the adult-side reward creation/edit form still
+  needs the actual upload UI once this exists** — deliberately deferred
+  until the child view was settled first). The "Önska belöning" CTA disables
+  (dimmed, not hidden) when the child can't afford it or a request is
+  already in flight.
+- `ChildRedemptionCard` — the same shape again (same placeholder image, same
+  reason), but with a status banner instead of a CTA, since there's nothing
+  left for the child to do: amber "Väntar på vuxen" (Requested), green
+  "Godkänd" (Approved) or "Utlämnad" (Delivered), red "Avslag" (Cancelled).
+  Used for both the "Aktuella önskningar" (Requested/Approved, unbounded) and
+  "Senaste besked" (Cancelled/Delivered, capped) sections on Önskningar — the
+  cap is 6, not the previous 5, since a 2-column grid reads much better full
+  than with one straggling card on its own row.
 - `palette.ts` / `card-motion.ts` — the rotating 5-color palette and the
   random-tilt-plus-random-wobble scheduler are shared, not duplicated per
   card type. Any new child card type should reuse both rather than

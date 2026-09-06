@@ -1,19 +1,34 @@
-import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { finalize } from 'rxjs';
-import { AppBottomNav, NavItem } from '../../shared/app-bottom-nav';
-import { UserHeader } from '../../shared/user-header';
-import { RewardRedemption, RewardRedemptionStatus } from './child-chores.models';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { finalize, forkJoin } from 'rxjs';
+import { AuthService } from '../../core/auth/auth.service';
+import { ChildCardMotion } from './ui/card-motion';
+import { CHILD_CARD_PALETTES, ChildCardPalette } from './ui/palette';
+import { ChildPageHeader } from './ui/page-header';
+import { ChildRedemptionCard } from './ui/redemption-card';
+import { ChildSideNav } from './ui/side-nav';
+import { RewardRedemption } from './child-chores.models';
 import { ChildChoresService } from './child-chores.service';
+
+// 2-column grid reads much better filled out than the previous 5, which
+// always left an awkward lone card on its own row.
+const RECENT_FINAL_ITEMS_LIMIT = 6;
 
 @Component({
   selector: 'app-child-redemptions-page',
-  imports: [AppBottomNav, DatePipe, UserHeader],
+  imports: [ChildSideNav, ChildPageHeader, ChildRedemptionCard],
   templateUrl: './child-redemptions-page.html',
 })
-export class ChildRedemptionsPage implements OnInit {
+export class ChildRedemptionsPage implements OnInit, OnDestroy {
+  private readonly auth = inject(AuthService);
   private readonly service = inject(ChildChoresService);
+  private readonly motion = new ChildCardMotion(() =>
+    [...this.activeItems(), ...this.recentFinalItems()].map((item) => item.id),
+  );
+
+  readonly childName = computed(() => this.auth.user()?.name || 'där');
+  readonly wobblingRedemptionId = this.motion.wobblingId;
   readonly items = signal<RewardRedemption[]>([]);
+  readonly availablePoints = signal(0);
   readonly loading = signal(true);
   readonly error = signal('');
   readonly activeItems = computed(() =>
@@ -22,33 +37,40 @@ export class ChildRedemptionsPage implements OnInit {
   readonly recentFinalItems = computed(() =>
     this.items()
       .filter((item) => item.status === 'Cancelled' || item.status === 'Delivered')
-      .slice(0, 5),
+      .slice(0, RECENT_FINAL_ITEMS_LIMIT),
   );
-  readonly navItems: NavItem[] = [
-    { label: 'Sysslor', icon: 'H', route: '/barn' },
-    { label: 'Belöningar', icon: '*', route: '/barn/beloningar' },
-    { label: 'Önskningar', icon: '+', active: true, route: '/barn/onskningar' },
-  ];
+
   ngOnInit(): void {
     this.load();
+    this.motion.start();
   }
+
+  ngOnDestroy(): void {
+    this.motion.stop();
+  }
+
   load(): void {
     this.loading.set(true);
     this.error.set('');
-    this.service
-      .getRewardRedemptions()
+    forkJoin({
+      redemptions: this.service.getRewardRedemptions(),
+      rewards: this.service.getRewards(),
+    })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (items) => this.items.set(items),
+        next: ({ redemptions, rewards }) => {
+          this.items.set(redemptions);
+          this.availablePoints.set(rewards.availablePoints);
+        },
         error: () => this.error.set('Dina önskningar kunde inte hämtas.'),
       });
   }
-  label(status: RewardRedemptionStatus): string {
-    return {
-      Requested: 'Väntar på vuxen',
-      Approved: 'Godkänd',
-      Cancelled: 'Avslag',
-      Delivered: 'Utlämnad',
-    }[status];
+
+  paletteFor(index: number): ChildCardPalette {
+    return CHILD_CARD_PALETTES[index % CHILD_CARD_PALETTES.length];
+  }
+
+  tiltFor(redemptionId: number): number {
+    return this.motion.tiltFor(redemptionId);
   }
 }
