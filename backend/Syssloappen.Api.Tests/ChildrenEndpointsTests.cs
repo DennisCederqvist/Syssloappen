@@ -8,6 +8,9 @@ using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.Auth;
 using Syssloappen.Api.Dtos.Children;
+using Syssloappen.Api.Dtos.ChoreAssignments;
+using Syssloappen.Api.Dtos.Chores;
+using Syssloappen.Api.Models;
 using Xunit;
 
 namespace Syssloappen.Api.Tests;
@@ -334,6 +337,37 @@ public sealed class ChildrenEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Deactivating_a_child_preserves_its_assignment_and_completion_history()
+    {
+        using var adultClient = CreateClient();
+        using var childClient = CreateClient();
+        await RegisterAdult(adultClient, "Familjen Historik", "adult.historik@example.test");
+        await Login(adultClient, "adult.historik@example.test");
+        var child = await CreateChild(adultClient, "Elsa");
+        await PairChild(adultClient, childClient, child.Id);
+        var chore = await CreateChore(adultClient, "Dammsuga");
+        var assignment = await AssignChore(adultClient, chore.Id, child.Id);
+        await SubmitAssignment(childClient, assignment.Id);
+        await ApproveAssignment(adultClient, assignment.Id);
+
+        var deactivateResponse = await adultClient.DeleteAsync($"/api/children/{child.Id}");
+        Assert.Equal(HttpStatusCode.NoContent, deactivateResponse.StatusCode);
+
+        var assignments = await adultClient.GetFromJsonAsync<List<AdultChoreAssignmentResponse>>(
+            "/api/chore-assignments");
+        var preservedAssignment = Assert.Single(assignments!, item => item.AssignmentId == assignment.Id);
+        Assert.Equal(child.Id, preservedAssignment.ChildId);
+        Assert.Equal("Approved", preservedAssignment.Status);
+
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var completion = await dbContext.ChoreCompletions
+            .AsNoTracking()
+            .SingleAsync(item => item.AssignmentId == assignment.Id);
+        Assert.Equal(child.Id, completion.ChildId);
+    }
+
+    [Fact]
     public async Task Adult_cannot_deactivate_a_child_in_another_household()
     {
         using var firstClient = CreateClient();
@@ -418,6 +452,38 @@ public sealed class ChildrenEndpointsTests : IDisposable
             "/api/auth/child/pair",
             new PairChildDeviceRequest { Code = pairingCode.Code });
         Assert.Equal(HttpStatusCode.OK, pairResponse.StatusCode);
+    }
+
+    private static async Task<ChoreResponse> CreateChore(HttpClient client, string title)
+    {
+        var response = await client.PostAsJsonAsync("/api/chores", new { Title = title });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<ChoreResponse>())!;
+    }
+
+    private static async Task<ChoreAssignmentResponse> AssignChore(HttpClient client, int choreId, int childId)
+    {
+        var response = await client.PostAsJsonAsync(
+            "/api/chore-assignments",
+            new CreateChoreAssignmentRequest { ChoreId = choreId, ChildId = childId });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<ChoreAssignmentResponse>())!;
+    }
+
+    private static async Task SubmitAssignment(HttpClient childClient, int assignmentId)
+    {
+        var response = await childClient.PostAsync(
+            $"/api/child/chore-assignments/{assignmentId}/submit",
+            null);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    private static async Task ApproveAssignment(HttpClient adultClient, int assignmentId)
+    {
+        var response = await adultClient.PostAsJsonAsync(
+            $"/api/chore-assignments/{assignmentId}/approve",
+            new ReviewChoreAssignmentRequest());
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     private static async Task<RegisterAdultResponse> RegisterAdult(

@@ -326,7 +326,7 @@ så att barn som inte längre ska använda appen inte visas eller får nya syssl
 - [x] Ett avaktiverat barn ska inte visas bland Householdets aktiva barn.
 - [x] Ett avaktiverat barn ska inte kunna få nya sysslor.
 - [x] Ett eventuellt kopplat barnkonto ska inte längre kunna logga in.
-- [ ] Historiska tilldelningar, godkännanden och completions ska bevaras.
+- [x] Historiska tilldelningar, godkännanden och completions ska bevaras.
 - [x] Borttagning ska därför normalt implementeras som avaktivering, inte fysisk radering av databasposten.
 
 ---
