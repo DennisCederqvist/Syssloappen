@@ -1,6 +1,6 @@
 # Syssloappen - Project Handoff
 
-Senast uppdaterad: 2026-08-27
+Senast uppdaterad: 2026-09-06
 
 Läs alltid `REQUIREMENTS.md` först. Den här filen kompletterar kraven med projektets aktuella tekniska status och fattade beslut.
 
@@ -430,6 +430,23 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
+### Child-vyns grafiska genomgång (`feature/child-view-redesign`) — Idag, Belöningar och Önskningar klara, väntar på merge
+
+Referens: `docs/barnvy mockup.png` (användarens egen mockup) och den nya `docs/child-view-redesign/child-view-design-spec.md`. Målet var samma sorts genomgång som adult-vyn fick (se sektionen nedanför denna), men i motsatt riktning — lekfullt och "bubbligt" snarare än lugnt och tool-like, riktat mot barn ca 6–10 år.
+
+- **Typsnitt och designtoken.** Fredoka (rubriker) + Inter (brödtext) laddas från Google Fonts. En helt egen `--color-child-*`-tokenuppsättning i `styles.css`, separat från både de gamla delade tokens och adult-vyns `--color-adult-*`.
+- **Alla tre huvudsidor ombyggda:** "Idag" (`child-home-page`), "Belöningar" (`child-rewards-page`) och "Önskningar" (`child-redemptions-page`), samt en ny, hittills tunn `/barn/installningar`-sida (fanns inte som route tidigare) dit "Senast godkända" flyttades bort från Idag.
+- **Nytt delat komponentbibliotek** i `frontend/src/app/features/child/ui/`: `ChildSideNav` (ljusblå sidopanel på `md:`, bottompanel på mobil — inget "Logga ut", det är vuxenstyrt), `ChildPageHeader` ("Hej {namn}!" + en icke-klickbar poängbricka), `ChildTaskCard`, `ChildStatusCard`, `ChildRewardCard`, `ChildRedemptionCard`, samt delad `palette.ts` (5-färgs pastellrotation) och `card-motion.ts` (slumpmässig permanent lutning + slumpmässig "wobble"-animation, se nedan).
+- **Kortens rörelse gick igenom flera iterationer efter direkt användarfeedback:** lutningen alternerade först strikt per kolumn (vänster/höger speglade varandra, sågs som "forcerat") → nu en slumpmässig vinkel (1.5–3°, slumpat tecken) per kort-id. "Wobble"-animationen var först en enda långsam sväng i oändlig loop per kort → nu ett kort ~0.9s-utslag som en JS-schemaläggare utlöser på ett slumpmässigt kort med slumpmässigt intervall (3–7 s).
+- **Bakgrundsfärgen justerades tre gånger** efter feedback: ren vit (badges syntes inte alls mot den) → `#f2ede1` (för mörk, "clashade") → `#f9f6ef` (bättre, fortfarande för mörk enligt användaren) → användaren satte själv slutgiltiga `#fffcf6` och pushade det direkt.
+- **Bildplatshållare för belöningar.** Både `ChildRewardCard` och `ChildRedemptionCard` har en streckad platshållarruta (generisk presenticka) där ett vuxen-uppladdat foto senare ska visas — själva uppladdningsfunktionen (backend-fält, lagring, adult-UI) är inte byggd än. Se `REQUIREMENTS.md` US-070/US-071, vars bildkriterier därför fortsatt korrekt är okryssade.
+- **Nav omdöpt.** Första fliken heter nu "Sysslor" (inte "Idag") med en block-med-bock-ikon i stället för ett hus, konsekvent överallt.
+- **Dödkodsstädning.** Sedan alla tre barnsidor migrerats till `ChildSideNav` hade `AppBottomNav` och `UserHeader` inga kvarvarande användare — båda är borttagna, liksom det tidigare kända testfelet i `AppBottomNav`s numera borttagna spec.
+- **Liten men verklig backend-fix:** `GET /api/auth/me` returnerar nu `ChildId`/`Name` även för rollen Child (tidigare bara `FirstName`/`LastName`/`Nickname`/`DisplayName`, som bara är relevanta för Adult). Utan detta skulle en sessionsåterställning (t.ex. en omladdning på en surfplatta) tappa namnet i "Hej {namn}!"-rubriken, eftersom bara enhetskopplingen tidigare levererade det. Täcks nu av ett test.
+- Verifierat: 149/149 backendtester (Release), `ng build` rent, 53/56 frontendtester, hela `npm run e2e`-svepet grönt (inklusive Axe-tillgänglighetsskanningen, som fångade två riktiga kontrastfel under arbetets gång — båda åtgärdade), samt flera separata liveverifieringar av alla tre sidor via en körande instans (skärmdumpar, alla belöningsstatusar Requested/Approved/Cancelled/Delivered, mobil och surfplatta-bredd). De 3 sedan tidigare kända testfelen i `AdultChoresPage` (2 st, dödkod sedan tidigare) är oförändrade av detta arbete; det tredje (`AppBottomNav`s inställningsmeny) försvann eftersom hela komponenten togs bort, se nedan — så frontendsviten har nu bara 2 kända kvarvarande fel.
+- **Kvarstår:** Inställningar är fortfarande bara en tunn platshållare. Bilduppladdning för belöningar (backend + adult-UI) är beslutat att göras efter denna genomgång, inte som en del av den.
+- Branchen är pushad, inte mergad. Väntar på användarens granskning.
+
 ### Adult-UI, grafisk genomgång enligt separat designspec — klar i sin helhet och mergad
 
 > Uppdatering 2026-09-06: Hela genomgången är nu klar och mergad till `main`, inklusive de två delar som tidigare var uppskjutna:
@@ -448,9 +465,11 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 >
 > Användaren har granskat och godkänt varje skärm samt testat den körande appen efter varje merge.
 
-### US-012, vuxenhantering (`feature/household-owner-and-listing`) — alla tre delar klara, väntar på merge
+### US-012, vuxenhantering — mergad till `main`
 
-Alla tre steg i den beslutade ordningen (se `REQUIREMENTS.md` under US-012 → "Planerad implementationsordning") är implementerade, verifierade och committade på samma branch, men ännu inte mergade till `main`:
+> Uppdatering 2026-09-06: Mergad till `main` (`ec62f4c`, PR #4) efter användarens granskning. Branchen och dess fjärrkopia är borttagna.
+
+Alla tre steg i den beslutade ordningen (se `REQUIREMENTS.md` under US-012 → "Planerad implementationsordning") implementerades, verifierades och committades på samma branch innan merge:
 
 1. **Backend, huvudägare och listning.** `Household.OwnerUserId` pekar på den Adult som skapade Householdet. Fältet är nullable i schemat enbart för att lösa den ömsesidiga foreign key-cykeln vid skapande (Household behöver ägarens user-ID, den användaren behöver Householdets ID); `POST /api/auth/register` sätter det inom samma transaktion direkt efter att användaren skapats. Migrationen `AddHouseholdOwner` backfyllde alla 144 befintliga Households utan luckor: ett Household med en registrerad inbjudan ägs beviskraftigt av den som skapade dess tidigaste inbjudan (eftersom varje ytterligare vuxen bara kan ha gått med via en förbrukad inbjudan); ett Household utan inbjudan har aldrig haft en andra vuxen, så dess enda vuxna är otvetydigt ägaren. Verifierat direkt mot `syssloappen_dev`: det riktiga Householdet "Cederqvist" löstes korrekt till `zappelicus@gmail.com` som ägare. Ny `GET /api/household/adults` (Adult-skyddad) listar Householdets aktiva vuxna med `IsOwner`, ägaren först.
 2. **Backend, säker bortkoppling.** `DELETE /api/household/adults/{userId}` kopplar bort en aktiv vuxen. Vem som helst (ägare eller inbjuden) kan koppla bort sig själv eller en annan icke-ägare; ägaren kan aldrig kopplas bort av någon, och den sista aktiva vuxna kan aldrig kopplas bort (kontrolleras separat från ägarregeln, som ett extra skyddslager). Bortkoppling bevarar raden och all historisk referens till den men rensar e-post/användarnamn så adressen omedelbart blir ledig för en obesläktad framtida registrering. `ChildSessionCookieEvents` döptes om till `SessionCookieEvents` och byggdes ut till att även omvalidera Adult-sessioner vid varje anrop (tidigare omvaliderades bara Child-sessioner per anrop; en vuxens cookie litades på fram till naturlig utgång) — en bortkopplad vuxens redan öppna session nekas nu direkt vid nästa anrop, inte bara vid nästa inloggningsförsök.
@@ -461,9 +480,7 @@ Verifierat: 148/148 backendtester (Release), `ng build` rent, 53/56 frontendtest
 
 Permanent familjeradering (huvudägaren tar bort familjen permanent) är fortfarande ett eget, senare, uttryckligen destruktivt steg och ingår inte här.
 
-Branchen ligger klar och pushad (senaste commit `1af8c86`), arbetsträdet är rent. Inget ytterligare arbete pågår på den just nu.
-
-**Nästa arbetsdel:** inte beslutat ännu. Väntar på användarens granskning och godkännande att merga `feature/household-owner-and-listing` till `main`. Efter det återstår samma val som tidigare — barnvyns grafiska genomgång (kräver eget designarbete först, ingen designspec finns ännu) eller permanent familjeradering.
+Efter merge fortsatte samma session direkt med barnvyns grafiska genomgång (se sektionen ovanför denna).
 
 - Adult-hemsidan är omgjord till en barncentrerad översikt. Varje barnrad visar initial-avatar, namn och en dagsmätare: endast tilldelningar med dagens `DueDate` räknas, och endast `Approved` räknas som klara. Äldre oavslutade uppgifter hör fortsatt till barnets arbetslista men får inte förorena dagens kvot.
 - Startsidan visar direkta kort för `PendingApproval`; Adult kan godkänna eller välja `NeedsRedo` utan omväg. Mobilknapparna ligger under sysslans namn.

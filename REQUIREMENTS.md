@@ -637,6 +637,8 @@ så att jag kan använda mina intjänade poäng.
 - [x] En belöning med barnets redan väntande förfrågan ska inte visas som valbar för samma barn förrän förfrågan har hanterats.
 - [x] Barnet ska kunna se sina egna belöningsförfrågningar och om de väntar på vuxenhantering, är godkända, får avslag eller är utlämnade.
 
+Status: barnvyns grafiska genomgång (`feature/child-view-redesign`, se `docs/HANDOFF.md`) lade till en bildplatshållare på varje belönings- och önskningskort inför den kommande bilduppladdningen ovan — själva uppladdningen (adult-UI, backend-fält, lagring) är fortfarande inte byggd, så kriterierna om bild ovan är medvetet oförändrade.
+
 ---
 
 ## US-072 – Vuxen hanterar barnets belöningsförfrågan
