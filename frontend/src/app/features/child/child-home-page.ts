@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { focusAfterRender } from '../../shared/focus';
@@ -12,18 +12,28 @@ import { ChildChoreAssignment } from './child-chores.models';
 import { ChildChoresService } from './child-chores.service';
 
 const PALETTES: ChildTaskCardPalette[] = ['blue', 'pink', 'yellow', 'peach', 'mint'];
-const WOBBLE_DELAYS_S = [0, 2, 4, 5, 7, 8];
+
+// One card wobbles at a time, at a random moment — feels alive rather than a
+// mechanical loop. 3–7s between events averages about one wobble every 5s;
+// short enough to catch the eye now and then, long enough not to be twitchy.
+const MIN_WOBBLE_INTERVAL_MS = 3000;
+const MAX_WOBBLE_INTERVAL_MS = 7000;
+const WOBBLE_EVENT_MS = 900;
 
 @Component({
   selector: 'app-child-home-page',
   imports: [ChildSideNav, ChildPageHeader, ChildTaskCard, ChildStatusCard],
   templateUrl: './child-home-page.html',
 })
-export class ChildHomePage implements OnInit {
+export class ChildHomePage implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly childChoresService = inject(ChildChoresService);
+  private wobbleTimeout?: ReturnType<typeof setTimeout>;
+  private wobbleClearTimeout?: ReturnType<typeof setTimeout>;
+  private lastWobbledAssignmentId: number | null = null;
 
   readonly childName = computed(() => this.auth.user()?.name || 'där');
+  readonly wobblingAssignmentId = signal<number | null>(null);
   readonly assignments = signal<ChildChoreAssignment[]>([]);
   readonly availablePoints = signal(0);
   readonly isLoading = signal(true);
@@ -46,6 +56,37 @@ export class ChildHomePage implements OnInit {
 
   ngOnInit(): void {
     this.loadPage();
+    this.scheduleNextWobble();
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.wobbleTimeout);
+    clearTimeout(this.wobbleClearTimeout);
+  }
+
+  private scheduleNextWobble(): void {
+    const delayMs =
+      MIN_WOBBLE_INTERVAL_MS + Math.random() * (MAX_WOBBLE_INTERVAL_MS - MIN_WOBBLE_INTERVAL_MS);
+    this.wobbleTimeout = setTimeout(() => this.triggerRandomWobble(), delayMs);
+  }
+
+  private triggerRandomWobble(): void {
+    const candidates = this.actionableAssignments();
+    if (candidates.length > 0) {
+      // Avoid picking the same card twice in a row when there's a choice.
+      const pool =
+        candidates.length > 1
+          ? candidates.filter((a) => a.assignmentId !== this.lastWobbledAssignmentId)
+          : candidates;
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      this.lastWobbledAssignmentId = chosen.assignmentId;
+      this.wobblingAssignmentId.set(chosen.assignmentId);
+      this.wobbleClearTimeout = setTimeout(
+        () => this.wobblingAssignmentId.set(null),
+        WOBBLE_EVENT_MS,
+      );
+    }
+    this.scheduleNextWobble();
   }
 
   loadPage(): void {
@@ -128,9 +169,5 @@ export class ChildHomePage implements OnInit {
 
   tiltFor(index: number): number {
     return index % 2 === 0 ? -2 : 2;
-  }
-
-  wobbleDelayFor(index: number): number {
-    return WOBBLE_DELAYS_S[index % WOBBLE_DELAYS_S.length];
   }
 }

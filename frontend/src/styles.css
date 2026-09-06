@@ -120,19 +120,20 @@ a {
     }
   }
 
-  /* Child task-card idle wobble: rests at its permanent --tilt, then flicks
-     off and back TWICE in quick succession per cycle so it's easier to
-     notice. Staggered per-card via animation-delay so cards don't wobble
-     in sync. */
+  /* Child task-card wobble: a single ~0.9s event with two quick flicks off
+     --tilt and back. Runs once per trigger (animation-iteration-count: 1) —
+     the JS scheduler in child-home-page.ts picks a random card at a random
+     interval and toggles it on, so which card wobbles and when both feel
+     unpredictable rather than a fixed per-card loop. */
   @keyframes child-card-wobble {
     0%,
-    85%,
-    93%,
+    20%,
+    55%,
     100% {
       rotate: var(--tilt, 0deg);
     }
-    89%,
-    97% {
+    35%,
+    75% {
       rotate: calc(var(--tilt, 0deg) + 2.5deg);
     }
   }

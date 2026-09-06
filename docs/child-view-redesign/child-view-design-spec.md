@@ -57,11 +57,12 @@ separate from the (now legacy) tokens the child view used to share with it.
   **down-and-right** (`4px 6px 0 <color>`, not `0 6px 0`). Applies to every
   card and button in the child view, not just task cards.
 - Task cards get a permanent tilt (`--tilt`, roughly ±2°, alternating per
-  card) plus an idle "wobble" — a `child-card-wobble` keyframe (`styles.css`)
-  that flicks off-rest and back **twice in quick succession** per ~9s cycle,
-  staggered per card via `animation-delay` so cards don't move in sync. Tuned
-  to actually catch the eye — an earlier single-flick version was too subtle
-  to notice without staring at the screen.
+  card, applied as a plain inline `rotate` style) plus an idle "wobble" — a
+  one-shot `child-card-wobble` CSS animation (`styles.css`, ~0.9s, two quick
+  flicks off-rest and back) that a JS scheduler in `child-home-page.ts`
+  triggers on a **random card at a random interval** (3–7s apart, averaging
+  about one wobble every 5s) rather than a fixed per-card loop — it's meant
+  to feel alive, not like a mechanical wave sweeping across the cards.
 - No XP/leveling language. "Points" only.
 
 ## Components (`frontend/src/app/features/child/ui/`)

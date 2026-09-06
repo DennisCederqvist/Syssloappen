@@ -80,7 +80,7 @@
               [points]="assignment.points"
               [palette]="paletteFor(i)"
               [tiltDeg]="tiltFor(i)"
-              [wobbleDelaySeconds]="wobbleDelayFor(i)"
+              [wobbling]="wobblingAssignmentId() === assignment.assignmentId"
               [submitting]="isSubmitting(assignment.assignmentId)"
               [errorMessage]="submissionErrors()[assignment.assignmentId] || null"
               (done)="submitAssignment(assignment)"

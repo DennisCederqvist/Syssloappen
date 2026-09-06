@@ -10,11 +10,15 @@ const PALETTE_CLASSES: Record<ChildTaskCardPalette, string> = {
   mint: 'bg-child-card-mint shadow-[4px_6px_0_var(--color-child-card-mint-shadow)]',
 };
 
-/** A single "today's chore" card: permanently tilted a couple degrees, with a
- * subtle staggered idle wobble, matching docs/barnvy mockup.png. Covers both
- * a fresh assignment and one sent back for redo (still actionable, with a
- * "Jag är klar!" button) — a genuinely waiting-on-review assignment has no
- * CTA at all, so that state lives in ChildStatusCard instead. */
+/** A single "today's chore" card: permanently tilted a couple degrees,
+ * matching docs/barnvy mockup.png. The tilt itself is a plain inline style
+ * (`rotate`, always on); `wobbling` layers a one-shot CSS animation on top
+ * of it — the parent decides *when* and *which* card wobbles (a random card
+ * at a random interval), this component just plays the single ~0.9s event
+ * when told to. Covers both a fresh assignment and one sent back for redo
+ * (still actionable, with a "Jag är klar!" button) — a genuinely
+ * waiting-on-review assignment has no CTA at all, so that state lives in
+ * ChildStatusCard instead. */
 @Component({
   selector: 'app-child-task-card',
   template: `
@@ -22,12 +26,12 @@ const PALETTE_CLASSES: Record<ChildTaskCardPalette, string> = {
       [id]="cardId()"
       tabindex="-1"
       class="flex flex-col rounded-[30px] p-5 outline-none sm:p-6 {{ paletteClasses() }}"
+      [style.rotate.deg]="tiltDeg()"
       [style.--tilt.deg]="tiltDeg()"
-      [style.animation-name]="'child-card-wobble'"
-      [style.animation-duration.s]="9"
+      [style.animation-name]="wobbling() ? 'child-card-wobble' : 'none'"
+      [style.animation-duration.s]="0.9"
       [style.animation-timing-function]="'ease-in-out'"
-      [style.animation-iteration-count]="'infinite'"
-      [style.animation-delay.s]="wobbleDelaySeconds()"
+      [style.animation-iteration-count]="1"
     >
       <div class="flex items-start justify-between gap-3">
         <h3 class="font-display text-[19px] leading-snug font-semibold text-child-text">
@@ -89,7 +93,7 @@ export class ChildTaskCard {
   readonly points = input.required<number>();
   readonly palette = input<ChildTaskCardPalette>('blue');
   readonly tiltDeg = input(0);
-  readonly wobbleDelaySeconds = input(0);
+  readonly wobbling = input(false);
   readonly submitting = input(false);
   readonly errorMessage = input<string | null>(null);
   readonly done = output<void>();
