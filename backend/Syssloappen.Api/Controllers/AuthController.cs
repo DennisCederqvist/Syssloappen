@@ -67,6 +67,12 @@ public sealed class AuthController(
             return ValidationProblem(ToValidationProblem(addRoleResult));
         }
 
+        // The registering Adult becomes the permanent household owner. This can only
+        // be set now that the user row exists, since Household.OwnerUserId and
+        // ApplicationUser.HouseholdId reference each other.
+        household.OwnerUserId = user.Id;
+        await dbContext.SaveChangesAsync();
+
         await transaction.CommitAsync();
 
         // The clear family code is returned once. Only its hash remains in the database.

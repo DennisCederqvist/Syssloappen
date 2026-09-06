@@ -48,6 +48,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.HasIndex(household => household.FamilyCodeHash)
                 .IsUnique();
+
+            entity.HasOne(household => household.OwnerUser)
+                .WithMany()
+                .HasForeignKey(household => household.OwnerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<HouseholdInvitation>(entity =>
