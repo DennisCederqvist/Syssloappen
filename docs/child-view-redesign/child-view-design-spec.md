@@ -57,9 +57,11 @@ separate from the (now legacy) tokens the child view used to share with it.
   **down-and-right** (`4px 6px 0 <color>`, not `0 6px 0`). Applies to every
   card and button in the child view, not just task cards.
 - Task cards get a permanent tilt (`--tilt`, roughly ±2°, alternating per
-  card) plus a subtle idle "wobble" — a `child-card-wobble` keyframe
-  (`styles.css`) that flicks a couple degrees off-rest once per ~15s cycle,
-  staggered per card via `animation-delay` so cards don't move in sync.
+  card) plus an idle "wobble" — a `child-card-wobble` keyframe (`styles.css`)
+  that flicks off-rest and back **twice in quick succession** per ~9s cycle,
+  staggered per card via `animation-delay` so cards don't move in sync. Tuned
+  to actually catch the eye — an earlier single-flick version was too subtle
+  to notice without staring at the screen.
 - No XP/leveling language. "Points" only.
 
 ## Components (`frontend/src/app/features/child/ui/`)
@@ -74,11 +76,11 @@ separate from the (now legacy) tokens the child view used to share with it.
   the "Jag är klar!" CTA. Also covers `NeedsRedo` (still actionable) with an
   adult-comment banner.
 - `ChildStatusCard` — `PendingApproval` (waiting on review, no CTA).
-- `ChildCelebration` — confetti burst + "Bra jobbat!" pill, triggered via
-  `.play()`. Quick (~1.7s) and non-blocking. No sound (a fanfare may be
-  added later). Wired to a demo button on Idag for now — there's no live
-  push signal for "an adult just approved this," so it can't fire
-  automatically yet.
+
+A celebratory approval animation (confetti + "Bra jobbat!") was prototyped
+and removed again — there's no live push signal for "an adult just approved
+this" yet, so it had nothing real to attach to. Revisit once that signal
+exists.
 
 ## Haptics
 

@@ -120,28 +120,20 @@ a {
     }
   }
 
-  /* Child task-card idle wobble: rests at its permanent --tilt, flicks a couple
-     degrees off and back once per ~14s cycle. Staggered per-card via
-     animation-delay so cards don't wobble in sync. */
+  /* Child task-card idle wobble: rests at its permanent --tilt, then flicks
+     off and back TWICE in quick succession per cycle so it's easier to
+     notice. Staggered per-card via animation-delay so cards don't wobble
+     in sync. */
   @keyframes child-card-wobble {
     0%,
-    88%,
+    85%,
+    93%,
     100% {
       rotate: var(--tilt, 0deg);
     }
-    94% {
-      rotate: calc(var(--tilt, 0deg) + 1.6deg);
-    }
-  }
-
-  @keyframes child-confetti-piece {
-    0% {
-      transform: translate(0, 0) rotate(0deg);
-      opacity: 1;
-    }
-    100% {
-      transform: translate(var(--dx), var(--dy)) rotate(var(--spin));
-      opacity: 0;
+    89%,
+    97% {
+      rotate: calc(var(--tilt, 0deg) + 2.5deg);
     }
   }
 }

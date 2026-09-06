@@ -1,10 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { focusAfterRender } from '../../shared/focus';
 import { vibrateOnTap } from '../../shared/haptics';
-import { ChildCelebration } from './ui/celebration';
 import { ChildPageHeader } from './ui/page-header';
 import { ChildSideNav } from './ui/side-nav';
 import { ChildStatusCard } from './ui/status-card';
@@ -13,17 +12,16 @@ import { ChildChoreAssignment } from './child-chores.models';
 import { ChildChoresService } from './child-chores.service';
 
 const PALETTES: ChildTaskCardPalette[] = ['blue', 'pink', 'yellow', 'peach', 'mint'];
-const WOBBLE_DELAYS_S = [0, 4, 6, 7, 10, 13];
+const WOBBLE_DELAYS_S = [0, 2, 4, 5, 7, 8];
 
 @Component({
   selector: 'app-child-home-page',
-  imports: [ChildSideNav, ChildPageHeader, ChildTaskCard, ChildStatusCard, ChildCelebration],
+  imports: [ChildSideNav, ChildPageHeader, ChildTaskCard, ChildStatusCard],
   templateUrl: './child-home-page.html',
 })
 export class ChildHomePage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly childChoresService = inject(ChildChoresService);
-  private readonly celebration = viewChild.required(ChildCelebration);
 
   readonly childName = computed(() => this.auth.user()?.name || 'där');
   readonly assignments = signal<ChildChoreAssignment[]>([]);
@@ -114,10 +112,6 @@ export class ChildHomePage implements OnInit {
           }));
         },
       });
-  }
-
-  playCelebrationDemo(): void {
-    this.celebration().play();
   }
 
   canSubmit(assignment: ChildChoreAssignment): boolean {
