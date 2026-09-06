@@ -191,6 +191,8 @@ Vuxenhanteringen byggs i tre små, gröna steg innan UI:t färdigställs. Ordnin
 2. **Backend, del 2 – säker bortkoppling.** Byggs först när del 1 är grön. Implementerar reglerna ovan under "Beslutad framtida vuxenhantering": normal bortkoppling med bevarad audit, återkallad åtkomst och frigjord e-post; skydd av huvudägaren mot bortkoppling; skydd mot att den sista Adult lämnar Householdet.
 3. **Frontend – "Hantera vuxna" och komplett "Bjud in vuxen".** Byggs först när del 1 och del 2 är gröna. Lägger till "Hantera vuxna" i Inställningar och kompletterar "Bjud in vuxen"-sidan med listan över Householdets vuxna samt tydlig information om vem som är huvudägare respektive inbjuden.
 
+Status: alla tre steg ovan är implementerade, testade och committade på `feature/household-owner-and-listing`, men branchen är ännu inte mergad till `main` (väntar på användarens granskning). Se `docs/HANDOFF.md` för fullständiga detaljer. Efter feedback byggdes "Hantera vuxna" och "Bjud in vuxen" ihop till en enda sida (den separata "Bjud in vuxen"-sidan togs bort helt), och tre valfria profilfält (förnamn, efternamn, användarnamn) samt eget lösenordsbyte lades till för varje Adult, utöver vad som ursprungligen planerades här.
+
 Permanent familjeradering är ett eget, separat och uttryckligen destruktivt steg med explicit bekräftelse, och ligger utanför denna ordning.
 
 Detta arbete kräver backend- och datamodelländringar och ska köras som en egen arbetsdel, inte blandas in i en rent visuell/frontend-genomgång av Adult-vyn (se `docs/HANDOFF.md`, avsnittet "Aktuell arbetsdel").
