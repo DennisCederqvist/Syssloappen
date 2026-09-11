@@ -129,6 +129,23 @@ public sealed class RewardsEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Deactivating_a_reward_with_an_image_deletes_it_from_storage()
+    {
+        using var adult = CreateClient();
+        await RegisterAndLoginAdult(adult, "Familjen Nyman", "rewards.deactivateimage@example.test");
+        var reward = await CreateRewardResponse(adult, "Godis", 20);
+        var uploadResponse = await adult.PostAsync($"/api/rewards/{reward.Id}/image", BuildImageFormContent(100, 100));
+        var imageUrl = (await uploadResponse.Content.ReadFromJsonAsync<RewardResponse>())!.ImageUrl!;
+
+        Assert.Equal(HttpStatusCode.NoContent, (await adult.DeleteAsync($"/api/rewards/{reward.Id}")).StatusCode);
+
+        Assert.Equal(imageUrl, Assert.Single(factory.RewardImageStorage.DeletedUrls));
+        using var scope = factory.Services.CreateScope();
+        var stored = await scope.ServiceProvider.GetRequiredService<AppDbContext>().Rewards.AsNoTracking().SingleAsync();
+        Assert.Null(stored.ImageUrl);
+    }
+
+    [Fact]
     public async Task Deactivation_hides_reward_and_preserves_its_historical_row()
     {
         using var adult = CreateClient();

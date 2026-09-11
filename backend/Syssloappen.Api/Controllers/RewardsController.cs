@@ -120,9 +120,19 @@ public sealed class RewardsController(
             item.Id == rewardId && item.HouseholdId == currentUser.HouseholdId && item.IsActive);
         if (reward is null) return NotFound();
 
-        // Keep the row for the redemption history introduced in US-071 and US-072.
+        // Keep the row for the redemption history introduced in US-071 and US-072, but the
+        // photo itself no longer needs to exist anywhere — clearing ImageUrl also stops any
+        // past redemption card from pointing at a now-deleted file.
+        var imageUrl = reward.ImageUrl;
         reward.IsActive = false;
+        reward.ImageUrl = null;
         await dbContext.SaveChangesAsync();
+
+        if (imageUrl is not null)
+        {
+            await imageStorage.DeleteAsync(imageUrl, HttpContext.RequestAborted);
+        }
+
         return NoContent();
     }
 
