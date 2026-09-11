@@ -588,6 +588,17 @@
       "activeTitle": "Current chores",
       "activeEmpty": "No current chores.",
       "pointsMeta": "{{points}} points",
+      "removeSheet": {
+        "button": "Remove from child",
+        "question": "Remove this chore from {{name}}? This only removes the assignment, not the chore itself.",
+        "confirm": "Remove",
+        "removing": "Removing…",
+        "error": {
+          "notFound": "The assignment couldn't be found. It may already have been removed.",
+          "conflict": "The assignment couldn't be removed right now. Reload the page and try again.",
+          "generic": "The assignment couldn't be removed. Please try again."
+        }
+      },
       "rejectCommentLabel": "Comment (optional)",
       "rewardMetaRequested": "Awaiting response",
       "rewardMetaApproved": "Approved – hand it over",

@@ -1,7 +1,8 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { forkJoin } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { AdultApprovalCard } from '../ui/approval-card';
 import { AdultBadge } from '../ui/badge';
 import { AdultBottomNav } from '../ui/bottom-nav';
@@ -46,6 +47,10 @@ export class AdultChildProfilePage {
   readonly assigningChoreId = signal<number | null>(null);
   readonly rejectingAssignmentId = signal<number | null>(null);
   readonly rejectComments = signal<Readonly<Record<number, string>>>({});
+  readonly selectedAssignment = signal<AdultAssignment | null>(null);
+  readonly confirmingAssignmentRemovalId = signal<number | null>(null);
+  readonly removingAssignmentId = signal<number | null>(null);
+  readonly assignmentRemovalError = signal('');
   readonly activeAssignments = computed(() =>
     this.assignments().filter((item) => item.status === 'Assigned' || item.status === 'NeedsRedo'),
   );
@@ -127,6 +132,62 @@ export class AdultChildProfilePage {
           this.error.set(this.transloco.translate('adult.chores.assignError.generic'));
           this.assigningChoreId.set(null);
         },
+      });
+  }
+
+  openAssignmentDetail(item: AdultAssignment): void {
+    this.selectedAssignment.set(item);
+    this.confirmingAssignmentRemovalId.set(null);
+    this.assignmentRemovalError.set('');
+  }
+
+  closeAssignmentDetail(): void {
+    this.selectedAssignment.set(null);
+    this.confirmingAssignmentRemovalId.set(null);
+    this.assignmentRemovalError.set('');
+  }
+
+  requestAssignmentRemoval(assignmentId: number): void {
+    this.confirmingAssignmentRemovalId.set(assignmentId);
+    this.assignmentRemovalError.set('');
+  }
+
+  cancelAssignmentRemoval(): void {
+    this.confirmingAssignmentRemovalId.set(null);
+    this.assignmentRemovalError.set('');
+  }
+
+  removeAssignment(item: AdultAssignment): void {
+    if (
+      this.confirmingAssignmentRemovalId() !== item.assignmentId ||
+      this.removingAssignmentId() !== null
+    ) {
+      return;
+    }
+
+    this.removingAssignmentId.set(item.assignmentId);
+    this.assignmentRemovalError.set('');
+    this.choresService
+      .cancelAssignment(item.assignmentId)
+      .pipe(finalize(() => this.removingAssignmentId.set(null)))
+      .subscribe({
+        next: () => {
+          this.assignments.update((assignments) =>
+            assignments.filter((current) => current.assignmentId !== item.assignmentId),
+          );
+          this.confirmingAssignmentRemovalId.set(null);
+          this.closeAssignmentDetail();
+        },
+        error: (error: HttpErrorResponse) =>
+          this.assignmentRemovalError.set(
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.childProfile.removeSheet.error.notFound'
+                : error.status === 409
+                  ? 'adult.childProfile.removeSheet.error.conflict'
+                  : 'adult.childProfile.removeSheet.error.generic',
+            ),
+          ),
       });
   }
 

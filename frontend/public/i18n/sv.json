@@ -588,6 +588,17 @@
       "activeTitle": "Aktuella sysslor",
       "activeEmpty": "Inga aktuella sysslor.",
       "pointsMeta": "{{points}} poäng",
+      "removeSheet": {
+        "button": "Ta bort från barnet",
+        "question": "Ta bort den här sysslan från {{name}}? Detta tar bara bort tilldelningen, inte sysslan i sig.",
+        "confirm": "Ta bort",
+        "removing": "Tar bort…",
+        "error": {
+          "notFound": "Tilldelningen kunde inte hittas. Den kan redan vara borttagen.",
+          "conflict": "Tilldelningen kunde inte tas bort just nu. Ladda om sidan och försök igen.",
+          "generic": "Tilldelningen kunde inte tas bort. Försök igen."
+        }
+      },
       "rejectCommentLabel": "Kommentar (valfri)",
       "rewardMetaRequested": "Väntar på svar",
       "rewardMetaApproved": "Godkänd – lämna ut",
