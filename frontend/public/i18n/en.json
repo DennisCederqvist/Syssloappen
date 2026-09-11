@@ -403,12 +403,14 @@
         "lastUsed": "Last used",
         "connected": "Paired",
         "activeUntil": "Active until",
-        "maxValidUntil": "Valid at most until",
+        "maxValidUntil": "Disconnects if unused after",
         "revokeConfirm": "The child will be logged out of this device immediately. Continue?",
         "revokeYes": "Yes, log out",
         "revoking": "Logging out…",
         "revokeButton": "Log out the device",
-        "footNote": "Active child sessions renew safely with use, but never last more than 30 days from login."
+        "removeButton": "Remove",
+        "removing": "Removing…",
+        "footNote": "Active child sessions renew automatically with use, and only disconnect if the device goes unused for 30 days."
       },
       "editSheet": {
         "title": "Manage {{name}}",
@@ -480,6 +482,8 @@
         "pointsLabel": "Point cost",
         "stockLabel": "Stock quantity",
         "imageLabel": "Image",
+        "chooseImage": "Choose photo",
+        "takePhoto": "Take photo",
         "imageUploadError": "The image couldn't be uploaded. Try again.",
         "submitCreate": "Create reward",
         "submitEdit": "Save changes",

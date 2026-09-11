@@ -403,12 +403,14 @@
         "lastUsed": "Senast använd",
         "connected": "Kopplad",
         "activeUntil": "Aktiv till",
-        "maxValidUntil": "Längst giltig till",
+        "maxValidUntil": "Kopplas bort om oanvänd efter",
         "revokeConfirm": "Barnet loggas ut direkt på den här enheten. Fortsätta?",
         "revokeYes": "Ja, logga ut",
         "revoking": "Loggar ut…",
         "revokeButton": "Logga ut enheten",
-        "footNote": "Aktiva barnsessioner förnyas säkert vid användning, men gäller aldrig längre än 30 dagar från inloggningen."
+        "removeButton": "Ta bort",
+        "removing": "Tar bort…",
+        "footNote": "Aktiva barnsessioner förnyas automatiskt vid användning och kopplas bara bort om enheten inte används på 30 dagar."
       },
       "editSheet": {
         "title": "Hantera {{name}}",
@@ -480,6 +482,8 @@
         "pointsLabel": "Poängpris",
         "stockLabel": "Antal i lager",
         "imageLabel": "Bild",
+        "chooseImage": "Välj bild",
+        "takePhoto": "Ta bild",
         "imageUploadError": "Bilden kunde inte laddas upp. Försök igen.",
         "submitCreate": "Skapa belöning",
         "submitEdit": "Spara ändringar",
