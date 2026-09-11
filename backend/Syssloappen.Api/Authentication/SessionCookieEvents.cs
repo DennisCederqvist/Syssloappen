@@ -79,6 +79,9 @@ public sealed class SessionCookieEvents(
 
         if (shouldRenew)
         {
+            // Push the idle deadline forward with every renewal too, so a session only lapses
+            // after ~30 days of no activity, not 30 days from the original login.
+            session.AbsoluteExpiresAt = now.Add(ChildDeviceSessionService.MaximumLifetime);
             session.ExpiresAt = Min(
                 now.Add(ChildDeviceSessionService.RenewableLifetime),
                 session.AbsoluteExpiresAt);

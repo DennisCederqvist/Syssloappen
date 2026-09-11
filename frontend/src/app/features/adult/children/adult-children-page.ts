@@ -72,6 +72,7 @@ export class AdultChildrenPage implements OnInit {
   readonly deviceSessionsError = signal('');
   readonly confirmingRevocation = signal<string | null>(null);
   readonly revokingSession = signal<string | null>(null);
+  readonly removingSession = signal<string | null>(null);
   readonly revocationError = signal('');
   readonly editingChild = signal<ChildSummary | null>(null);
   readonly isUpdatingChild = signal(false);
@@ -292,6 +293,28 @@ export class AdultChildrenPage implements OnInit {
 
   isSessionExpired(session: ChildDeviceSession): boolean {
     return new Date(session.expiresAt).getTime() <= Date.now();
+  }
+
+  removeDeviceSession(session: ChildDeviceSession): void {
+    const child = this.deviceSessionsChild();
+    if (!child || this.removingSession()) return;
+
+    this.removingSession.set(session.sessionId);
+    this.revocationError.set('');
+    this.childrenService
+      .revokeDeviceSession(child.id, session.sessionId)
+      .pipe(finalize(() => this.removingSession.set(null)))
+      .subscribe({
+        next: () => {
+          this.deviceSessions.update((sessions) =>
+            sessions.filter((current) => current.sessionId !== session.sessionId),
+          );
+        },
+        error: () =>
+          this.revocationError.set(
+            this.transloco.translate('adult.children.revocationError.generic'),
+          ),
+      });
   }
 
   openEditChild(child: ChildSummary): void {

@@ -157,7 +157,7 @@ public sealed class AuthController(
         var signInResult = await signInManager.PasswordSignInAsync(
             user,
             request.Password,
-            isPersistent: false,
+            isPersistent: true,
             lockoutOnFailure: false);
 
         if (!signInResult.Succeeded)

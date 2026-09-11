@@ -72,21 +72,23 @@ public sealed class ChildDeviceSessionTests : IDisposable
     }
 
     [Fact]
-    public async Task Active_session_renews_without_passing_its_absolute_maximum()
+    public async Task Active_session_renews_and_pushes_its_idle_deadline_forward()
     {
         using var adultClient = CreateClient();
         using var childClient = CreateClient();
         await RegisterAndLoginAdult(adultClient, "Familjen Carlsson", "adult.renew@example.test");
         var child = await CreateChild(adultClient, "Iris");
         await Pair(adultClient, childClient, child.Id);
-        var absoluteLimit = DateTime.UtcNow.AddHours(2);
+        // AbsoluteExpiresAt is an idle timeout, not a hard cap from login: a session close to it
+        // that's still being actively used must have that deadline pushed back out, not clamped.
+        var closeToIdleDeadline = DateTime.UtcNow.AddHours(2);
 
         using (var scope = factory.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var session = await dbContext.ChildDeviceSessions.SingleAsync();
             session.ExpiresAt = DateTime.UtcNow.AddMinutes(30);
-            session.AbsoluteExpiresAt = absoluteLimit;
+            session.AbsoluteExpiresAt = closeToIdleDeadline;
             session.LastSeenAt = DateTime.UtcNow.AddHours(-1);
             await dbContext.SaveChangesAsync();
         }
@@ -98,8 +100,9 @@ public sealed class ChildDeviceSessionTests : IDisposable
         using var verificationScope = factory.Services.CreateScope();
         var verificationDb = verificationScope.ServiceProvider.GetRequiredService<AppDbContext>();
         var renewed = await verificationDb.ChildDeviceSessions.AsNoTracking().SingleAsync();
-        Assert.Equal(absoluteLimit, renewed.AbsoluteExpiresAt);
-        Assert.Equal(absoluteLimit, renewed.ExpiresAt);
+        Assert.True(renewed.AbsoluteExpiresAt > closeToIdleDeadline.AddDays(27));
+        Assert.True(renewed.ExpiresAt < renewed.AbsoluteExpiresAt);
+        Assert.True(renewed.ExpiresAt > DateTime.UtcNow.AddDays(6));
     }
 
     [Fact]
@@ -153,6 +156,35 @@ public sealed class ChildDeviceSessionTests : IDisposable
 
         Assert.Equal(HttpStatusCode.NoContent, revokeResponse.StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await childClient.GetAsync("/api/auth/me")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Deleting_an_already_revoked_or_expired_session_removes_it_instead_of_re_revoking()
+    {
+        using var adultClient = CreateClient();
+        using var childClient = CreateClient();
+        await RegisterAndLoginAdult(adultClient, "Familjen Holt", "adult.purge@example.test");
+        var child = await CreateChild(adultClient, "Ali");
+        await Pair(adultClient, childClient, child.Id);
+        var sessionId = (await adultClient.GetFromJsonAsync<List<ChildDeviceSessionResponse>>(
+            $"/api/children/{child.Id}/device-sessions"))!.Single().SessionId;
+
+        // First delete call revokes the still-active session (existing behavior).
+        var firstDelete = await adultClient.DeleteAsync(
+            $"/api/children/{child.Id}/device-sessions/{sessionId}");
+        Assert.Equal(HttpStatusCode.NoContent, firstDelete.StatusCode);
+        var afterRevoke = await adultClient.GetFromJsonAsync<List<ChildDeviceSessionResponse>>(
+            $"/api/children/{child.Id}/device-sessions");
+        Assert.NotNull(Assert.Single(afterRevoke!).RevokedAt);
+
+        // A second delete call, on an already-revoked row, permanently removes it so the list
+        // doesn't grow forever with dead devices.
+        var secondDelete = await adultClient.DeleteAsync(
+            $"/api/children/{child.Id}/device-sessions/{sessionId}");
+        Assert.Equal(HttpStatusCode.NoContent, secondDelete.StatusCode);
+        var afterPurge = await adultClient.GetFromJsonAsync<List<ChildDeviceSessionResponse>>(
+            $"/api/children/{child.Id}/device-sessions");
+        Assert.Empty(afterPurge!);
     }
 
     [Fact]

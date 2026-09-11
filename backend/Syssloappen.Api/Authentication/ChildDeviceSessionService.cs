@@ -9,7 +9,9 @@ namespace Syssloappen.Api.Authentication;
 
 public static class ChildDeviceSessionService
 {
-    // Activity may renew the cookie for seven days, but never beyond thirty days.
+    // Each renewal extends the near-term cookie by seven days. The thirty-day figure is an
+    // idle timeout, not a hard cap from login — SessionCookieEvents pushes it forward on every
+    // renewal, so a continuously-used device never hits it; only ~30 days of no activity does.
     public static readonly TimeSpan RenewableLifetime = TimeSpan.FromDays(7);
 
     public static readonly TimeSpan MaximumLifetime = TimeSpan.FromDays(30);

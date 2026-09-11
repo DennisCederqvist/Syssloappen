@@ -82,7 +82,22 @@ public sealed class ChildDeviceSessionsController(
             return NotFound();
         }
 
-        session.RevokedAt ??= timeProvider.GetUtcNow().UtcDateTime;
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var isAlreadyInactive = session.RevokedAt is not null
+            || session.ExpiresAt <= now
+            || session.AbsoluteExpiresAt <= now;
+
+        // An already-inactive row represents nothing live to disconnect, so this becomes a
+        // permanent removal instead — lets the adult clear old devices out of the list.
+        if (isAlreadyInactive)
+        {
+            dbContext.ChildDeviceSessions.Remove(session);
+        }
+        else
+        {
+            session.RevokedAt = now;
+        }
+
         await dbContext.SaveChangesAsync();
         return NoContent();
     }
