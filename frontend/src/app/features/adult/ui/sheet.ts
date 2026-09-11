@@ -43,7 +43,7 @@ export class AdultSheet {
   readonly panelId = input.required<string>();
   readonly headingId = input.required<string>();
   readonly title = input.required<string>();
-  readonly closeLabel = input('Stäng');
+  readonly closeLabel = input.required<string>();
   readonly close = output<void>();
 
   @HostListener('document:keydown.escape')

@@ -1,0 +1,632 @@
+{
+  "common": {
+    "actions": {
+      "save": "Spara",
+      "cancel": "Avbryt",
+      "close": "Stäng",
+      "confirm": "Bekräfta",
+      "retry": "Försök igen"
+    },
+    "errors": {
+      "generic": "Något gick fel. Försök igen.",
+      "network": "Kunde inte nå servern. Kontrollera din anslutning.",
+      "unauthorized": "Du har inte behörighet att göra detta."
+    },
+    "loading": "Laddar…",
+    "settings": {
+      "language": {
+        "label": "Språk",
+        "swedish": "Svenska",
+        "english": "Engelska"
+      }
+    }
+  },
+  "session": {
+    "opening": "Öppnar Syssloappen…"
+  },
+  "auth": {
+    "login": {
+      "hero": {
+        "eyebrow": "Enklare familjevardag",
+        "title": "Små uppgifter.<br />Stora framsteg.",
+        "subtitle": "En lugn plats där familjen hjälps åt och varje insats räknas.",
+        "footer": "Tryggt separerat för varje familj."
+      },
+      "modeGroupLabel": "Välj inloggning",
+      "modeAdult": "Vuxen",
+      "modeChild": "Barn",
+      "title": "Logga in",
+      "titleRegister": "Skapa din familj",
+      "subtitle": "Välj den vy som passar dig.",
+      "subtitleRegister": "Kom igång med ett vuxenkonto på någon minut.",
+      "registrationSuccess": {
+        "eyebrow": "Kontot är skapat",
+        "welcome": "Välkommen till Syssloappen!",
+        "description": "Din familj och ditt vuxenkonto är klara. Spara familjekoden innan du fortsätter.",
+        "familyCodeLabel": "Familjekod",
+        "copy": "Kopiera koden",
+        "copied": "Kopierad ✓",
+        "copyError": "Koden kunde inte kopieras automatiskt. Markera och kopiera den manuellt.",
+        "importantLabel": "Viktigt:",
+        "importantNote": "Koden visas bara nu. Den behövs tillsammans med barnets namn och lösenord vid reservinloggning.",
+        "continue": "Jag har sparat koden – fortsätt"
+      },
+      "adultTabsLabel": "Vuxenkonto",
+      "adultTabLogin": "Logga in",
+      "adultTabRegister": "Skapa konto",
+      "form": {
+        "email": "E-post",
+        "emailPlaceholder": "du@example.se",
+        "emailError": "Skriv en giltig e-postadress.",
+        "password": "Lösenord",
+        "passwordPlaceholder": "Ditt lösenord",
+        "passwordError": "Skriv ditt lösenord.",
+        "submit": "Logga in som vuxen",
+        "submitting": "Loggar in…",
+        "haveInvitation": "Jag har en inbjudan"
+      },
+      "registration": {
+        "householdName": "Familjens namn",
+        "householdNamePlaceholder": "Till exempel Familjen Andersson",
+        "householdNameError": "Skriv familjens namn.",
+        "email": "Din e-post",
+        "emailError": "Skriv en giltig e-postadress.",
+        "firstName": "Förnamn",
+        "firstNamePlaceholder": "Till exempel Anna",
+        "optional": "(valfritt)",
+        "lastName": "Efternamn",
+        "lastNamePlaceholder": "Till exempel Andersson",
+        "nickname": "Användarnamn",
+        "nicknamePlaceholder": "Till exempel annaa",
+        "nicknameHint": "Visas t.ex. på Hem om du inte anger ett förnamn.",
+        "password": "Välj lösenord",
+        "passwordPlaceholder": "Minst 8 tecken",
+        "passwordHint": "Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.",
+        "passwordError": "Lösenordet uppfyller inte kraven.",
+        "confirmPassword": "Upprepa lösenordet",
+        "confirmPasswordPlaceholder": "Skriv lösenordet igen",
+        "confirmPasswordError": "Lösenorden är inte lika.",
+        "submit": "Skapa familj och konto",
+        "submitting": "Skapar familjen…",
+        "disclaimer": "När du fortsätter skapas en ny, separat familj där du blir vuxen administratör.",
+        "errorInvalid": "Kontot kunde inte skapas. E-postadressen kan redan användas eller uppgifterna behöver rättas.",
+        "errorGeneric": "Något gick fel när kontot skapades. Försök igen om en liten stund."
+      },
+      "childModeGroupLabel": "Barnets inloggningssätt",
+      "childTabPairing": "Engångskod",
+      "childTabFallback": "Familjekod",
+      "pairing": {
+        "codeLabel": "Kod från en vuxen",
+        "codePlaceholder": "Skriv engångskoden",
+        "codeError": "Koden ska innehålla 8 tecken.",
+        "submit": "Koppla min enhet",
+        "submitting": "Kopplar…",
+        "hint": "Be en vuxen skapa en ny kod. Den gäller en kort stund och kan bara användas en gång."
+      },
+      "fallback": {
+        "familyCodeLabel": "Familjekod",
+        "familyCodePlaceholder": "Familjens kod",
+        "familyCodeError": "Skriv familjekoden.",
+        "usernameLabel": "Mitt namn",
+        "usernamePlaceholder": "Ditt användarnamn",
+        "usernameError": "Skriv ditt användarnamn.",
+        "passwordLabel": "Mitt lösenord",
+        "passwordPlaceholder": "Ditt lösenord",
+        "passwordError": "Skriv ditt lösenord.",
+        "submit": "Öppna min sida",
+        "submitting": "Öppnar…",
+        "hint": "Använd detta alternativ om en vuxen inte kan skapa en engångskod just nu."
+      },
+      "error": {
+        "rateLimited": "För många försök. Vänta en liten stund och försök igen.",
+        "generic": "Inloggningen lyckades inte. Kontrollera uppgifterna och försök igen."
+      }
+    },
+    "acceptInvitation": {
+      "eyebrow": "Syssloappen",
+      "title": "Gå med i familjen",
+      "successMessage": "Kontot är skapat. Du kan nu logga in som vuxen.",
+      "goToLogin": "Gå till login",
+      "description": "Skriv in koden du fått och välj dina egna inloggningsuppgifter.",
+      "invitationCodeLabel": "Inbjudningskod",
+      "invitationCodePlaceholder": "ABCD-EFGH",
+      "emailLabel": "E-post",
+      "firstNameLabel": "Förnamn (valfritt)",
+      "lastNameLabel": "Efternamn (valfritt)",
+      "nicknameLabel": "Användarnamn (valfritt)",
+      "passwordLabel": "Lösenord",
+      "submit": "Skapa vuxenkonto",
+      "submitting": "Skapar konto…",
+      "errorInvalidCode": "Koden är felaktig, utgången eller redan använd.",
+      "errorGeneric": "Kontot kunde inte skapas. Kontrollera uppgifterna."
+    }
+  },
+  "adult": {
+    "nav": {
+      "ariaLabel": "Huvudnavigation",
+      "home": "Hem",
+      "chores": "Sysslor",
+      "rewards": "Belöningar",
+      "settings": "Inställningar"
+    },
+    "settings": {
+      "title": "Inställningar",
+      "navAriaLabel": "Tillgängliga familjeinställningar",
+      "children": { "title": "Barn och konton", "subtitle": "Profiler och enheter" },
+      "adults": { "title": "Hantera vuxna", "subtitle": "Bjud in och se vem som har tillgång" },
+      "history": { "title": "Historik", "subtitle": "Familjens avslutade aktiviteter" },
+      "logout": "Logga ut"
+    },
+    "home": {
+      "welcome": "Välkommen, {{name}}!",
+      "subtitle": "Här är läget i familjen idag.",
+      "childrenTitle": "Barn",
+      "childProgress": "{{completed}} / {{total}} klara",
+      "childNoChores": "Inga sysslor idag",
+      "pendingTitle": "Behöver godkännas",
+      "pendingEmpty": "Inget väntar på granskning.",
+      "assignmentMeta": "{{childName}} · {{points}} poäng",
+      "rejectCommentLabel": "Kommentar till {{name}} (valfri)",
+      "send": "Skicka",
+      "sending": "Skickar…",
+      "approve": "Godkänn",
+      "reject": "Avslå",
+      "rewardsTitle": "Belöningsönskningar",
+      "rewardsEmpty": "Inga aktiva belöningsönskningar.",
+      "markDelivered": "Markera som utlämnad",
+      "loadError": "Översikten kunde inte hämtas. Försök igen.",
+      "reviewError": "Granskningen kunde inte sparas. Försök igen.",
+      "rewardChangeError": "Belöningsönskan kunde inte hanteras. Försök igen."
+    },
+    "manageAdults": {
+      "title": "Hantera vuxna",
+      "subtitle": "Bjud in fler vuxna och se vem som just nu har tillgång till familjen.",
+      "invitation": {
+        "oneTimeCodeLabel": "Engångskod",
+        "validUntil": "Giltig till {{date}}",
+        "copy": "Kopiera kod",
+        "copied": "Kopierad",
+        "createLabel": "+ Bjud in vuxen",
+        "creating": "Skapar kod…",
+        "createError": "Inbjudningskoden kunde inte skapas. Försök igen.",
+        "copyError": "Koden kunde inte kopieras automatiskt. Kopiera den manuellt."
+      },
+      "list": {
+        "loadingSr": "Hämtar vuxna…",
+        "loadError": "De vuxna kunde inte hämtas. Försök igen.",
+        "youLabel": "Det här är du",
+        "ownerBadge": "Huvudägare",
+        "invitedBadge": "Inbjuden"
+      },
+      "detail": {
+        "closeLabel": "Stäng",
+        "profile": {
+          "firstName": "Förnamn",
+          "lastName": "Efternamn",
+          "nickname": "Användarnamn",
+          "save": "Spara",
+          "saving": "Sparar…",
+          "success": "Uppgifterna är sparade.",
+          "error": "Uppgifterna kunde inte sparas. Försök igen."
+        },
+        "password": {
+          "title": "Byt lösenord",
+          "current": "Nuvarande lösenord",
+          "new": "Nytt lösenord",
+          "hint": "Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.",
+          "confirm": "Upprepa nytt lösenord",
+          "mismatch": "Lösenorden är inte lika.",
+          "change": "Byt lösenord",
+          "changing": "Ändrar…",
+          "success": "Lösenordet är ändrat.",
+          "errorInvalid": "Nuvarande lösenord stämmer inte, eller det nya lösenordet uppfyller inte kraven.",
+          "errorGeneric": "Lösenordet kunde inte ändras. Försök igen."
+        },
+        "leave": {
+          "button": "Lämna familjen",
+          "confirmQuestion": "Du loggas ut direkt och tappar tillgång till familjen. Fortsätta?",
+          "confirmYes": "Ja, lämna familjen",
+          "leaving": "Lämnar…"
+        },
+        "ownerNote": "{{name}} skapade familjen och kan inte kopplas bort.",
+        "disconnect": {
+          "button": "Koppla bort",
+          "confirmQuestion": "{{name}} loggas ut direkt och tappar tillgång till familjen. Fortsätta?",
+          "confirmYes": "Ja, koppla bort",
+          "disconnecting": "Kopplar bort…",
+          "errorNotFound": "Den vuxna finns inte längre i familjen. Uppdatera listan och försök igen.",
+          "errorConflict": "Den här personen kan inte kopplas bort just nu.",
+          "errorGeneric": "Kunde inte koppla bort. Försök igen om en liten stund."
+        }
+      }
+    },
+    "chores": {
+      "pageTitle": "Sysslor",
+      "loadError": "Sysslorna kunde inte hämtas. Försök igen.",
+      "createSuccess": "{{title}} är skapad och kan nu tilldelas.",
+      "updateSuccess": "{{title}} är uppdaterad.",
+      "deactivateSuccess": "{{title}} är bortplockad från uppgiftsbanken.",
+      "assignSuccess": "{{choreTitle}} är tilldelad till {{childName}}.",
+      "cancelAssignmentSuccess": "{{choreTitle}} är borttagen från {{childName}}.",
+      "createError": {
+        "validation": "Kontrollera titel, beskrivning och poäng.",
+        "generic": "Sysslan kunde inte skapas. Försök igen."
+      },
+      "updateError": {
+        "notFound": "Sysslan är inte längre aktiv eller finns inte i din familj.",
+        "validation": "Kontrollera titel, beskrivning och poäng.",
+        "generic": "Sysslan kunde inte uppdateras. Försök igen."
+      },
+      "deactivateError": {
+        "notFound": "Sysslan är redan bortplockad eller finns inte i din familj.",
+        "generic": "Sysslan kunde inte plockas bort. Försök igen."
+      },
+      "assignmentValidation": "Välj en syssla och ett aktivt barn.",
+      "assignError": {
+        "notFound": "Sysslan eller barnet finns inte längre i din familj.",
+        "generic": "Sysslan kunde inte tilldelas. Försök igen."
+      },
+      "cancelAssignmentError": {
+        "notFound": "Tilldelningen finns inte längre i din familj.",
+        "conflict": "Tilldelningen har redan godkänts eller ändrats och kan inte tas bort.",
+        "generic": "Tilldelningen kunde inte tas bort. Försök igen."
+      },
+      "archiveError": "Historiken kunde inte döljas. Försök igen.",
+      "restoreError": "Historiken kunde inte återställas. Försök igen.",
+      "status": {
+        "assigned": "Tilldelad",
+        "pendingApproval": "Väntar på granskning",
+        "needsRedo": "Behöver göras om",
+        "approved": "Godkänd",
+        "cancelled": "Borttagen"
+      },
+      "newChoreButton": "+ Ny syssla",
+      "pointsOption": "{{points}} poäng",
+      "createSheet": {
+        "title": "Skapa syssla",
+        "close": "Stäng formuläret",
+        "titleLabel": "Titel",
+        "titlePlaceholder": "Till exempel Mata katten",
+        "titleError": "Skriv en titel med högst 100 tecken.",
+        "pointsLabel": "Poäng",
+        "descriptionLabel": "Beskrivning",
+        "descriptionOptional": "(valfri)",
+        "descriptionPlaceholder": "En kort och tydlig instruktion",
+        "descriptionError": "Beskrivningen får innehålla högst 500 tecken.",
+        "submit": "Skapa syssla",
+        "submitting": "Skapar…"
+      },
+      "assign": {
+        "title": "Tilldela syssla",
+        "close": "Stäng tilldelningen",
+        "choreLabel": "Syssla",
+        "choosePlaceholder": "Välj syssla",
+        "choreOption": "{{title}} · {{points}} p",
+        "choreError": "Välj en syssla.",
+        "childLabel": "Barn",
+        "childPlaceholder": "Välj barn",
+        "childError": "Välj ett aktivt barn.",
+        "dateLabel": "Datum",
+        "dateHint": "Sysslan visas för barnet på det här datumet.",
+        "noActiveChildren": "Lägg till ett aktivt barn innan du tilldelar en syssla.",
+        "submit": "Tilldela sysslan",
+        "submitting": "Tilldelar…"
+      },
+      "editSheet": {
+        "title": "Redigera syssla",
+        "close": "Stäng redigeringen",
+        "note": "Nya poäng gäller framtida tilldelningar. Tidigare poäng ändras inte.",
+        "submit": "Spara ändringar",
+        "saving": "Sparar…",
+        "deactivateQuestion": "Plocka bort sysslan?",
+        "deactivateConfirm": "Ja, plocka bort",
+        "deactivating": "Plockar bort…",
+        "deactivateButton": "Ta bort syssla"
+      },
+      "list": {
+        "title": "Uppgiftsbank",
+        "loadingSr": "Hämtar familjens sysslor och tilldelningar…",
+        "emptyTitle": "Inga sysslor ännu",
+        "emptySubtitle": "Skapa en tydlig första uppgift för familjen.",
+        "editAria": "Redigera {{title}}",
+        "assignButton": "Tilldela",
+        "addNew": "Ny syssla"
+      }
+    },
+    "children": {
+      "loadError": "Barnen kunde inte hämtas. Försök igen.",
+      "createError": {
+        "conflict": "Användarnamnet används redan av ett barn i familjen.",
+        "validation": "Kontrollera namn, användarnamn och lösenord.",
+        "generic": "Barnkontot kunde inte skapas. Försök igen om en liten stund."
+      },
+      "pairingError": {
+        "notFound": "Barnet är inte längre aktivt eller saknar ett konto.",
+        "generic": "Koden kunde inte skapas. Försök igen om en liten stund."
+      },
+      "pairingCopyError": "Koden kunde inte kopieras automatiskt. Kopiera den manuellt.",
+      "revocationError": {
+        "notFound": "Enheten finns inte längre. Uppdatera listan och försök igen.",
+        "generic": "Enheten kunde inte loggas ut. Försök igen om en liten stund."
+      },
+      "editSuccess": "Namnet är uppdaterat.",
+      "editError": {
+        "notFound": "Barnet är inte längre aktivt eller finns inte i din familj.",
+        "validation": "Skriv ett namn med högst 100 tecken.",
+        "generic": "Namnet kunde inte uppdateras. Försök igen om en liten stund."
+      },
+      "deactivateSuccess": "{{name}} är avaktiverad och visas inte längre.",
+      "deactivateError": {
+        "notFound": "Barnet är redan avaktiverat eller finns inte i din familj.",
+        "generic": "Barnet kunde inte avaktiveras. Försök igen om en liten stund."
+      },
+      "deviceSessionsError": {
+        "notFound": "Barnet finns inte längre i den aktiva familjevyn.",
+        "generic": "De kopplade enheterna kunde inte hämtas. Försök igen."
+      },
+      "pageTitle": "Barn och konton",
+      "addButton": "+ Lägg till barn",
+      "created": {
+        "title": "{{name}} är tillagd",
+        "body": "Barnets användarnamn är <strong>{{userName}}</strong>. Nu kan du koppla barnets enhet med en engångskod.",
+        "pairCode": "Koppla enhet",
+        "creatingCode": "Skapar kod…"
+      },
+      "deactivationBanner": {
+        "title": "Barnprofilen är avaktiverad",
+        "closeAria": "Stäng bekräftelsen"
+      },
+      "pairingSheet": {
+        "title": "Koppla {{name}}s enhet",
+        "close": "Stäng engångskoden",
+        "codeLabel": "Kod för barnets enhet",
+        "validUntil": "Gäller till {{time}}",
+        "copy": "Kopiera koden",
+        "copied": "Kopierad ✓",
+        "step1": "Öppna Syssloappen på barnets enhet.",
+        "step2": "Välj Barn och sedan Engångskod.",
+        "step3": "Skriv koden innan den går ut.",
+        "secureNoteLabel": "Säker kod:",
+        "secureNote": "Den kan bara användas en gång och sparas inte i klartext. Skapa en ny kod om tiden hinner gå ut."
+      },
+      "deviceSessions": {
+        "title": "{{name}}s enheter",
+        "close": "Stäng listan med kopplade enheter",
+        "intro": "Här ser du tidigare kopplingar. Logga ut en enhet direkt om den har tappats bort eller inte längre används.",
+        "loadingSr": "Hämtar kopplade enheter…",
+        "emptyTitle": "Inga enheter är kopplade",
+        "emptySubtitle": "Skapa en engångskod från barnkortet för att koppla barnets mobil eller surfplatta.",
+        "deviceTitle": "Kopplad enhet {{index}}",
+        "statusRevoked": "Utloggad",
+        "statusExpired": "Utgången",
+        "statusActive": "Aktiv",
+        "lastUsed": "Senast använd",
+        "connected": "Kopplad",
+        "activeUntil": "Aktiv till",
+        "maxValidUntil": "Längst giltig till",
+        "revokeConfirm": "Barnet loggas ut direkt på den här enheten. Fortsätta?",
+        "revokeYes": "Ja, logga ut",
+        "revoking": "Loggar ut…",
+        "revokeButton": "Logga ut enheten",
+        "footNote": "Aktiva barnsessioner förnyas säkert vid användning, men gäller aldrig längre än 30 dagar från inloggningen."
+      },
+      "editSheet": {
+        "title": "Hantera {{name}}",
+        "close": "Stäng barnprofilen",
+        "intro": "Ändra namnet som visas i familjen eller avaktivera profilen.",
+        "nameLabel": "Visningsnamn",
+        "nameError": "Skriv ett namn med högst 100 tecken.",
+        "save": "Spara nytt namn",
+        "saving": "Sparar…",
+        "deactivateQuestion": "Är du säker på att {{name}} ska avaktiveras?",
+        "deactivateConfirm": "Ja, avaktivera",
+        "deactivating": "Avaktiverar…",
+        "deactivateButton": "Avaktivera barn"
+      },
+      "createSheet": {
+        "title": "Lägg till ett barn",
+        "close": "Stäng formuläret",
+        "intro": "Uppgifterna används bara inom din familj.",
+        "nameLabel": "Barnets namn",
+        "namePlaceholder": "Till exempel Maja",
+        "nameError": "Skriv barnets namn.",
+        "usernameLabel": "Användarnamn",
+        "usernamePlaceholder": "Till exempel maja",
+        "usernameHint": "Barnvänligt och unikt inom familjen.",
+        "usernameError": "Skriv ett användarnamn.",
+        "passwordLabel": "Lösenord",
+        "passwordPlaceholder": "Minst 8 tecken",
+        "passwordHint": "Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.",
+        "passwordError": "Lösenordet uppfyller inte kraven.",
+        "confirmPasswordLabel": "Upprepa lösenordet",
+        "confirmPasswordPlaceholder": "Skriv lösenordet igen",
+        "confirmPasswordRequired": "Upprepa lösenordet.",
+        "confirmPasswordMismatch": "Lösenorden är inte lika.",
+        "submit": "Skapa barnkonto",
+        "submitting": "Skapar kontot…"
+      },
+      "list": {
+        "title": "Familjens barn",
+        "loadingSr": "Hämtar familjens barn…",
+        "emptyTitle": "Inga barn är tillagda ännu",
+        "emptySubtitle": "Skapa familjens första barnkonto för att senare kunna tilldela sysslor.",
+        "addFirst": "+ Lägg till första barnet",
+        "manageAria": "Hantera {{name}}",
+        "activeAccount": "Aktivt barnkonto",
+        "pairButton": "Koppla enhet",
+        "pairing": "Skapar…",
+        "viewDevices": "Visa enheter"
+      }
+    },
+    "rewards": {
+      "loadError": "Belöningarna kunde inte hämtas. Försök igen.",
+      "saveSuccessCreated": "{{name}} är skapad.",
+      "saveSuccessUpdated": "{{name}} är uppdaterad.",
+      "saveError": {
+        "validation": "Kontrollera namn, beskrivning och poängpris.",
+        "generic": "Belöningen kunde inte sparas. Försök igen."
+      },
+      "deactivateSuccess": "{{name}} är bortplockad från belöningslistan.",
+      "deactivateError": "Belöningen kunde inte plockas bort. Försök igen.",
+      "pageTitle": "Belöningar",
+      "newButton": "+ Ny belöning",
+      "formSheet": {
+        "createTitle": "Skapa belöning",
+        "editTitle": "Redigera belöning",
+        "close": "Stäng formuläret",
+        "nameLabel": "Namn",
+        "descriptionLabel": "Beskrivning",
+        "descriptionOptional": "(valfri)",
+        "pointsLabel": "Poängpris",
+        "stockLabel": "Antal i lager",
+        "imageLabel": "Bild",
+        "imageUploadError": "Bilden kunde inte laddas upp. Försök igen.",
+        "submitCreate": "Skapa belöning",
+        "submitEdit": "Spara ändringar",
+        "saving": "Sparar…"
+      },
+      "deactivate": {
+        "question": "Plocka bort belöningen?",
+        "confirmYes": "Ja, plocka bort",
+        "button": "Ta bort belöning"
+      },
+      "list": {
+        "title": "Familjens lista",
+        "loadingSr": "Hämtar belöningar…",
+        "emptyTitle": "Inga belöningar ännu",
+        "emptySubtitle": "Skapa familjens första mål.",
+        "editAria": "Redigera {{name}}",
+        "stockLabel": "Lager: {{count}}",
+        "addNew": "Ny belöning"
+      }
+    },
+    "history": {
+      "detail": {
+        "points": "{{points}} poäng",
+        "assignmentCancelled": "Tilldelningen togs bort",
+        "pointsSpent": "{{points}} poäng användes",
+        "wishRejected": "Önskan fick avslag"
+      },
+      "status": {
+        "choreApproved": "Godkänd syssla",
+        "choreCancelled": "Avbruten syssla",
+        "rewardDelivered": "Utlämnad belöning",
+        "rewardRejected": "Avslagen belöning"
+      },
+      "loadError": "Historiken kunde inte hämtas. Försök igen.",
+      "hideError": "Posten kunde inte döljas. Försök igen.",
+      "restoreError": "Posten kunde inte återställas. Försök igen.",
+      "pageTitle": "Historik",
+      "subtitle": "Följ familjens avslutade sysslor och belöningar över tid.",
+      "loadingText": "Hämtar historiken…",
+      "recentTitle": "Senaste aktiviteter",
+      "showHidden": "Visa även dolda",
+      "hideHidden": "Dölj dolda",
+      "hideAria": "Dölj {{title}} ur historiken",
+      "hideButton": "Dölj",
+      "hiding": "Döljer…",
+      "restoreButton": "Återställ",
+      "restoring": "Återställer…",
+      "empty": "Det finns inga avslutade aktiviteter ännu."
+    },
+    "childProfile": {
+      "notFound": "Barnet kunde inte hittas i din familj.",
+      "loadError": "Barnets översikt kunde inte hämtas. Försök igen.",
+      "fallbackName": "Barn",
+      "assignButton": "Tilldela syssla",
+      "pickerSheet": {
+        "title": "Tilldela syssla till {{name}}",
+        "hint": "Tilldelas med dagens datum.",
+        "assigning": "Tilldelar…",
+        "empty": "Inga sysslor i uppgiftsbanken ännu."
+      },
+      "activeTitle": "Aktuella sysslor",
+      "activeEmpty": "Inga aktuella sysslor.",
+      "pointsMeta": "{{points}} poäng",
+      "rejectCommentLabel": "Kommentar (valfri)",
+      "rewardMetaRequested": "Väntar på svar",
+      "rewardMetaApproved": "Godkänd – lämna ut",
+      "recentApprovedTitle": "Senaste godkända sysslor",
+      "recentApprovedEmpty": "Inga godkända sysslor ännu."
+    }
+  },
+  "child": {
+    "common": {
+      "fallbackName": "där",
+      "greeting": "Hej {{name}}!",
+      "pointsAria": "{{points}} poäng"
+    },
+    "nav": {
+      "ariaLabel": "Huvudnavigation",
+      "chores": "Sysslor",
+      "rewards": "Belöningar",
+      "wishes": "Önskningar",
+      "settings": "Inställningar"
+    },
+    "home": {
+      "subtitle": "Detta är dagens sysslor",
+      "choresHeading": "Dagens sysslor",
+      "loadingText": "Hämtar dina sysslor…",
+      "loadError": "Dina sysslor och poäng kunde inte hämtas. Försök igen.",
+      "emptyTitle": "Inga sysslor just nu",
+      "emptyBody": "Du är klar tills du får en ny uppgift.",
+      "motivationDone": "Du är klar med allt för idag — bra jobbat!",
+      "motivationOne": "Du har 1 syssla kvar idag — du fixar det!",
+      "motivationMany": "Du har {{count}} sysslor kvar idag — du fixar det!",
+      "assignmentError404": "Sysslan finns inte längre i din lista.",
+      "assignmentError409": "Sysslan har redan ändrats. Uppdatera listan och försök igen.",
+      "assignmentErrorGeneric": "Sysslan kunde inte rapporteras. Försök igen."
+    },
+    "taskCard": {
+      "reviewCommentLabel": "Kommentar från en vuxen",
+      "submitAria": "Rapportera {{title}} som klar",
+      "submitting": "Rapporterar…",
+      "submit": "Jag är klar!"
+    },
+    "statusCard": {
+      "pendingMessage": "Bra jobbat! En vuxen tittar på uppgiften innan poängen delas ut.",
+      "needsRedoLabel": "Kommentar från en vuxen",
+      "needsRedoFallback": "Försök en gång till och rapportera när du är klar."
+    },
+    "rewards": {
+      "subtitle": "Byt dina poäng mot en belöning",
+      "heading": "Belöningar",
+      "loadingText": "Hämtar belöningar…",
+      "loadError": "Belöningarna kunde inte hämtas. Försök igen.",
+      "emptyTitle": "Inga belöningar just nu",
+      "emptyBody": "Kolla i Önskningar för status på det du redan har önskat.",
+      "requestErrorConflict": "Belöningen är redan önskad eller poängen räcker inte.",
+      "requestErrorGeneric": "Belöningen kunde inte önskas. Försök igen."
+    },
+    "rewardCard": {
+      "requestAria": "Önska {{name}}",
+      "requesting": "Önskar…",
+      "request": "Önska belöning"
+    },
+    "redemptions": {
+      "subtitle": "Dina önskade belöningar",
+      "loadingText": "Hämtar dina önskningar…",
+      "loadError": "Dina önskningar kunde inte hämtas.",
+      "emptyTitle": "Inga önskningar ännu",
+      "emptyBody": "Önska en belöning under Belöningar så dyker den upp här.",
+      "activeAriaLabel": "Aktuella önskningar",
+      "activeTitle": "Aktuella önskningar",
+      "recentAriaLabel": "Senaste besked",
+      "recentTitle": "Senaste besked",
+      "status": {
+        "requested": "Väntar på vuxen",
+        "approved": "Godkänd",
+        "cancelled": "Avslag",
+        "delivered": "Utlämnad"
+      }
+    },
+    "settings": {
+      "subtitle": "Inställningar",
+      "historyTitle": "Senast godkända",
+      "loadingText": "Hämtar din historik…",
+      "loadError": "Din historik kunde inte hämtas. Försök igen.",
+      "emptyText": "Inga godkända sysslor än — de dyker upp här när en vuxen har sagt bra jobbat!",
+      "approvedBody": "Godkänt! {{points}} poäng är tillagda i ditt saldo."
+    }
+  }
+}

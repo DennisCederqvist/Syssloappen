@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { focusAfterRender } from '../../shared/focus';
@@ -15,17 +16,21 @@ import { ChildChoresService } from './child-chores.service';
 
 @Component({
   selector: 'app-child-home-page',
-  imports: [ChildSideNav, ChildPageHeader, ChildTaskCard, ChildStatusCard],
+  imports: [ChildSideNav, ChildPageHeader, ChildTaskCard, ChildStatusCard, TranslocoPipe],
   templateUrl: './child-home-page.html',
 })
 export class ChildHomePage implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly childChoresService = inject(ChildChoresService);
+  private readonly transloco = inject(TranslocoService);
   private readonly motion = new ChildCardMotion(() =>
     this.actionableAssignments().map((assignment) => assignment.assignmentId),
   );
 
-  readonly childName = computed(() => this.auth.user()?.name || 'där');
+  readonly childName = computed(() => {
+    this.transloco.activeLang();
+    return this.auth.user()?.name || this.transloco.translate('child.common.fallbackName');
+  });
   readonly wobblingAssignmentId = this.motion.wobblingId;
   readonly assignments = signal<ChildChoreAssignment[]>([]);
   readonly availablePoints = signal(0);
@@ -41,10 +46,11 @@ export class ChildHomePage implements OnInit, OnDestroy {
   );
 
   readonly motivationMessage = computed(() => {
+    this.transloco.activeLang();
     const remaining = this.actionableAssignments().length;
-    if (remaining === 0) return 'Du är klar med allt för idag — bra jobbat!';
-    if (remaining === 1) return 'Du har 1 syssla kvar idag — du fixar det!';
-    return `Du har ${remaining} sysslor kvar idag — du fixar det!`;
+    if (remaining === 0) return this.transloco.translate('child.home.motivationDone');
+    if (remaining === 1) return this.transloco.translate('child.home.motivationOne');
+    return this.transloco.translate('child.home.motivationMany', { count: remaining });
   });
 
   ngOnInit(): void {
@@ -69,7 +75,7 @@ export class ChildHomePage implements OnInit, OnDestroy {
           this.assignments.set(assignments);
           this.availablePoints.set(rewards.availablePoints);
         },
-        error: () => this.loadError.set('Dina sysslor och poäng kunde inte hämtas. Försök igen.'),
+        error: () => this.loadError.set(this.transloco.translate('child.home.loadError')),
       });
   }
 
@@ -108,12 +114,13 @@ export class ChildHomePage implements OnInit, OnDestroy {
           focusAfterRender(`child-assignment-${assignment.assignmentId}`);
         },
         error: (error: HttpErrorResponse) => {
-          const message =
+          const message = this.transloco.translate(
             error.status === 404
-              ? 'Sysslan finns inte längre i din lista.'
+              ? 'child.home.assignmentError404'
               : error.status === 409
-                ? 'Sysslan har redan ändrats. Uppdatera listan och försök igen.'
-                : 'Sysslan kunde inte rapporteras. Försök igen.';
+                ? 'child.home.assignmentError409'
+                : 'child.home.assignmentErrorGeneric',
+          );
           this.submissionErrors.update((errors) => ({
             ...errors,
             [assignment.assignmentId]: message,

@@ -1,10 +1,12 @@
 import { Component, input } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /** "Hej {name}!" header for the child view: avatar placeholder (a real
  * uploaded photo later), name + subtitle, and a static points readout —
  * a plain white pill, not a button, so it must never look clickable. */
 @Component({
   selector: 'app-child-page-header',
+  imports: [TranslocoPipe],
   template: `
     <header class="flex items-start justify-between gap-3">
       <div class="flex min-w-0 items-center gap-3">
@@ -19,7 +21,7 @@ import { Component, input } from '@angular/core';
         </div>
         <div class="min-w-0">
           <h1 class="font-display text-[26px] leading-tight font-bold text-child-text">
-            Hej {{ name() }}!
+            {{ 'child.common.greeting' | transloco: { name: name() } }}
           </h1>
           <p class="mt-0.5 text-[15px] text-child-text-secondary">{{ subtitle() }}</p>
         </div>
@@ -27,7 +29,7 @@ import { Component, input } from '@angular/core';
 
       <div
         class="flex shrink-0 items-center gap-1.5 rounded-[18px] bg-white px-[18px] py-2.5 shadow-[0_3px_0_rgba(0,0,0,0.06)]"
-        [attr.aria-label]="points() + ' poäng'"
+        [attr.aria-label]="'child.common.pointsAria' | transloco: { points: points() }"
       >
         <svg
           viewBox="0 0 20 20"

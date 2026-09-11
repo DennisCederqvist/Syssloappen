@@ -1,0 +1,632 @@
+{
+  "common": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close",
+      "confirm": "Confirm",
+      "retry": "Try again"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "network": "Couldn't reach the server. Check your connection.",
+      "unauthorized": "You don't have permission to do that."
+    },
+    "loading": "Loading…",
+    "settings": {
+      "language": {
+        "label": "Language",
+        "swedish": "Swedish",
+        "english": "English"
+      }
+    }
+  },
+  "session": {
+    "opening": "Opening Syssloappen…"
+  },
+  "auth": {
+    "login": {
+      "hero": {
+        "eyebrow": "An easier family routine",
+        "title": "Small tasks.<br />Big progress.",
+        "subtitle": "A calm place where the family helps out and every effort counts.",
+        "footer": "Safely separated for every family."
+      },
+      "modeGroupLabel": "Choose login",
+      "modeAdult": "Adult",
+      "modeChild": "Child",
+      "title": "Log in",
+      "titleRegister": "Create your family",
+      "subtitle": "Choose the view that suits you.",
+      "subtitleRegister": "Get started with an adult account in a couple of minutes.",
+      "registrationSuccess": {
+        "eyebrow": "Account created",
+        "welcome": "Welcome to Syssloappen!",
+        "description": "Your family and adult account are ready. Save the family code before continuing.",
+        "familyCodeLabel": "Family code",
+        "copy": "Copy code",
+        "copied": "Copied ✓",
+        "copyError": "The code couldn't be copied automatically. Select and copy it manually.",
+        "importantLabel": "Important:",
+        "importantNote": "The code is only shown now. You'll need it, along with the child's name and password, for the fallback login.",
+        "continue": "I've saved the code – continue"
+      },
+      "adultTabsLabel": "Adult account",
+      "adultTabLogin": "Log in",
+      "adultTabRegister": "Create account",
+      "form": {
+        "email": "Email",
+        "emailPlaceholder": "you@example.com",
+        "emailError": "Enter a valid email address.",
+        "password": "Password",
+        "passwordPlaceholder": "Your password",
+        "passwordError": "Enter your password.",
+        "submit": "Log in as adult",
+        "submitting": "Logging in…",
+        "haveInvitation": "I have an invitation"
+      },
+      "registration": {
+        "householdName": "Family name",
+        "householdNamePlaceholder": "For example the Andersson family",
+        "householdNameError": "Enter the family's name.",
+        "email": "Your email",
+        "emailError": "Enter a valid email address.",
+        "firstName": "First name",
+        "firstNamePlaceholder": "For example Anna",
+        "optional": "(optional)",
+        "lastName": "Last name",
+        "lastNamePlaceholder": "For example Andersson",
+        "nickname": "Username",
+        "nicknamePlaceholder": "For example annaa",
+        "nicknameHint": "Shown on Home, for example, if you don't provide a first name.",
+        "password": "Choose a password",
+        "passwordPlaceholder": "At least 8 characters",
+        "passwordHint": "At least 8 characters, with an uppercase letter, a lowercase letter, and a digit.",
+        "passwordError": "The password doesn't meet the requirements.",
+        "confirmPassword": "Repeat the password",
+        "confirmPasswordPlaceholder": "Type the password again",
+        "confirmPasswordError": "The passwords don't match.",
+        "submit": "Create family and account",
+        "submitting": "Creating the family…",
+        "disclaimer": "Continuing creates a new, separate family where you become the adult administrator.",
+        "errorInvalid": "The account couldn't be created. The email may already be in use, or the details need correcting.",
+        "errorGeneric": "Something went wrong while creating the account. Please try again shortly."
+      },
+      "childModeGroupLabel": "How the child logs in",
+      "childTabPairing": "One-time code",
+      "childTabFallback": "Family code",
+      "pairing": {
+        "codeLabel": "Code from an adult",
+        "codePlaceholder": "Enter the one-time code",
+        "codeError": "The code must be 8 characters.",
+        "submit": "Pair my device",
+        "submitting": "Pairing…",
+        "hint": "Ask an adult to create a new code. It's valid for a short while and can only be used once."
+      },
+      "fallback": {
+        "familyCodeLabel": "Family code",
+        "familyCodePlaceholder": "The family's code",
+        "familyCodeError": "Enter the family code.",
+        "usernameLabel": "My name",
+        "usernamePlaceholder": "Your username",
+        "usernameError": "Enter your username.",
+        "passwordLabel": "My password",
+        "passwordPlaceholder": "Your password",
+        "passwordError": "Enter your password.",
+        "submit": "Open my page",
+        "submitting": "Opening…",
+        "hint": "Use this option if an adult can't create a one-time code right now."
+      },
+      "error": {
+        "rateLimited": "Too many attempts. Wait a moment and try again.",
+        "generic": "Login failed. Check the details and try again."
+      }
+    },
+    "acceptInvitation": {
+      "eyebrow": "Syssloappen",
+      "title": "Join the family",
+      "successMessage": "The account has been created. You can now log in as an adult.",
+      "goToLogin": "Go to login",
+      "description": "Enter the code you received and choose your own login details.",
+      "invitationCodeLabel": "Invitation code",
+      "invitationCodePlaceholder": "ABCD-EFGH",
+      "emailLabel": "Email",
+      "firstNameLabel": "First name (optional)",
+      "lastNameLabel": "Last name (optional)",
+      "nicknameLabel": "Username (optional)",
+      "passwordLabel": "Password",
+      "submit": "Create adult account",
+      "submitting": "Creating account…",
+      "errorInvalidCode": "The code is incorrect, expired, or already used.",
+      "errorGeneric": "The account couldn't be created. Check the details."
+    }
+  },
+  "adult": {
+    "nav": {
+      "ariaLabel": "Main navigation",
+      "home": "Home",
+      "chores": "Chores",
+      "rewards": "Rewards",
+      "settings": "Settings"
+    },
+    "settings": {
+      "title": "Settings",
+      "navAriaLabel": "Available family settings",
+      "children": { "title": "Children and accounts", "subtitle": "Profiles and devices" },
+      "adults": { "title": "Manage adults", "subtitle": "Invite and see who has access" },
+      "history": { "title": "History", "subtitle": "The family's finished activity" },
+      "logout": "Log out"
+    },
+    "home": {
+      "welcome": "Welcome, {{name}}!",
+      "subtitle": "Here's how the family is doing today.",
+      "childrenTitle": "Children",
+      "childProgress": "{{completed}} / {{total}} done",
+      "childNoChores": "No chores today",
+      "pendingTitle": "Needs approval",
+      "pendingEmpty": "Nothing is waiting for review.",
+      "assignmentMeta": "{{childName}} · {{points}} points",
+      "rejectCommentLabel": "Comment to {{name}} (optional)",
+      "send": "Send",
+      "sending": "Sending…",
+      "approve": "Approve",
+      "reject": "Reject",
+      "rewardsTitle": "Reward requests",
+      "rewardsEmpty": "No active reward requests.",
+      "markDelivered": "Mark as delivered",
+      "loadError": "The overview couldn't be loaded. Please try again.",
+      "reviewError": "The review couldn't be saved. Please try again.",
+      "rewardChangeError": "The reward request couldn't be handled. Please try again."
+    },
+    "manageAdults": {
+      "title": "Manage adults",
+      "subtitle": "Invite more adults and see who currently has access to the family.",
+      "invitation": {
+        "oneTimeCodeLabel": "One-time code",
+        "validUntil": "Valid until {{date}}",
+        "copy": "Copy code",
+        "copied": "Copied",
+        "createLabel": "+ Invite adult",
+        "creating": "Creating code…",
+        "createError": "The invitation code couldn't be created. Please try again.",
+        "copyError": "The code couldn't be copied automatically. Copy it manually."
+      },
+      "list": {
+        "loadingSr": "Loading adults…",
+        "loadError": "The adults couldn't be loaded. Please try again.",
+        "youLabel": "This is you",
+        "ownerBadge": "Owner",
+        "invitedBadge": "Invited"
+      },
+      "detail": {
+        "closeLabel": "Close",
+        "profile": {
+          "firstName": "First name",
+          "lastName": "Last name",
+          "nickname": "Username",
+          "save": "Save",
+          "saving": "Saving…",
+          "success": "The details have been saved.",
+          "error": "The details couldn't be saved. Please try again."
+        },
+        "password": {
+          "title": "Change password",
+          "current": "Current password",
+          "new": "New password",
+          "hint": "At least 8 characters, with an uppercase letter, a lowercase letter, and a digit.",
+          "confirm": "Repeat new password",
+          "mismatch": "The passwords don't match.",
+          "change": "Change password",
+          "changing": "Changing…",
+          "success": "The password has been changed.",
+          "errorInvalid": "The current password is incorrect, or the new password doesn't meet the requirements.",
+          "errorGeneric": "The password couldn't be changed. Please try again."
+        },
+        "leave": {
+          "button": "Leave the family",
+          "confirmQuestion": "You'll be logged out immediately and lose access to the family. Continue?",
+          "confirmYes": "Yes, leave the family",
+          "leaving": "Leaving…"
+        },
+        "ownerNote": "{{name}} created the family and can't be disconnected.",
+        "disconnect": {
+          "button": "Disconnect",
+          "confirmQuestion": "{{name}} will be logged out immediately and lose access to the family. Continue?",
+          "confirmYes": "Yes, disconnect",
+          "disconnecting": "Disconnecting…",
+          "errorNotFound": "This adult is no longer in the family. Refresh the list and try again.",
+          "errorConflict": "This person can't be disconnected right now.",
+          "errorGeneric": "Couldn't disconnect. Please try again shortly."
+        }
+      }
+    },
+    "chores": {
+      "pageTitle": "Chores",
+      "loadError": "The chores couldn't be loaded. Please try again.",
+      "createSuccess": "{{title}} has been created and can now be assigned.",
+      "updateSuccess": "{{title}} has been updated.",
+      "deactivateSuccess": "{{title}} has been removed from the chore bank.",
+      "assignSuccess": "{{choreTitle}} has been assigned to {{childName}}.",
+      "cancelAssignmentSuccess": "{{choreTitle}} has been removed from {{childName}}.",
+      "createError": {
+        "validation": "Check the title, description, and points.",
+        "generic": "The chore couldn't be created. Please try again."
+      },
+      "updateError": {
+        "notFound": "The chore is no longer active or doesn't exist in your family.",
+        "validation": "Check the title, description, and points.",
+        "generic": "The chore couldn't be updated. Please try again."
+      },
+      "deactivateError": {
+        "notFound": "The chore is already removed or doesn't exist in your family.",
+        "generic": "The chore couldn't be removed. Please try again."
+      },
+      "assignmentValidation": "Choose a chore and an active child.",
+      "assignError": {
+        "notFound": "The chore or child no longer exists in your family.",
+        "generic": "The chore couldn't be assigned. Please try again."
+      },
+      "cancelAssignmentError": {
+        "notFound": "The assignment no longer exists in your family.",
+        "conflict": "The assignment has already been approved or changed and can't be removed.",
+        "generic": "The assignment couldn't be removed. Please try again."
+      },
+      "archiveError": "The history couldn't be hidden. Please try again.",
+      "restoreError": "The history couldn't be restored. Please try again.",
+      "status": {
+        "assigned": "Assigned",
+        "pendingApproval": "Awaiting review",
+        "needsRedo": "Needs redo",
+        "approved": "Approved",
+        "cancelled": "Removed"
+      },
+      "newChoreButton": "+ New chore",
+      "pointsOption": "{{points}} points",
+      "createSheet": {
+        "title": "Create chore",
+        "close": "Close the form",
+        "titleLabel": "Title",
+        "titlePlaceholder": "For example Feed the cat",
+        "titleError": "Enter a title of at most 100 characters.",
+        "pointsLabel": "Points",
+        "descriptionLabel": "Description",
+        "descriptionOptional": "(optional)",
+        "descriptionPlaceholder": "A short, clear instruction",
+        "descriptionError": "The description may be at most 500 characters.",
+        "submit": "Create chore",
+        "submitting": "Creating…"
+      },
+      "assign": {
+        "title": "Assign chore",
+        "close": "Close the assignment",
+        "choreLabel": "Chore",
+        "choosePlaceholder": "Choose a chore",
+        "choreOption": "{{title}} · {{points}} p",
+        "choreError": "Choose a chore.",
+        "childLabel": "Child",
+        "childPlaceholder": "Choose a child",
+        "childError": "Choose an active child.",
+        "dateLabel": "Date",
+        "dateHint": "The chore will be shown to the child on this date.",
+        "noActiveChildren": "Add an active child before assigning a chore.",
+        "submit": "Assign the chore",
+        "submitting": "Assigning…"
+      },
+      "editSheet": {
+        "title": "Edit chore",
+        "close": "Close editing",
+        "note": "New points apply to future assignments. Past points don't change.",
+        "submit": "Save changes",
+        "saving": "Saving…",
+        "deactivateQuestion": "Remove the chore?",
+        "deactivateConfirm": "Yes, remove it",
+        "deactivating": "Removing…",
+        "deactivateButton": "Remove chore"
+      },
+      "list": {
+        "title": "Chore bank",
+        "loadingSr": "Loading the family's chores and assignments…",
+        "emptyTitle": "No chores yet",
+        "emptySubtitle": "Create a clear first task for the family.",
+        "editAria": "Edit {{title}}",
+        "assignButton": "Assign",
+        "addNew": "New chore"
+      }
+    },
+    "children": {
+      "loadError": "The children couldn't be loaded. Please try again.",
+      "createError": {
+        "conflict": "That username is already used by a child in the family.",
+        "validation": "Check the name, username, and password.",
+        "generic": "The child account couldn't be created. Please try again shortly."
+      },
+      "pairingError": {
+        "notFound": "The child is no longer active or doesn't have an account.",
+        "generic": "The code couldn't be created. Please try again shortly."
+      },
+      "pairingCopyError": "The code couldn't be copied automatically. Copy it manually.",
+      "revocationError": {
+        "notFound": "This device no longer exists. Refresh the list and try again.",
+        "generic": "The device couldn't be logged out. Please try again shortly."
+      },
+      "editSuccess": "The name has been updated.",
+      "editError": {
+        "notFound": "The child is no longer active or doesn't exist in your family.",
+        "validation": "Enter a name of at most 100 characters.",
+        "generic": "The name couldn't be updated. Please try again shortly."
+      },
+      "deactivateSuccess": "{{name}} has been deactivated and is no longer shown.",
+      "deactivateError": {
+        "notFound": "The child is already deactivated or doesn't exist in your family.",
+        "generic": "The child couldn't be deactivated. Please try again shortly."
+      },
+      "deviceSessionsError": {
+        "notFound": "The child is no longer in the active family view.",
+        "generic": "The paired devices couldn't be loaded. Please try again."
+      },
+      "pageTitle": "Children and accounts",
+      "addButton": "+ Add child",
+      "created": {
+        "title": "{{name}} has been added",
+        "body": "The child's username is <strong>{{userName}}</strong>. You can now pair the child's device with a one-time code.",
+        "pairCode": "Pair device",
+        "creatingCode": "Creating code…"
+      },
+      "deactivationBanner": {
+        "title": "The child profile has been deactivated",
+        "closeAria": "Close the confirmation"
+      },
+      "pairingSheet": {
+        "title": "Pair {{name}}'s device",
+        "close": "Close the one-time code",
+        "codeLabel": "Code for the child's device",
+        "validUntil": "Valid until {{time}}",
+        "copy": "Copy code",
+        "copied": "Copied ✓",
+        "step1": "Open Syssloappen on the child's device.",
+        "step2": "Choose Child, then One-time code.",
+        "step3": "Enter the code before it expires.",
+        "secureNoteLabel": "Secure code:",
+        "secureNote": "It can only be used once and is never stored in plain text. Create a new code if time runs out."
+      },
+      "deviceSessions": {
+        "title": "{{name}}'s devices",
+        "close": "Close the list of paired devices",
+        "intro": "Here you can see previous pairings. Log out a device right away if it's been lost or is no longer used.",
+        "loadingSr": "Loading paired devices…",
+        "emptyTitle": "No devices are paired",
+        "emptySubtitle": "Create a one-time code from the child's card to pair their phone or tablet.",
+        "deviceTitle": "Paired device {{index}}",
+        "statusRevoked": "Logged out",
+        "statusExpired": "Expired",
+        "statusActive": "Active",
+        "lastUsed": "Last used",
+        "connected": "Paired",
+        "activeUntil": "Active until",
+        "maxValidUntil": "Valid at most until",
+        "revokeConfirm": "The child will be logged out of this device immediately. Continue?",
+        "revokeYes": "Yes, log out",
+        "revoking": "Logging out…",
+        "revokeButton": "Log out the device",
+        "footNote": "Active child sessions renew safely with use, but never last more than 30 days from login."
+      },
+      "editSheet": {
+        "title": "Manage {{name}}",
+        "close": "Close the child profile",
+        "intro": "Change the name shown in the family or deactivate the profile.",
+        "nameLabel": "Display name",
+        "nameError": "Enter a name of at most 100 characters.",
+        "save": "Save new name",
+        "saving": "Saving…",
+        "deactivateQuestion": "Are you sure {{name}} should be deactivated?",
+        "deactivateConfirm": "Yes, deactivate",
+        "deactivating": "Deactivating…",
+        "deactivateButton": "Deactivate child"
+      },
+      "createSheet": {
+        "title": "Add a child",
+        "close": "Close the form",
+        "intro": "The details are only used within your family.",
+        "nameLabel": "Child's name",
+        "namePlaceholder": "For example Maja",
+        "nameError": "Enter the child's name.",
+        "usernameLabel": "Username",
+        "usernamePlaceholder": "For example maja",
+        "usernameHint": "Kid-friendly and unique within the family.",
+        "usernameError": "Enter a username.",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "At least 8 characters",
+        "passwordHint": "At least 8 characters, with an uppercase letter, a lowercase letter, and a digit.",
+        "passwordError": "The password doesn't meet the requirements.",
+        "confirmPasswordLabel": "Repeat the password",
+        "confirmPasswordPlaceholder": "Type the password again",
+        "confirmPasswordRequired": "Repeat the password.",
+        "confirmPasswordMismatch": "The passwords don't match.",
+        "submit": "Create child account",
+        "submitting": "Creating the account…"
+      },
+      "list": {
+        "title": "Family's children",
+        "loadingSr": "Loading the family's children…",
+        "emptyTitle": "No children added yet",
+        "emptySubtitle": "Create the family's first child account so you can assign chores later.",
+        "addFirst": "+ Add the first child",
+        "manageAria": "Manage {{name}}",
+        "activeAccount": "Active child account",
+        "pairButton": "Pair device",
+        "pairing": "Creating…",
+        "viewDevices": "View devices"
+      }
+    },
+    "rewards": {
+      "loadError": "The rewards couldn't be loaded. Please try again.",
+      "saveSuccessCreated": "{{name}} has been created.",
+      "saveSuccessUpdated": "{{name}} has been updated.",
+      "saveError": {
+        "validation": "Check the name, description, and point cost.",
+        "generic": "The reward couldn't be saved. Please try again."
+      },
+      "deactivateSuccess": "{{name}} has been removed from the rewards list.",
+      "deactivateError": "The reward couldn't be removed. Please try again.",
+      "pageTitle": "Rewards",
+      "newButton": "+ New reward",
+      "formSheet": {
+        "createTitle": "Create reward",
+        "editTitle": "Edit reward",
+        "close": "Close the form",
+        "nameLabel": "Name",
+        "descriptionLabel": "Description",
+        "descriptionOptional": "(optional)",
+        "pointsLabel": "Point cost",
+        "stockLabel": "Stock quantity",
+        "imageLabel": "Image",
+        "imageUploadError": "The image couldn't be uploaded. Try again.",
+        "submitCreate": "Create reward",
+        "submitEdit": "Save changes",
+        "saving": "Saving…"
+      },
+      "deactivate": {
+        "question": "Remove the reward?",
+        "confirmYes": "Yes, remove it",
+        "button": "Remove reward"
+      },
+      "list": {
+        "title": "Family's list",
+        "loadingSr": "Loading rewards…",
+        "emptyTitle": "No rewards yet",
+        "emptySubtitle": "Create the family's first goal.",
+        "editAria": "Edit {{name}}",
+        "stockLabel": "Stock: {{count}}",
+        "addNew": "New reward"
+      }
+    },
+    "history": {
+      "detail": {
+        "points": "{{points}} points",
+        "assignmentCancelled": "The assignment was removed",
+        "pointsSpent": "{{points}} points spent",
+        "wishRejected": "The wish was rejected"
+      },
+      "status": {
+        "choreApproved": "Approved chore",
+        "choreCancelled": "Cancelled chore",
+        "rewardDelivered": "Delivered reward",
+        "rewardRejected": "Rejected reward"
+      },
+      "loadError": "The history couldn't be loaded. Please try again.",
+      "hideError": "The entry couldn't be hidden. Please try again.",
+      "restoreError": "The entry couldn't be restored. Please try again.",
+      "pageTitle": "History",
+      "subtitle": "Follow the family's finished chores and rewards over time.",
+      "loadingText": "Loading history…",
+      "recentTitle": "Recent activity",
+      "showHidden": "Show hidden too",
+      "hideHidden": "Hide hidden",
+      "hideAria": "Hide {{title}} from the history",
+      "hideButton": "Hide",
+      "hiding": "Hiding…",
+      "restoreButton": "Restore",
+      "restoring": "Restoring…",
+      "empty": "There's no finished activity yet."
+    },
+    "childProfile": {
+      "notFound": "The child couldn't be found in your family.",
+      "loadError": "The child's overview couldn't be loaded. Please try again.",
+      "fallbackName": "Child",
+      "assignButton": "Assign chore",
+      "pickerSheet": {
+        "title": "Assign a chore to {{name}}",
+        "hint": "Assigned with today's date.",
+        "assigning": "Assigning…",
+        "empty": "No chores in the chore bank yet."
+      },
+      "activeTitle": "Current chores",
+      "activeEmpty": "No current chores.",
+      "pointsMeta": "{{points}} points",
+      "rejectCommentLabel": "Comment (optional)",
+      "rewardMetaRequested": "Awaiting response",
+      "rewardMetaApproved": "Approved – hand it over",
+      "recentApprovedTitle": "Recently approved chores",
+      "recentApprovedEmpty": "No approved chores yet."
+    }
+  },
+  "child": {
+    "common": {
+      "fallbackName": "there",
+      "greeting": "Hi {{name}}!",
+      "pointsAria": "{{points}} points"
+    },
+    "nav": {
+      "ariaLabel": "Main navigation",
+      "chores": "Chores",
+      "rewards": "Rewards",
+      "wishes": "Wishes",
+      "settings": "Settings"
+    },
+    "home": {
+      "subtitle": "Here are today's chores",
+      "choresHeading": "Today's chores",
+      "loadingText": "Fetching your chores…",
+      "loadError": "Your chores and points couldn't be loaded. Try again.",
+      "emptyTitle": "No chores right now",
+      "emptyBody": "You're all done until you get a new task.",
+      "motivationDone": "You're done with everything for today — great job!",
+      "motivationOne": "You have 1 chore left today — you've got this!",
+      "motivationMany": "You have {{count}} chores left today — you've got this!",
+      "assignmentError404": "This chore is no longer in your list.",
+      "assignmentError409": "This chore has already changed. Refresh the list and try again.",
+      "assignmentErrorGeneric": "The chore couldn't be reported. Try again."
+    },
+    "taskCard": {
+      "reviewCommentLabel": "Comment from an adult",
+      "submitAria": "Report {{title}} as done",
+      "submitting": "Reporting…",
+      "submit": "I'm done!"
+    },
+    "statusCard": {
+      "pendingMessage": "Great job! An adult is looking at the task before the points are given out.",
+      "needsRedoLabel": "Comment from an adult",
+      "needsRedoFallback": "Give it another try and report it when you're done."
+    },
+    "rewards": {
+      "subtitle": "Trade your points for a reward",
+      "heading": "Rewards",
+      "loadingText": "Fetching rewards…",
+      "loadError": "The rewards couldn't be loaded. Try again.",
+      "emptyTitle": "No rewards right now",
+      "emptyBody": "Check Wishes for the status of what you've already wished for.",
+      "requestErrorConflict": "This reward is already wished for or you don't have enough points.",
+      "requestErrorGeneric": "The reward couldn't be wished for. Try again."
+    },
+    "rewardCard": {
+      "requestAria": "Wish for {{name}}",
+      "requesting": "Wishing…",
+      "request": "Wish for reward"
+    },
+    "redemptions": {
+      "subtitle": "Your wished-for rewards",
+      "loadingText": "Fetching your wishes…",
+      "loadError": "Your wishes couldn't be loaded.",
+      "emptyTitle": "No wishes yet",
+      "emptyBody": "Wish for a reward under Rewards and it'll show up here.",
+      "activeAriaLabel": "Current wishes",
+      "activeTitle": "Current wishes",
+      "recentAriaLabel": "Latest news",
+      "recentTitle": "Latest news",
+      "status": {
+        "requested": "Waiting for an adult",
+        "approved": "Approved",
+        "cancelled": "Declined",
+        "delivered": "Delivered"
+      }
+    },
+    "settings": {
+      "subtitle": "Settings",
+      "historyTitle": "Recently approved",
+      "loadingText": "Fetching your history…",
+      "loadError": "Your history couldn't be loaded. Try again.",
+      "emptyText": "No approved chores yet — they'll show up here once an adult says great job!",
+      "approvedBody": "Approved! {{points}} points have been added to your balance."
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { AdultApprovalCard } from '../ui/approval-card';
 import { AdultBadge } from '../ui/badge';
@@ -23,6 +24,7 @@ import { ChildrenService } from './children.service';
     AdultPrimaryButton,
     AdultPageHeader,
     AdultSheet,
+    TranslocoPipe,
   ],
   templateUrl: './adult-child-profile-page.html',
 })
@@ -31,6 +33,7 @@ export class AdultChildProfilePage {
   private readonly childrenService = inject(ChildrenService);
   private readonly choresService = inject(ChoresService);
   private readonly rewardRedemptionsService = inject(RewardRedemptionsService);
+  private readonly transloco = inject(TranslocoService);
   private readonly childId = Number(this.route.snapshot.paramMap.get('childId'));
   readonly child = signal<ChildSummary | null>(null);
   readonly assignments = signal<AdultAssignment[]>([]);
@@ -101,7 +104,7 @@ export class AdultChildProfilePage {
         this.rewardRedemptions.update((items) =>
           items.map((current) => (current.id === updated.id ? updated : current)),
         ),
-      error: () => this.error.set('Belöningsönskan kunde inte hanteras. Försök igen.'),
+      error: () => this.error.set(this.transloco.translate('adult.home.rewardChangeError')),
       complete: () => this.busyRewardRedemptionId.set(null),
     });
   }
@@ -121,7 +124,7 @@ export class AdultChildProfilePage {
           this.load();
         },
         error: () => {
-          this.error.set('Sysslan kunde inte tilldelas. Försök igen.');
+          this.error.set(this.transloco.translate('adult.chores.assignError.generic'));
           this.assigningChoreId.set(null);
         },
       });
@@ -143,9 +146,9 @@ export class AdultChildProfilePage {
           rewardRedemptions.filter((item) => item.childId === this.childId),
         );
         this.assigningChoreId.set(null);
-        if (!child) this.error.set('Barnet kunde inte hittas i din familj.');
+        if (!child) this.error.set(this.transloco.translate('adult.childProfile.notFound'));
       },
-      error: () => this.error.set('Barnets översikt kunde inte hämtas. Försök igen.'),
+      error: () => this.error.set(this.transloco.translate('adult.childProfile.loadError')),
     });
   }
 
@@ -170,7 +173,7 @@ export class AdultChildProfilePage {
           this.rejectComments.update(({ [item.assignmentId]: _, ...rest }) => rest);
         }
       },
-      error: () => this.error.set('Granskningen kunde inte sparas. Försök igen.'),
+      error: () => this.error.set(this.transloco.translate('adult.home.reviewError')),
       complete: () => this.busyAssignmentId.set(null),
     });
   }

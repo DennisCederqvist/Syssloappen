@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize, Observable } from 'rxjs';
 import { CurrentUser, RegisterAdultResponse } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
@@ -27,13 +28,20 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, RouterLink, AdultPrimaryButton, AdultSecondaryTintButton],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    AdultPrimaryButton,
+    AdultSecondaryTintButton,
+    TranslocoPipe,
+  ],
   templateUrl: './login-page.html',
 })
 export class LoginPage {
   private readonly auth = inject(AuthService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly transloco = inject(TranslocoService);
   readonly mode = signal<LoginMode>('adult');
   readonly adultView = signal<AdultView>('login');
   readonly childLoginMode = signal<ChildLoginMode>('pairing');
@@ -128,9 +136,11 @@ export class LoginPage {
         next: (result) => this.registrationResult.set(result),
         error: (error: HttpErrorResponse) =>
           this.errorMessage.set(
-            error.status === 400
-              ? 'Kontot kunde inte skapas. E-postadressen kan redan användas eller uppgifterna behöver rättas.'
-              : 'Något gick fel när kontot skapades. Försök igen om en liten stund.',
+            this.transloco.translate(
+              error.status === 400
+                ? 'auth.login.registration.errorInvalid'
+                : 'auth.login.registration.errorGeneric',
+            ),
           ),
       });
   }
@@ -151,9 +161,7 @@ export class LoginPage {
       await navigator.clipboard.writeText(familyCode);
       this.familyCodeCopied.set(true);
     } catch {
-      this.errorMessage.set(
-        'Koden kunde inte kopieras automatiskt. Markera och kopiera den manuellt.',
-      );
+      this.errorMessage.set(this.transloco.translate('auth.login.registrationSuccess.copyError'));
     }
   }
   submitChild(): void {
@@ -186,9 +194,9 @@ export class LoginPage {
       next: (user) => this.router.navigateByUrl(this.auth.homeFor(user.role)),
       error: (error: HttpErrorResponse) =>
         this.errorMessage.set(
-          error.status === 429
-            ? 'För många försök. Vänta en liten stund och försök igen.'
-            : 'Inloggningen lyckades inte. Kontrollera uppgifterna och försök igen.',
+          this.transloco.translate(
+            error.status === 429 ? 'auth.login.error.rateLimited' : 'auth.login.error.generic',
+          ),
         ),
     });
   }

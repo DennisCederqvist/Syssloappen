@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { ChildCardMotion } from './ui/card-motion';
@@ -12,15 +13,19 @@ import { ChildChoresService } from './child-chores.service';
 
 @Component({
   selector: 'app-child-rewards-page',
-  imports: [ChildSideNav, ChildPageHeader, ChildRewardCard],
+  imports: [ChildSideNav, ChildPageHeader, ChildRewardCard, TranslocoPipe],
   templateUrl: './child-rewards-page.html',
 })
 export class ChildRewardsPage implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly service = inject(ChildChoresService);
+  private readonly transloco = inject(TranslocoService);
   private readonly motion = new ChildCardMotion(() => this.rewards().map((reward) => reward.id));
 
-  readonly childName = computed(() => this.auth.user()?.name || 'där');
+  readonly childName = computed(() => {
+    this.transloco.activeLang();
+    return this.auth.user()?.name || this.transloco.translate('child.common.fallbackName');
+  });
   readonly wobblingRewardId = this.motion.wobblingId;
   readonly rewards = signal<ChildReward[]>([]);
   readonly availablePoints = signal(0);
@@ -48,7 +53,7 @@ export class ChildRewardsPage implements OnInit, OnDestroy {
           this.rewards.set(result.rewards);
           this.availablePoints.set(result.availablePoints);
         },
-        error: () => this.error.set('Belöningarna kunde inte hämtas. Försök igen.'),
+        error: () => this.error.set(this.transloco.translate('child.rewards.loadError')),
       });
   }
 
@@ -66,9 +71,11 @@ export class ChildRewardsPage implements OnInit, OnDestroy {
         },
         error: (error: HttpErrorResponse) =>
           this.error.set(
-            error.status === 409
-              ? 'Belöningen är redan önskad eller poängen räcker inte.'
-              : 'Belöningen kunde inte önskas. Försök igen.',
+            this.transloco.translate(
+              error.status === 409
+                ? 'child.rewards.requestErrorConflict'
+                : 'child.rewards.requestErrorGeneric',
+            ),
           ),
       });
   }

@@ -4,7 +4,7 @@
   <main class="mx-auto w-full max-w-5xl flex-1 px-5 py-6 sm:px-8 md:py-8">
     <app-child-page-header
       [name]="childName()"
-      subtitle="Detta är dagens sysslor"
+      [subtitle]="'child.home.subtitle' | transloco"
       [points]="availablePoints()"
     />
 
@@ -33,14 +33,14 @@
     }
 
     <section class="mt-6" aria-labelledby="chores-title" aria-live="polite">
-      <h2 id="chores-title" class="sr-only">Dagens sysslor</h2>
+      <h2 id="chores-title" class="sr-only">{{ 'child.home.choresHeading' | transloco }}</h2>
 
       @if (isLoading()) {
         <div
           class="flex min-h-40 items-center justify-center rounded-[30px] bg-white p-6 text-center shadow-[4px_6px_0_rgba(0,0,0,0.04)]"
           role="status"
         >
-          <p class="font-semibold text-child-text-secondary">Hämtar dina sysslor…</p>
+          <p class="font-semibold text-child-text-secondary">{{ 'child.home.loadingText' | transloco }}</p>
         </div>
       } @else if (loadError()) {
         <div
@@ -53,16 +53,16 @@
             (click)="loadPage()"
             class="mt-4 min-h-11 rounded-full bg-[linear-gradient(180deg,var(--color-child-cta-from),var(--color-child-cta-to))] px-5 font-bold text-child-text shadow-[4px_6px_0_var(--color-child-cta-shadow)]"
           >
-            Försök igen
+            {{ 'common.actions.retry' | transloco }}
           </button>
         </div>
       } @else if (actionableAssignments().length === 0 && pendingAssignments().length === 0) {
         <div
           class="flex min-h-48 flex-col items-center justify-center rounded-[30px] bg-child-card-mint p-6 text-center shadow-[4px_6px_0_var(--color-child-card-mint-shadow)]"
         >
-          <h3 class="font-display text-xl font-semibold text-child-text">Inga sysslor just nu</h3>
+          <h3 class="font-display text-xl font-semibold text-child-text">{{ 'child.home.emptyTitle' | transloco }}</h3>
           <p class="mt-2 max-w-md text-child-text-secondary">
-            Du är klar tills du får en ny uppgift.
+            {{ 'child.home.emptyBody' | transloco }}
           </p>
         </div>
       } @else {

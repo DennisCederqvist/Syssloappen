@@ -2,12 +2,14 @@
   <app-adult-bottom-nav />
   <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
     <app-adult-page-header
-      [title]="'Välkommen, ' + displayName() + '!'"
-      subtitle="Här är läget i familjen idag."
+      [title]="('adult.home.welcome' | transloco: { name: displayName() })"
+      [subtitle]="'adult.home.subtitle' | transloco"
     />
 
     <section class="mt-6" aria-labelledby="children-title">
-      <h2 id="children-title" class="text-[15px] font-semibold text-adult-text">Barn</h2>
+      <h2 id="children-title" class="text-[15px] font-semibold text-adult-text">
+        {{ 'adult.home.childrenTitle' | transloco }}
+      </h2>
       <div class="mt-2 grid grid-cols-2 gap-2">
         @for (child of childOverviews(); track child.id) {
           <app-adult-tile [title]="child.name" [avatarLabel]="child.name.slice(0, 1)" [routerLink]="['/vuxen/barn', child.id]">
@@ -18,7 +20,12 @@
               ></span>
             </span>
             <span class="mt-1.5 block text-xs font-medium text-adult-text-secondary">
-              {{ child.total ? child.completed + ' / ' + child.total + ' klara' : 'Inga sysslor idag' }}
+              {{
+                child.total
+                  ? ('adult.home.childProgress'
+                    | transloco: { completed: child.completed, total: child.total })
+                  : ('adult.home.childNoChores' | transloco)
+              }}
             </span>
           </app-adult-tile>
         }
@@ -27,21 +34,26 @@
 
     <section class="mt-6" aria-labelledby="pending-title">
       <div class="flex items-center gap-2">
-        <h2 id="pending-title" class="text-[15px] font-semibold text-adult-text">Behöver godkännas</h2>
+        <h2 id="pending-title" class="text-[15px] font-semibold text-adult-text">
+          {{ 'adult.home.pendingTitle' | transloco }}
+        </h2>
         @if (pendingAssignments().length) {
           <app-adult-badge variant="count" [value]="pendingAssignments().length" />
         }
       </div>
       <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
         @for (item of pendingAssignments(); track item.assignmentId) {
-          <app-adult-approval-card [title]="item.choreTitle" [meta]="item.childName + ' · ' + item.points + ' poäng'">
+          <app-adult-approval-card
+            [title]="item.choreTitle"
+            [meta]="'adult.home.assignmentMeta' | transloco: { childName: item.childName, points: item.points }"
+          >
             @if (rejectingAssignmentId() === item.assignmentId) {
               <div class="w-full rounded-lg border border-adult-danger-border bg-adult-danger-bg p-3">
                 <label
                   class="block text-sm font-semibold text-adult-danger-text"
                   [for]="'reject-comment-' + item.assignmentId"
                 >
-                  Kommentar till {{ item.childName }} <span class="font-normal">(valfri)</span>
+                  {{ 'adult.home.rejectCommentLabel' | transloco: { name: item.childName } }}
                   <textarea
                     [id]="'reject-comment-' + item.assignmentId"
                     rows="2"
@@ -58,7 +70,7 @@
                     [disabled]="busyAssignmentId() !== null"
                     class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
                   >
-                    Avbryt
+                    {{ 'common.actions.cancel' | transloco }}
                   </button>
                   <button
                     type="button"
@@ -67,7 +79,12 @@
                     [disabled]="busyAssignmentId() !== null"
                     (click)="confirmReject(item)"
                   >
-                    {{ busyAssignmentId() === item.assignmentId ? 'Skickar…' : 'Skicka' }}
+                    {{
+                      (busyAssignmentId() === item.assignmentId
+                        ? 'adult.home.sending'
+                        : 'adult.home.send'
+                      ) | transloco
+                    }}
                   </button>
                 </div>
               </div>
@@ -79,7 +96,7 @@
                 [disabled]="busyAssignmentId() !== null"
                 (click)="approve(item)"
               >
-                Godkänn
+                {{ 'adult.home.approve' | transloco }}
               </button>
               <button
                 type="button"
@@ -88,13 +105,13 @@
                 [disabled]="busyAssignmentId() !== null"
                 (click)="requestReject(item)"
               >
-                Avslå
+                {{ 'adult.home.reject' | transloco }}
               </button>
             }
           </app-adult-approval-card>
         } @empty {
           <p class="rounded-lg border border-adult-border bg-adult-surface p-3 text-sm text-adult-text-secondary sm:col-span-2 lg:col-span-3">
-            Inget väntar på granskning.
+            {{ 'adult.home.pendingEmpty' | transloco }}
           </p>
         }
       </div>
@@ -102,7 +119,9 @@
 
     <section class="mt-6" aria-labelledby="reward-requests-title">
       <div class="flex items-center gap-2">
-        <h2 id="reward-requests-title" class="text-[15px] font-semibold text-adult-text">Belöningsönskningar</h2>
+        <h2 id="reward-requests-title" class="text-[15px] font-semibold text-adult-text">
+          {{ 'adult.home.rewardsTitle' | transloco }}
+        </h2>
         @if (activeRewardRedemptions().length) {
           <app-adult-badge variant="count" [value]="activeRewardRedemptions().length" />
         }
@@ -122,7 +141,7 @@
                 [disabled]="busyRewardRedemptionId() !== null"
                 (click)="changeRewardRedemption(item, 'approve')"
               >
-                Godkänn
+                {{ 'adult.home.approve' | transloco }}
               </button>
               <button
                 type="button"
@@ -131,7 +150,7 @@
                 [disabled]="busyRewardRedemptionId() !== null"
                 (click)="changeRewardRedemption(item, 'cancel')"
               >
-                Avslå
+                {{ 'adult.home.reject' | transloco }}
               </button>
             } @else {
               <button
@@ -141,13 +160,13 @@
                 [disabled]="busyRewardRedemptionId() !== null"
                 (click)="changeRewardRedemption(item, 'deliver')"
               >
-                Markera som utlämnad
+                {{ 'adult.home.markDelivered' | transloco }}
               </button>
             }
           </app-adult-approval-card>
         } @empty {
           <p class="rounded-lg border border-adult-border bg-adult-surface p-3 text-sm text-adult-text-secondary sm:col-span-2 lg:col-span-3">
-            Inga aktiva belöningsönskningar.
+            {{ 'adult.home.rewardsEmpty' | transloco }}
           </p>
         }
       </div>

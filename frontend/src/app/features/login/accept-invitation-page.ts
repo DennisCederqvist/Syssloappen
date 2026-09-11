@@ -2,18 +2,20 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-accept-invitation-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, TranslocoPipe],
   templateUrl: './accept-invitation-page.html',
 })
 export class AcceptInvitationPage {
   private readonly auth = inject(AuthService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly transloco = inject(TranslocoService);
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal('');
   readonly success = signal(false);
@@ -52,9 +54,11 @@ export class AcceptInvitationPage {
         next: () => this.success.set(true),
         error: (error: HttpErrorResponse) =>
           this.errorMessage.set(
-            error.status === 401
-              ? 'Koden är felaktig, utgången eller redan använd.'
-              : 'Kontot kunde inte skapas. Kontrollera uppgifterna.',
+            this.transloco.translate(
+              error.status === 401
+                ? 'auth.acceptInvitation.errorInvalidCode'
+                : 'auth.acceptInvitation.errorGeneric',
+            ),
           ),
       });
   }

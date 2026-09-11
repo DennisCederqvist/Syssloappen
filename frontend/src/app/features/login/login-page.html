@@ -36,14 +36,17 @@
         </svg>
       </div>
       <p class="mb-3 text-xs font-semibold tracking-[0.14em] text-white/70 uppercase">
-        Enklare familjevardag
+        {{ 'auth.login.hero.eyebrow' | transloco }}
       </p>
-      <h2 class="text-4xl leading-tight font-semibold">Små uppgifter.<br />Stora framsteg.</h2>
+      <h2
+        class="text-4xl leading-tight font-semibold"
+        [innerHTML]="'auth.login.hero.title' | transloco"
+      ></h2>
       <p class="mt-4 text-base leading-7 text-white/80">
-        En lugn plats där familjen hjälps åt och varje insats räknas.
+        {{ 'auth.login.hero.subtitle' | transloco }}
       </p>
     </div>
-    <p class="text-sm text-white/70">Tryggt separerat för varje familj.</p>
+    <p class="text-sm text-white/70">{{ 'auth.login.hero.footer' | transloco }}</p>
   </section>
   <section class="flex min-h-dvh items-center justify-center bg-adult-bg px-5 py-8 sm:px-10">
     <div class="w-full max-w-md">
@@ -68,20 +71,26 @@
       </div>
       <div class="mb-6">
         <h1 class="text-[21px] leading-tight font-semibold text-adult-text">
-          {{ mode() === 'adult' && adultView() === 'register' ? 'Skapa din familj' : 'Logga in' }}
+          {{
+            (mode() === 'adult' && adultView() === 'register'
+              ? 'auth.login.titleRegister'
+              : 'auth.login.title'
+            ) | transloco
+          }}
         </h1>
         <p class="mt-1 text-sm text-adult-text-secondary">
           {{
-            mode() === 'adult' && adultView() === 'register'
-              ? 'Kom igång med ett vuxenkonto på någon minut.'
-              : 'Välj den vy som passar dig.'
+            (mode() === 'adult' && adultView() === 'register'
+              ? 'auth.login.subtitleRegister'
+              : 'auth.login.subtitle'
+            ) | transloco
           }}
         </p>
       </div>
       <div
         class="mb-4 grid grid-cols-2 gap-1 rounded-lg border border-adult-border bg-adult-surface p-1"
         role="group"
-        aria-label="Välj inloggning"
+        [attr.aria-label]="'auth.login.modeGroupLabel' | transloco"
       >
         <button
           type="button"
@@ -92,7 +101,7 @@
           [class.text-white]="mode() === 'adult'"
           [class.text-adult-text-secondary]="mode() !== 'adult'"
         >
-          Vuxen
+          {{ 'auth.login.modeAdult' | transloco }}
         </button>
         <button
           type="button"
@@ -103,7 +112,7 @@
           [class.text-white]="mode() === 'child'"
           [class.text-adult-text-secondary]="mode() !== 'child'"
         >
-          Barn
+          {{ 'auth.login.modeChild' | transloco }}
         </button>
       </div>
       @if (errorMessage()) {
@@ -137,17 +146,17 @@
               </svg>
             </div>
             <p class="mt-4 text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">
-              Kontot är skapat
+              {{ 'auth.login.registrationSuccess.eyebrow' | transloco }}
             </p>
             <h2 class="mt-1 text-[19px] font-semibold text-adult-text">
-              Välkommen till Syssloappen!
+              {{ 'auth.login.registrationSuccess.welcome' | transloco }}
             </h2>
             <p class="mt-2 text-sm leading-6 text-adult-text-secondary">
-              Din familj och ditt vuxenkonto är klara. Spara familjekoden innan du fortsätter.
+              {{ 'auth.login.registrationSuccess.description' | transloco }}
             </p>
             <div class="mt-4 rounded-lg border border-adult-border bg-adult-bg p-4 text-center">
               <p class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">
-                Familjekod
+                {{ 'auth.login.registrationSuccess.familyCodeLabel' | transloco }}
               </p>
               <p class="mt-2 break-all text-2xl font-semibold tracking-[0.12em] text-adult-text">
                 {{ result.familyCode }}
@@ -158,14 +167,19 @@
                 class="mt-4"
                 (click)="copyFamilyCode()"
               >
-                {{ familyCodeCopied() ? 'Kopierad ✓' : 'Kopiera koden' }}
+                {{
+                  (familyCodeCopied()
+                    ? 'auth.login.registrationSuccess.copied'
+                    : 'auth.login.registrationSuccess.copy'
+                  ) | transloco
+                }}
               </button>
             </div>
             <p
               class="mt-4 rounded-lg border border-adult-border bg-adult-points-bg px-4 py-3 text-sm leading-6 text-adult-points-text"
             >
-              <strong>Viktigt:</strong> Koden visas bara nu. Den behövs tillsammans med barnets namn
-              och lösenord vid reservinloggning.
+              <strong>{{ 'auth.login.registrationSuccess.importantLabel' | transloco }}</strong>
+              {{ 'auth.login.registrationSuccess.importantNote' | transloco }}
             </p>
             <button
               type="button"
@@ -173,14 +187,14 @@
               class="mt-4 w-full"
               (click)="continueToLogin()"
             >
-              Jag har sparat koden – fortsätt
+              {{ 'auth.login.registrationSuccess.continue' | transloco }}
             </button>
           </section>
         } @else {
           <div
             class="mb-4 grid grid-cols-2 gap-1 rounded-lg border border-adult-border bg-adult-bg p-1 text-sm font-medium"
             role="group"
-            aria-label="Vuxenkonto"
+            [attr.aria-label]="'auth.login.adultTabsLabel' | transloco"
           >
             <button
               type="button"
@@ -191,7 +205,7 @@
               [class.text-adult-text]="adultView() === 'login'"
               [class.text-adult-text-secondary]="adultView() !== 'login'"
             >
-              Logga in
+              {{ 'auth.login.adultTabLogin' | transloco }}
             </button>
             <button
               type="button"
@@ -202,20 +216,19 @@
               [class.text-adult-text]="adultView() === 'register'"
               [class.text-adult-text-secondary]="adultView() !== 'register'"
             >
-              Skapa konto
+              {{ 'auth.login.adultTabRegister' | transloco }}
             </button>
           </div>
           @if (adultView() === 'login') {
             <form [formGroup]="adultForm" (ngSubmit)="submitAdult()" class="grid gap-4" novalidate>
               <label class="block text-sm font-semibold text-adult-text">
-                E-post
+                {{ 'auth.login.form.email' | transloco }}
                 <input
                   id="adult-email"
                   formControlName="email"
                   type="email"
                   autocomplete="email"
-                  inputmode="email"
-                  placeholder="du@example.se"
+                  [placeholder]="'auth.login.form.emailPlaceholder' | transloco"
                   [attr.aria-invalid]="
                     adultForm.controls.email.touched && adultForm.controls.email.invalid
                   "
@@ -226,18 +239,18 @@
                   <span
                     id="adult-email-error"
                     class="mt-1.5 block text-sm font-normal text-adult-danger-text"
-                    >Skriv en giltig e-postadress.</span
+                    >{{ 'auth.login.form.emailError' | transloco }}</span
                   >
                 }
               </label>
               <label class="block text-sm font-semibold text-adult-text">
-                Lösenord
+                {{ 'auth.login.form.password' | transloco }}
                 <input
                   id="adult-password"
                   formControlName="password"
                   type="password"
                   autocomplete="current-password"
-                  placeholder="Ditt lösenord"
+                  [placeholder]="'auth.login.form.passwordPlaceholder' | transloco"
                   [attr.aria-invalid]="
                     adultForm.controls.password.touched && adultForm.controls.password.invalid
                   "
@@ -248,18 +261,21 @@
                   <span
                     id="adult-password-error"
                     class="mt-1.5 block text-sm font-normal text-adult-danger-text"
-                    >Skriv ditt lösenord.</span
+                    >{{ 'auth.login.form.passwordError' | transloco }}</span
                   >
                 }
               </label>
               <button type="submit" adultPrimaryButton class="w-full" [disabled]="isSubmitting()">
-                {{ isSubmitting() ? 'Loggar in…' : 'Logga in som vuxen' }}
+                {{
+                  (isSubmitting() ? 'auth.login.form.submitting' : 'auth.login.form.submit')
+                    | transloco
+                }}
               </button>
               <a
                 routerLink="/acceptera-inbjudan"
                 class="flex min-h-11 items-center justify-center text-sm font-medium text-adult-accent"
               >
-                Jag har en inbjudan
+                {{ 'auth.login.form.haveInvitation' | transloco }}
               </a>
             </form>
           } @else {
@@ -270,13 +286,13 @@
               novalidate
             >
               <label class="block text-sm font-semibold text-adult-text">
-                Familjens namn
+                {{ 'auth.login.registration.householdName' | transloco }}
                 <input
                   id="household-name"
                   formControlName="householdName"
                   type="text"
                   autocomplete="organization"
-                  placeholder="Till exempel Familjen Andersson"
+                  [placeholder]="'auth.login.registration.householdNamePlaceholder' | transloco"
                   [attr.aria-invalid]="
                     registrationForm.controls.householdName.touched &&
                     registrationForm.controls.householdName.invalid
@@ -291,19 +307,19 @@
                   <span
                     id="household-name-error"
                     class="mt-1.5 block text-sm font-normal text-adult-danger-text"
-                    >Skriv familjens namn.</span
+                    >{{ 'auth.login.registration.householdNameError' | transloco }}</span
                   >
                 }
               </label>
               <label class="block text-sm font-semibold text-adult-text">
-                Din e-post
+                {{ 'auth.login.registration.email' | transloco }}
                 <input
                   id="registration-email"
                   formControlName="email"
                   type="email"
                   autocomplete="email"
                   inputmode="email"
-                  placeholder="du@example.se"
+                  [placeholder]="'auth.login.form.emailPlaceholder' | transloco"
                   [attr.aria-invalid]="
                     registrationForm.controls.email.touched &&
                     registrationForm.controls.email.invalid
@@ -317,54 +333,63 @@
                   <span
                     id="registration-email-error"
                     class="mt-1.5 block text-sm font-normal text-adult-danger-text"
-                    >Skriv en giltig e-postadress.</span
+                    >{{ 'auth.login.registration.emailError' | transloco }}</span
                   >
                 }
               </label>
               <label class="block text-sm font-semibold text-adult-text">
-                Förnamn <span class="font-normal text-adult-text-secondary">(valfritt)</span>
+                {{ 'auth.login.registration.firstName' | transloco }}
+                <span class="font-normal text-adult-text-secondary">{{
+                  'auth.login.registration.optional' | transloco
+                }}</span>
                 <input
                   id="registration-first-name"
                   formControlName="firstName"
                   type="text"
                   autocomplete="given-name"
-                  placeholder="Till exempel Anna"
+                  [placeholder]="'auth.login.registration.firstNamePlaceholder' | transloco"
                   class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
                 />
               </label>
               <label class="block text-sm font-semibold text-adult-text">
-                Efternamn <span class="font-normal text-adult-text-secondary">(valfritt)</span>
+                {{ 'auth.login.registration.lastName' | transloco }}
+                <span class="font-normal text-adult-text-secondary">{{
+                  'auth.login.registration.optional' | transloco
+                }}</span>
                 <input
                   id="registration-last-name"
                   formControlName="lastName"
                   type="text"
                   autocomplete="family-name"
-                  placeholder="Till exempel Andersson"
+                  [placeholder]="'auth.login.registration.lastNamePlaceholder' | transloco"
                   class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
                 />
               </label>
               <label class="block text-sm font-semibold text-adult-text">
-                Användarnamn <span class="font-normal text-adult-text-secondary">(valfritt)</span>
+                {{ 'auth.login.registration.nickname' | transloco }}
+                <span class="font-normal text-adult-text-secondary">{{
+                  'auth.login.registration.optional' | transloco
+                }}</span>
                 <input
                   id="registration-nickname"
                   formControlName="nickname"
                   type="text"
                   autocomplete="nickname"
-                  placeholder="Till exempel annaa"
+                  [placeholder]="'auth.login.registration.nicknamePlaceholder' | transloco"
                   class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
                 />
                 <span class="mt-1.5 block text-xs font-normal text-adult-text-secondary">
-                  Visas t.ex. på Hem om du inte anger ett förnamn.
+                  {{ 'auth.login.registration.nicknameHint' | transloco }}
                 </span>
               </label>
               <label class="block text-sm font-semibold text-adult-text">
-                Välj lösenord
+                {{ 'auth.login.registration.password' | transloco }}
                 <input
                   id="registration-password"
                   formControlName="password"
                   type="password"
                   autocomplete="new-password"
-                  placeholder="Minst 8 tecken"
+                  [placeholder]="'auth.login.registration.passwordPlaceholder' | transloco"
                   [attr.aria-invalid]="
                     registrationForm.controls.password.touched &&
                     registrationForm.controls.password.invalid
@@ -375,7 +400,7 @@
                 <span
                   id="registration-password-help"
                   class="mt-1.5 block text-xs font-normal text-adult-text-secondary"
-                  >Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.</span
+                  >{{ 'auth.login.registration.passwordHint' | transloco }}</span
                 >
                 @if (
                   registrationForm.controls.password.touched &&
@@ -384,18 +409,18 @@
                   <span
                     id="registration-password-error"
                     class="mt-1 block text-sm font-normal text-adult-danger-text"
-                    >Lösenordet uppfyller inte kraven.</span
+                    >{{ 'auth.login.registration.passwordError' | transloco }}</span
                   >
                 }
               </label>
               <label class="block text-sm font-semibold text-adult-text">
-                Upprepa lösenordet
+                {{ 'auth.login.registration.confirmPassword' | transloco }}
                 <input
                   id="confirm-registration-password"
                   formControlName="confirmPassword"
                   type="password"
                   autocomplete="new-password"
-                  placeholder="Skriv lösenordet igen"
+                  [placeholder]="'auth.login.registration.confirmPasswordPlaceholder' | transloco"
                   [attr.aria-invalid]="
                     registrationForm.controls.confirmPassword.touched &&
                     registrationForm.hasError('passwordMismatch')
@@ -410,15 +435,20 @@
                   <span
                     id="confirm-registration-password-error"
                     class="mt-1.5 block text-sm font-normal text-adult-danger-text"
-                    >Lösenorden är inte lika.</span
+                    >{{ 'auth.login.registration.confirmPasswordError' | transloco }}</span
                   >
                 }
               </label>
               <button type="submit" adultPrimaryButton class="w-full" [disabled]="isSubmitting()">
-                {{ isSubmitting() ? 'Skapar familjen…' : 'Skapa familj och konto' }}
+                {{
+                  (isSubmitting()
+                    ? 'auth.login.registration.submitting'
+                    : 'auth.login.registration.submit'
+                  ) | transloco
+                }}
               </button>
               <p class="text-center text-xs leading-5 text-adult-text-secondary">
-                När du fortsätter skapas en ny, separat familj där du blir vuxen administratör.
+                {{ 'auth.login.registration.disclaimer' | transloco }}
               </p>
             </form>
           }
@@ -427,7 +457,7 @@
         <div
           class="mb-5 flex justify-center gap-1 rounded-2xl bg-brand-50 p-1 text-sm font-bold"
           role="group"
-          aria-label="Barnets inloggningssätt"
+          [attr.aria-label]="'auth.login.childModeGroupLabel' | transloco"
         >
           <button
             type="button"
@@ -437,7 +467,7 @@
             [class.bg-white]="childLoginMode() === 'pairing'"
             [class.shadow-sm]="childLoginMode() === 'pairing'"
           >
-            Engångskod
+            {{ 'auth.login.childTabPairing' | transloco }}
           </button>
           <button
             type="button"
@@ -447,7 +477,7 @@
             [class.bg-white]="childLoginMode() === 'fallback'"
             [class.shadow-sm]="childLoginMode() === 'fallback'"
           >
-            Familjekod
+            {{ 'auth.login.childTabFallback' | transloco }}
           </button>
         </div>
         @if (childLoginMode() === 'pairing') {
@@ -458,14 +488,15 @@
             novalidate
           >
             <label class="block font-bold"
-              >Kod från en vuxen<input
+              >{{ 'auth.login.pairing.codeLabel' | transloco
+              }}<input
                 id="pairing-code-input"
                 formControlName="code"
                 type="text"
                 autocomplete="one-time-code"
                 autocapitalize="characters"
                 maxlength="8"
-                placeholder="Skriv engångskoden"
+                [placeholder]="'auth.login.pairing.codePlaceholder' | transloco"
                 [attr.aria-invalid]="
                   pairingForm.controls.code.touched && pairingForm.controls.code.invalid
                 "
@@ -474,7 +505,7 @@
               />
               @if (pairingForm.controls.code.touched && pairingForm.controls.code.invalid) {
                 <span id="pairing-code-error" class="mt-2 block text-sm text-red-700"
-                  >Koden ska innehålla 8 tecken.</span
+                  >{{ 'auth.login.pairing.codeError' | transloco }}</span
                 >
               }
             </label>
@@ -483,22 +514,26 @@
               [disabled]="isSubmitting()"
               class="min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
             >
-              {{ isSubmitting() ? 'Kopplar…' : 'Koppla min enhet' }}
+              {{
+                (isSubmitting() ? 'auth.login.pairing.submitting' : 'auth.login.pairing.submit')
+                  | transloco
+              }}
             </button>
             <p class="text-center text-sm leading-6 text-muted">
-              Be en vuxen skapa en ny kod. Den gäller en kort stund och kan bara användas en gång.
+              {{ 'auth.login.pairing.hint' | transloco }}
             </p>
           </form>
         } @else {
           <form [formGroup]="childForm" (ngSubmit)="submitChild()" class="space-y-5" novalidate>
             <label class="block font-bold"
-              >Familjekod<input
+              >{{ 'auth.login.fallback.familyCodeLabel' | transloco
+              }}<input
                 id="family-code"
                 formControlName="familyCode"
                 type="text"
                 autocomplete="one-time-code"
                 autocapitalize="characters"
-                placeholder="Familjens kod"
+                [placeholder]="'auth.login.fallback.familyCodePlaceholder' | transloco"
                 [attr.aria-invalid]="
                   childForm.controls.familyCode.touched && childForm.controls.familyCode.invalid
                 "
@@ -507,17 +542,18 @@
               />
               @if (childForm.controls.familyCode.touched && childForm.controls.familyCode.invalid) {
                 <span id="family-code-error" class="mt-2 block text-sm text-red-700"
-                  >Skriv familjekoden.</span
+                  >{{ 'auth.login.fallback.familyCodeError' | transloco }}</span
                 >
               }
             </label>
             <label class="block font-bold"
-              >Mitt namn<input
+              >{{ 'auth.login.fallback.usernameLabel' | transloco
+              }}<input
                 id="child-username"
                 formControlName="userName"
                 type="text"
                 autocomplete="username"
-                placeholder="Ditt användarnamn"
+                [placeholder]="'auth.login.fallback.usernamePlaceholder' | transloco"
                 [attr.aria-invalid]="
                   childForm.controls.userName.touched && childForm.controls.userName.invalid
                 "
@@ -526,17 +562,18 @@
               />
               @if (childForm.controls.userName.touched && childForm.controls.userName.invalid) {
                 <span id="child-username-error" class="mt-2 block text-sm text-red-700"
-                  >Skriv ditt användarnamn.</span
+                  >{{ 'auth.login.fallback.usernameError' | transloco }}</span
                 >
               }
             </label>
             <label class="block font-bold"
-              >Mitt lösenord<input
+              >{{ 'auth.login.fallback.passwordLabel' | transloco
+              }}<input
                 id="child-password"
                 formControlName="password"
                 type="password"
                 autocomplete="current-password"
-                placeholder="Ditt lösenord"
+                [placeholder]="'auth.login.fallback.passwordPlaceholder' | transloco"
                 [attr.aria-invalid]="
                   childForm.controls.password.touched && childForm.controls.password.invalid
                 "
@@ -545,7 +582,7 @@
               />
               @if (childForm.controls.password.touched && childForm.controls.password.invalid) {
                 <span id="child-password-error" class="mt-2 block text-sm text-red-700"
-                  >Skriv ditt lösenord.</span
+                  >{{ 'auth.login.fallback.passwordError' | transloco }}</span
                 >
               }
             </label>
@@ -554,10 +591,13 @@
               [disabled]="isSubmitting()"
               class="min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white shadow-lg shadow-brand-500/20 transition hover:bg-brand-600 disabled:cursor-wait disabled:opacity-60"
             >
-              {{ isSubmitting() ? 'Öppnar…' : 'Öppna min sida' }}
+              {{
+                (isSubmitting() ? 'auth.login.fallback.submitting' : 'auth.login.fallback.submit')
+                  | transloco
+              }}
             </button>
             <p class="text-center text-sm leading-6 text-muted">
-              Använd detta alternativ om en vuxen inte kan skapa en engångskod just nu.
+              {{ 'auth.login.fallback.hint' | transloco }}
             </p>
           </form>
         }

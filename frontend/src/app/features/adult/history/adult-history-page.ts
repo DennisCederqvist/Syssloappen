@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { AdultBottomNav } from '../ui/bottom-nav';
 import { AdultDangerOutlineButton } from '../ui/buttons';
@@ -22,12 +23,13 @@ type HistoryItem = {
 
 @Component({
   selector: 'app-adult-history-page',
-  imports: [DatePipe, AdultBottomNav, AdultDangerOutlineButton, AdultPageHeader],
+  imports: [DatePipe, AdultBottomNav, AdultDangerOutlineButton, AdultPageHeader, TranslocoPipe],
   templateUrl: './adult-history-page.html',
 })
 export class AdultHistoryPage implements OnInit {
   private readonly chores = inject(ChoresService);
   private readonly redemptions = inject(RewardRedemptionsService);
+  private readonly transloco = inject(TranslocoService);
   readonly assignments = signal<AdultAssignment[]>([]);
   readonly rewards = signal<AdultRewardRedemption[]>([]);
   readonly loading = signal(true);
@@ -36,6 +38,9 @@ export class AdultHistoryPage implements OnInit {
   readonly busyId = signal<string | null>(null);
   readonly actionError = signal('');
   readonly items = computed(() => {
+    // Read so this recomputes (with freshly translated status/detail text)
+    // whenever the active language changes, not just when the raw data does.
+    this.transloco.activeLang();
     const chores = this.assignments().flatMap((item): HistoryItem[] =>
       item.status === 'Approved' && item.reviewedAt
         ? [
@@ -45,8 +50,10 @@ export class AdultHistoryPage implements OnInit {
               rawId: item.assignmentId,
               title: item.choreTitle,
               childName: item.childName,
-              detail: `${item.points} poäng`,
-              status: 'Godkänd syssla',
+              detail: this.transloco.translate('adult.history.detail.points', {
+                points: item.points,
+              }),
+              status: this.transloco.translate('adult.history.status.choreApproved'),
               occurredAt: item.reviewedAt,
               hidden: !!item.adultArchivedAt,
             },
@@ -59,8 +66,8 @@ export class AdultHistoryPage implements OnInit {
                 rawId: item.assignmentId,
                 title: item.choreTitle,
                 childName: item.childName,
-                detail: 'Tilldelningen togs bort',
-                status: 'Avbruten syssla',
+                detail: this.transloco.translate('adult.history.detail.assignmentCancelled'),
+                status: this.transloco.translate('adult.history.status.choreCancelled'),
                 occurredAt: item.cancelledAt,
                 hidden: !!item.adultArchivedAt,
               },
@@ -76,8 +83,10 @@ export class AdultHistoryPage implements OnInit {
               rawId: item.id,
               title: item.rewardName,
               childName: item.childName,
-              detail: `${item.pointsCost} poäng användes`,
-              status: 'Utlämnad belöning',
+              detail: this.transloco.translate('adult.history.detail.pointsSpent', {
+                points: item.pointsCost,
+              }),
+              status: this.transloco.translate('adult.history.status.rewardDelivered'),
               occurredAt: item.deliveredAt,
               hidden: !!item.adultArchivedAt,
             },
@@ -90,8 +99,8 @@ export class AdultHistoryPage implements OnInit {
                 rawId: item.id,
                 title: item.rewardName,
                 childName: item.childName,
-                detail: 'Önskan fick avslag',
-                status: 'Avslagen belöning',
+                detail: this.transloco.translate('adult.history.detail.wishRejected'),
+                status: this.transloco.translate('adult.history.status.rewardRejected'),
                 occurredAt: item.reviewedAt,
                 hidden: !!item.adultArchivedAt,
               },
@@ -116,7 +125,7 @@ export class AdultHistoryPage implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Historiken kunde inte hämtas. Försök igen.');
+        this.error.set(this.transloco.translate('adult.history.loadError'));
         this.loading.set(false);
       },
     });
@@ -132,7 +141,7 @@ export class AdultHistoryPage implements OnInit {
         : this.redemptions.archive(item.rawId);
     request.subscribe({
       next: () => this.setArchived(item, new Date().toISOString()),
-      error: () => this.actionError.set('Posten kunde inte döljas. Försök igen.'),
+      error: () => this.actionError.set(this.transloco.translate('adult.history.hideError')),
       complete: () => this.busyId.set(null),
     });
   }
@@ -147,7 +156,7 @@ export class AdultHistoryPage implements OnInit {
         : this.redemptions.restore(item.rawId);
     request.subscribe({
       next: () => this.setArchived(item, null),
-      error: () => this.actionError.set('Posten kunde inte återställas. Försök igen.'),
+      error: () => this.actionError.set(this.transloco.translate('adult.history.restoreError')),
       complete: () => this.busyId.set(null),
     });
   }

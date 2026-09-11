@@ -1,18 +1,19 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 
 interface ChildNavItem {
-  label: string;
+  labelKey: string;
   route: string;
   icon: 'tasks' | 'star' | 'heart' | 'gear';
   pinned?: boolean;
 }
 
 const NAV_ITEMS: ChildNavItem[] = [
-  { label: 'Sysslor', route: '/barn', icon: 'tasks' },
-  { label: 'Belöningar', route: '/barn/beloningar', icon: 'star' },
-  { label: 'Önskningar', route: '/barn/onskningar', icon: 'heart' },
-  { label: 'Inställningar', route: '/barn/installningar', icon: 'gear', pinned: true },
+  { labelKey: 'child.nav.chores', route: '/barn', icon: 'tasks' },
+  { labelKey: 'child.nav.rewards', route: '/barn/beloningar', icon: 'star' },
+  { labelKey: 'child.nav.wishes', route: '/barn/onskningar', icon: 'heart' },
+  { labelKey: 'child.nav.settings', route: '/barn/installningar', icon: 'gear', pinned: true },
 ];
 
 /** The child view's persistent nav: a bottom tab bar on narrow screens, a
@@ -25,7 +26,7 @@ const NAV_ITEMS: ChildNavItem[] = [
   template: `
     <nav
       class="fixed inset-x-0 bottom-0 z-50 border-t border-child-nav-bg bg-child-nav-bg px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 md:static md:flex md:h-dvh md:w-28 md:flex-col md:items-center md:border-t-0 md:px-3 md:py-6"
-      aria-label="Huvudnavigation"
+      [attr.aria-label]="navAriaLabel()"
     >
       <div
         class="mx-auto hidden size-12 shrink-0 place-items-center rounded-2xl bg-child-avatar-a-bg text-child-avatar-a-icon shadow-[4px_6px_0_rgba(0,0,0,0.05)] md:grid"
@@ -92,13 +93,23 @@ const NAV_ITEMS: ChildNavItem[] = [
 })
 export class ChildSideNav {
   private readonly router = inject(Router);
+  private readonly transloco = inject(TranslocoService);
 
   private readonly currentUrl = computed(() =>
     decodeURIComponent(this.router.url.split(/[?#]/, 1)[0]),
   );
-  readonly items = computed(() =>
-    NAV_ITEMS.map((item) => ({ ...item, active: this.currentUrl() === item.route })),
-  );
+  readonly navAriaLabel = computed(() => {
+    this.transloco.activeLang();
+    return this.transloco.translate('child.nav.ariaLabel');
+  });
+  readonly items = computed(() => {
+    this.transloco.activeLang();
+    return NAV_ITEMS.map((item) => ({
+      ...item,
+      label: this.transloco.translate(item.labelKey),
+      active: this.currentUrl() === item.route,
+    }));
+  });
 
   itemClasses(item: ChildNavItem & { active: boolean }): string {
     const pinned = item.pinned ? 'md:mt-auto' : '';

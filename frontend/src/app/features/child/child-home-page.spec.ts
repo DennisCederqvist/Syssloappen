@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
+import { provideTranslocoTesting } from '../../core/i18n/testing';
 import { ChildChoreAssignment, SubmittedChildChoreAssignment } from './child-chores.models';
 import { ChildChoresService } from './child-chores.service';
 import { ChildHomePage } from './child-home-page';
@@ -54,6 +55,7 @@ describe('ChildHomePage', () => {
       imports: [ChildHomePage],
       providers: [
         provideRouter([]),
+        provideTranslocoTesting(),
         { provide: ChildChoresService, useClass: FakeChildChoresService },
       ],
     }).compileComponents();

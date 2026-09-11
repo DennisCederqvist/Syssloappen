@@ -1,9 +1,35 @@
 <div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
   <app-adult-bottom-nav />
   <main class="mx-auto w-full max-w-2xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-adult-page-header title="Inställningar" />
+    <app-adult-page-header [title]="'adult.settings.title' | transloco" />
 
-    <nav class="mt-6 grid gap-2" aria-label="Tillgängliga familjeinställningar">
+    <div
+      class="mt-6 flex items-center gap-3 rounded-lg border border-adult-border bg-adult-surface p-3"
+    >
+      <span
+        class="grid size-10 shrink-0 place-items-center rounded-lg bg-adult-accent-soft text-adult-accent-dark"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          class="size-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18M12 3a13 13 0 0 1 0 18 13 13 0 0 1 0-18Z" />
+        </svg>
+      </span>
+      <span class="min-w-0 flex-1 text-[15px] font-semibold text-adult-text">{{
+        'common.settings.language.label' | transloco
+      }}</span>
+      <app-adult-language-toggle />
+    </div>
+
+    <nav class="mt-2 grid gap-2" [attr.aria-label]="'adult.settings.navAriaLabel' | transloco">
       <a
         routerLink="/vuxen/installningar/barn"
         class="flex items-center gap-3 rounded-lg border border-adult-border bg-adult-surface p-3 no-underline transition hover:border-adult-accent/30"
@@ -28,8 +54,12 @@
           </svg>
         </span>
         <span class="min-w-0 flex-1">
-          <span class="block text-[15px] font-semibold text-adult-text">Barn och konton</span>
-          <span class="mt-0.5 block text-sm text-adult-text-secondary">Profiler och enheter</span>
+          <span class="block text-[15px] font-semibold text-adult-text">{{
+            'adult.settings.children.title' | transloco
+          }}</span>
+          <span class="mt-0.5 block text-sm text-adult-text-secondary">{{
+            'adult.settings.children.subtitle' | transloco
+          }}</span>
         </span>
         <svg
           viewBox="0 0 24 24"
@@ -68,10 +98,12 @@
           </svg>
         </span>
         <span class="min-w-0 flex-1">
-          <span class="block text-[15px] font-semibold text-adult-text">Hantera vuxna</span>
-          <span class="mt-0.5 block text-sm text-adult-text-secondary"
-            >Bjud in och se vem som har tillgång</span
-          >
+          <span class="block text-[15px] font-semibold text-adult-text">{{
+            'adult.settings.adults.title' | transloco
+          }}</span>
+          <span class="mt-0.5 block text-sm text-adult-text-secondary">{{
+            'adult.settings.adults.subtitle' | transloco
+          }}</span>
         </span>
         <svg
           viewBox="0 0 24 24"
@@ -108,10 +140,12 @@
           </svg>
         </span>
         <span class="min-w-0 flex-1">
-          <span class="block text-[15px] font-semibold text-adult-text">Historik</span>
-          <span class="mt-0.5 block text-sm text-adult-text-secondary"
-            >Familjens avslutade aktiviteter</span
-          >
+          <span class="block text-[15px] font-semibold text-adult-text">{{
+            'adult.settings.history.title' | transloco
+          }}</span>
+          <span class="mt-0.5 block text-sm text-adult-text-secondary">{{
+            'adult.settings.history.subtitle' | transloco
+          }}</span>
         </span>
         <svg
           viewBox="0 0 24 24"
@@ -152,7 +186,9 @@
             <path d="M20 12H9" />
           </svg>
         </span>
-        <span class="text-[15px] font-semibold text-adult-text">Logga ut</span>
+        <span class="text-[15px] font-semibold text-adult-text">{{
+          'adult.settings.logout' | transloco
+        }}</span>
       </button>
     </div>
   </main>

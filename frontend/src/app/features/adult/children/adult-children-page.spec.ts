@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
+import { provideTranslocoTesting } from '../../../core/i18n/testing';
 import { AdultChildrenPage } from './adult-children-page';
 import { CreateChildRequest, UpdateChildRequest } from './children.models';
 import { ChildrenService } from './children.service';
@@ -64,13 +65,22 @@ describe('AdultChildrenPage', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AdultChildrenPage],
-      providers: [provideRouter([]), { provide: ChildrenService, useClass: FakeChildrenService }],
+      providers: [
+        provideRouter([]),
+        provideTranslocoTesting(),
+        { provide: ChildrenService, useClass: FakeChildrenService },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(AdultChildrenPage);
     component = fixture.componentInstance;
     service = TestBed.inject(ChildrenService) as unknown as FakeChildrenService;
-    component.ngOnInit();
+    // detectChanges (not a direct ngOnInit() call) so the template's transloco
+    // pipe bindings trigger the translation load — without it, imperative
+    // transloco.translate() calls in component methods resolve to the raw
+    // key instead of the translated string, since nothing else has loaded
+    // the language yet in a test that never renders the template.
+    fixture.detectChanges();
   });
 
   it('does not submit when the passwords differ', () => {

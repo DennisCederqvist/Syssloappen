@@ -9,6 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { HouseholdInvitation } from '../../../core/auth/auth.models';
@@ -41,6 +42,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
     AdultDangerOutlineButton,
     AdultPageHeader,
     AdultSheet,
+    TranslocoPipe,
   ],
   templateUrl: './adult-manage-adults-page.html',
 })
@@ -49,6 +51,7 @@ export class AdultManageAdultsPage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly transloco = inject(TranslocoService);
 
   readonly adults = signal<HouseholdAdult[]>([]);
   readonly isLoading = signal(true);
@@ -103,7 +106,7 @@ export class AdultManageAdultsPage implements OnInit {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (adults) => this.adults.set(adults),
-        error: () => this.loadError.set('De vuxna kunde inte hämtas. Försök igen.'),
+        error: () => this.loadError.set(this.transloco.translate('adult.manageAdults.list.loadError')),
       });
   }
 
@@ -116,7 +119,10 @@ export class AdultManageAdultsPage implements OnInit {
       .pipe(finalize(() => this.isCreatingInvitation.set(false)))
       .subscribe({
         next: (invitation) => this.invitation.set(invitation),
-        error: () => this.invitationError.set('Inbjudningskoden kunde inte skapas. Försök igen.'),
+        error: () =>
+          this.invitationError.set(
+            this.transloco.translate('adult.manageAdults.invitation.createError'),
+          ),
       });
   }
 
@@ -127,7 +133,9 @@ export class AdultManageAdultsPage implements OnInit {
       await navigator.clipboard.writeText(code);
       this.invitationCopied.set(true);
     } catch {
-      this.invitationError.set('Koden kunde inte kopieras automatiskt. Kopiera den manuellt.');
+      this.invitationError.set(
+        this.transloco.translate('adult.manageAdults.invitation.copyError'),
+      );
     }
   }
 
@@ -183,9 +191,10 @@ export class AdultManageAdultsPage implements OnInit {
             adults.map((current) => (current.id === updated.id ? updated : current)),
           );
           this.selectedAdult.set(updated);
-          this.profileSuccess.set('Uppgifterna är sparade.');
+          this.profileSuccess.set(this.transloco.translate('adult.manageAdults.detail.profile.success'));
         },
-        error: () => this.profileError.set('Uppgifterna kunde inte sparas. Försök igen.'),
+        error: () =>
+          this.profileError.set(this.transloco.translate('adult.manageAdults.detail.profile.error')),
       });
   }
 
@@ -205,13 +214,17 @@ export class AdultManageAdultsPage implements OnInit {
       .subscribe({
         next: () => {
           this.passwordForm.reset();
-          this.passwordSuccess.set('Lösenordet är ändrat.');
+          this.passwordSuccess.set(
+            this.transloco.translate('adult.manageAdults.detail.password.success'),
+          );
         },
         error: (error: HttpErrorResponse) =>
           this.passwordError.set(
-            error.status === 400
-              ? 'Nuvarande lösenord stämmer inte, eller det nya lösenordet uppfyller inte kraven.'
-              : 'Lösenordet kunde inte ändras. Försök igen.',
+            this.transloco.translate(
+              error.status === 400
+                ? 'adult.manageAdults.detail.password.errorInvalid'
+                : 'adult.manageAdults.detail.password.errorGeneric',
+            ),
           ),
       });
   }
@@ -250,11 +263,13 @@ export class AdultManageAdultsPage implements OnInit {
         },
         error: (error: HttpErrorResponse) =>
           this.disconnectError.set(
-            error.status === 404
-              ? 'Den vuxna finns inte längre i familjen. Uppdatera listan och försök igen.'
-              : error.status === 409
-                ? 'Den här personen kan inte kopplas bort just nu.'
-                : 'Kunde inte koppla bort. Försök igen om en liten stund.',
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.manageAdults.detail.disconnect.errorNotFound'
+                : error.status === 409
+                  ? 'adult.manageAdults.detail.disconnect.errorConflict'
+                  : 'adult.manageAdults.detail.disconnect.errorGeneric',
+            ),
           ),
       });
   }

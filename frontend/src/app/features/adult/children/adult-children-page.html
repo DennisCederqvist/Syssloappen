@@ -1,7 +1,7 @@
 <div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
   <app-adult-bottom-nav />
   <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-adult-page-header title="Barn och konton">
+    <app-adult-page-header [title]="'adult.children.pageTitle' | transloco">
       <button
         headerAction
         id="create-child-trigger"
@@ -11,7 +11,7 @@
         [attr.aria-controls]="showForm() ? 'create-child-panel' : null"
         [attr.aria-expanded]="showForm()"
       >
-        + Lägg till barn
+        {{ 'adult.children.addButton' | transloco }}
       </button>
     </app-adult-page-header>
 
@@ -23,12 +23,12 @@
         aria-live="polite"
       >
         <h2 class="text-[15px] font-semibold text-adult-accent-dark">
-          {{ child.name }} är tillagd
+          {{ 'adult.children.created.title' | transloco: { name: child.name } }}
         </h2>
-        <p class="mt-1 text-sm leading-6 text-adult-accent-dark">
-          Barnets användarnamn är <strong>{{ child.userName }}</strong
-          >. Nu kan du koppla barnets enhet med en engångskod.
-        </p>
+        <p
+          class="mt-1 text-sm leading-6 text-adult-accent-dark"
+          [innerHTML]="'adult.children.created.body' | transloco: { userName: child.userName }"
+        ></p>
         <button
           type="button"
           adultSecondaryTintButton
@@ -37,7 +37,12 @@
           [id]="'pair-created-child-' + child.id"
           [disabled]="generatingCodeFor() === child.id"
         >
-          {{ generatingCodeFor() === child.id ? 'Skapar kod…' : 'Koppla enhet' }}
+          {{
+            (generatingCodeFor() === child.id
+              ? 'adult.children.created.creatingCode'
+              : 'adult.children.created.pairCode'
+            ) | transloco
+          }}
         </button>
       </section>
     }
@@ -60,7 +65,7 @@
       >
         <div class="min-w-0 flex-1">
           <p class="text-[15px] font-semibold text-adult-accent-dark">
-            Barnprofilen är avaktiverad
+            {{ 'adult.children.deactivationBanner.title' | transloco }}
           </p>
           <p class="mt-1 text-sm leading-6 text-adult-accent-dark">{{ deactivationSuccess() }}</p>
         </div>
@@ -68,7 +73,7 @@
           type="button"
           (click)="deactivationSuccess.set('')"
           class="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-lg text-lg text-adult-accent-dark"
-          aria-label="Stäng bekräftelsen"
+          [attr.aria-label]="'adult.children.deactivationBanner.closeAria' | transloco"
         >
           ×
         </button>
@@ -79,22 +84,30 @@
       <app-adult-sheet
         panelId="pairing-code-panel"
         headingId="pairing-code-title"
-        [title]="'Koppla ' + pairing.childName + 's enhet'"
-        closeLabel="Stäng engångskoden"
+        [title]="'adult.children.pairingSheet.title' | transloco: { name: pairing.childName }"
+        [closeLabel]="'adult.children.pairingSheet.close' | transloco"
         (close)="closePairingCode()"
       >
         <div class="rounded-lg border border-adult-border bg-adult-bg p-5 text-center">
           <p class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">
-            Kod för barnets enhet
+            {{ 'adult.children.pairingSheet.codeLabel' | transloco }}
           </p>
           <p class="mt-3 text-3xl font-semibold tracking-[0.2em] text-adult-text">
             {{ pairing.code }}
           </p>
           <p class="mt-3 text-sm text-adult-text-secondary">
-            Gäller till {{ pairing.expiresAt | date: 'HH:mm' }}
+            {{
+              'adult.children.pairingSheet.validUntil'
+                | transloco: { time: (pairing.expiresAt | date: 'HH:mm') }
+            }}
           </p>
           <button type="button" adultSecondaryTintButton class="mt-4" (click)="copyPairingCode()">
-            {{ pairingCodeCopied() ? 'Kopierad ✓' : 'Kopiera koden' }}
+            {{
+              (pairingCodeCopied()
+                ? 'adult.children.pairingSheet.copied'
+                : 'adult.children.pairingSheet.copy'
+              ) | transloco
+            }}
           </button>
         </div>
 
@@ -105,7 +118,7 @@
               aria-hidden="true"
               >1</span
             >
-            <p class="mt-2 text-sm text-adult-text">Öppna Syssloappen på barnets enhet.</p>
+            <p class="mt-2 text-sm text-adult-text">{{ 'adult.children.pairingSheet.step1' | transloco }}</p>
           </div>
           <div class="rounded-lg border border-adult-border bg-adult-surface p-3">
             <span
@@ -113,7 +126,7 @@
               aria-hidden="true"
               >2</span
             >
-            <p class="mt-2 text-sm text-adult-text">Välj Barn och sedan Engångskod.</p>
+            <p class="mt-2 text-sm text-adult-text">{{ 'adult.children.pairingSheet.step2' | transloco }}</p>
           </div>
           <div class="rounded-lg border border-adult-border bg-adult-surface p-3">
             <span
@@ -121,15 +134,15 @@
               aria-hidden="true"
               >3</span
             >
-            <p class="mt-2 text-sm text-adult-text">Skriv koden innan den går ut.</p>
+            <p class="mt-2 text-sm text-adult-text">{{ 'adult.children.pairingSheet.step3' | transloco }}</p>
           </div>
         </div>
 
         <p
           class="mt-4 rounded-lg border border-adult-border bg-adult-points-bg px-4 py-3 text-sm leading-6 text-adult-points-text"
         >
-          <strong>Säker kod:</strong> Den kan bara användas en gång och sparas inte i klartext.
-          Skapa en ny kod om tiden hinner gå ut.
+          <strong>{{ 'adult.children.pairingSheet.secureNoteLabel' | transloco }}</strong>
+          {{ 'adult.children.pairingSheet.secureNote' | transloco }}
         </p>
       </app-adult-sheet>
     }
@@ -138,19 +151,18 @@
       <app-adult-sheet
         panelId="device-sessions-panel"
         headingId="device-sessions-title"
-        [title]="selectedChild.name + 's enheter'"
-        closeLabel="Stäng listan med kopplade enheter"
+        [title]="'adult.children.deviceSessions.title' | transloco: { name: selectedChild.name }"
+        [closeLabel]="'adult.children.deviceSessions.close' | transloco"
         (close)="closeDeviceSessions()"
       >
         <p class="-mt-2 mb-4 text-sm text-adult-text-secondary">
-          Här ser du tidigare kopplingar. Logga ut en enhet direkt om den har tappats bort eller
-          inte längre används.
+          {{ 'adult.children.deviceSessions.intro' | transloco }}
         </p>
 
         @if (deviceSessionsLoading()) {
           <div class="grid gap-3" role="status">
             <div class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-bg"></div>
-            <span class="sr-only">Hämtar kopplade enheter…</span>
+            <span class="sr-only">{{ 'adult.children.deviceSessions.loadingSr' | transloco }}</span>
             <div class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-bg"></div>
           </div>
         } @else if (deviceSessionsError()) {
@@ -165,7 +177,7 @@
               class="mt-3"
               (click)="retryDeviceSessions()"
             >
-              Försök igen
+              {{ 'common.actions.retry' | transloco }}
             </button>
           </div>
         } @else if (deviceSessions().length === 0) {
@@ -187,9 +199,9 @@
                 <line x1="11" y1="18" x2="13" y2="18" />
               </svg>
             </div>
-            <h3 class="mt-3 text-[15px] font-semibold text-adult-text">Inga enheter är kopplade</h3>
+            <h3 class="mt-3 text-[15px] font-semibold text-adult-text">{{ 'adult.children.deviceSessions.emptyTitle' | transloco }}</h3>
             <p class="mt-1 text-sm text-adult-text-secondary">
-              Skapa en engångskod från barnkortet för att koppla barnets mobil eller surfplatta.
+              {{ 'adult.children.deviceSessions.emptySubtitle' | transloco }}
             </p>
           </div>
         } @else {
@@ -226,46 +238,46 @@
                   <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                       <h3 class="text-[15px] font-semibold text-adult-text">
-                        Kopplad enhet {{ index + 1 }}
+                        {{ 'adult.children.deviceSessions.deviceTitle' | transloco: { index: index + 1 } }}
                       </h3>
                       @if (session.revokedAt) {
                         <span
                           class="rounded-full border border-adult-danger-border bg-adult-danger-bg px-2 py-0.5 text-xs font-semibold text-adult-danger-text"
-                          >Utloggad</span
+                          >{{ 'adult.children.deviceSessions.statusRevoked' | transloco }}</span
                         >
                       } @else if (isSessionExpired(session)) {
                         <span
                           class="rounded-full border border-adult-border bg-adult-bg px-2 py-0.5 text-xs font-semibold text-adult-text-secondary"
-                          >Utgången</span
+                          >{{ 'adult.children.deviceSessions.statusExpired' | transloco }}</span
                         >
                       } @else {
                         <span
                           class="rounded-full border border-adult-accent/25 bg-adult-accent-soft px-2 py-0.5 text-xs font-semibold text-adult-accent-dark"
-                          >Aktiv</span
+                          >{{ 'adult.children.deviceSessions.statusActive' | transloco }}</span
                         >
                       }
                     </div>
                     <dl class="mt-2 grid gap-1.5 text-sm">
                       <div class="flex items-baseline justify-between gap-4">
-                        <dt class="text-adult-text-secondary">Senast använd</dt>
+                        <dt class="text-adult-text-secondary">{{ 'adult.children.deviceSessions.lastUsed' | transloco }}</dt>
                         <dd class="text-right font-medium text-adult-text">
                           {{ session.lastSeenAt | date: 'd MMM HH:mm' }}
                         </dd>
                       </div>
                       <div class="flex items-baseline justify-between gap-4">
-                        <dt class="text-adult-text-secondary">Kopplad</dt>
+                        <dt class="text-adult-text-secondary">{{ 'adult.children.deviceSessions.connected' | transloco }}</dt>
                         <dd class="text-right font-medium text-adult-text">
                           {{ session.createdAt | date: 'd MMM HH:mm' }}
                         </dd>
                       </div>
                       <div class="flex items-baseline justify-between gap-4">
-                        <dt class="text-adult-text-secondary">Aktiv till</dt>
+                        <dt class="text-adult-text-secondary">{{ 'adult.children.deviceSessions.activeUntil' | transloco }}</dt>
                         <dd class="text-right font-medium text-adult-text">
                           {{ session.expiresAt | date: 'd MMM HH:mm' }}
                         </dd>
                       </div>
                       <div class="flex items-baseline justify-between gap-4">
-                        <dt class="text-adult-text-secondary">Längst giltig till</dt>
+                        <dt class="text-adult-text-secondary">{{ 'adult.children.deviceSessions.maxValidUntil' | transloco }}</dt>
                         <dd class="text-right font-medium text-adult-text">
                           {{ session.absoluteExpiresAt | date: 'd MMM HH:mm' }}
                         </dd>
@@ -285,7 +297,7 @@
                         [id]="'revocation-question-' + session.sessionId"
                         class="text-sm font-semibold text-adult-danger-text"
                       >
-                        Barnet loggas ut direkt på den här enheten. Fortsätta?
+                        {{ 'adult.children.deviceSessions.revokeConfirm' | transloco }}
                       </p>
                       <div class="mt-3 flex gap-2">
                         <button
@@ -295,7 +307,7 @@
                           [disabled]="revokingSession() === session.sessionId"
                           class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
                         >
-                          Avbryt
+                          {{ 'common.actions.cancel' | transloco }}
                         </button>
                         <button
                           type="button"
@@ -305,7 +317,10 @@
                           [disabled]="revokingSession() === session.sessionId"
                         >
                           {{
-                            revokingSession() === session.sessionId ? 'Loggar ut…' : 'Ja, logga ut'
+                            (revokingSession() === session.sessionId
+                              ? 'adult.children.deviceSessions.revoking'
+                              : 'adult.children.deviceSessions.revokeYes'
+                            ) | transloco
                           }}
                         </button>
                       </div>
@@ -318,7 +333,7 @@
                       class="mt-3 w-full"
                       (click)="requestRevocation(session.sessionId)"
                     >
-                      Logga ut enheten
+                      {{ 'adult.children.deviceSessions.revokeButton' | transloco }}
                     </button>
                   }
                 }
@@ -329,8 +344,7 @@
           <p
             class="mt-4 rounded-lg border border-adult-border bg-adult-bg px-4 py-3 text-sm leading-6 text-adult-text-secondary"
           >
-            Aktiva barnsessioner förnyas säkert vid användning, men gäller aldrig längre än 30 dagar
-            från inloggningen.
+            {{ 'adult.children.deviceSessions.footNote' | transloco }}
           </p>
         }
       </app-adult-sheet>
@@ -340,12 +354,12 @@
       <app-adult-sheet
         panelId="edit-child-panel"
         headingId="edit-child-title"
-        [title]="'Hantera ' + selectedChild.name"
-        closeLabel="Stäng barnprofilen"
+        [title]="'adult.children.editSheet.title' | transloco: { name: selectedChild.name }"
+        [closeLabel]="'adult.children.editSheet.close' | transloco"
         (close)="closeEditChild()"
       >
         <p class="-mt-2 mb-4 text-sm text-adult-text-secondary">
-          Ändra namnet som visas i familjen eller avaktivera profilen.
+          {{ 'adult.children.editSheet.intro' | transloco }}
         </p>
 
         <form [formGroup]="editChildForm" (ngSubmit)="updateChild()" class="grid gap-4" novalidate>
@@ -367,7 +381,7 @@
           }
           <div>
             <label class="block text-sm font-semibold text-adult-text">
-              Visningsnamn
+              {{ 'adult.children.editSheet.nameLabel' | transloco }}
               <input
                 id="edit-child-name"
                 formControlName="name"
@@ -385,7 +399,7 @@
                 id="edit-child-name-error"
                 class="mt-1.5 block text-sm font-normal text-adult-danger-text"
               >
-                Skriv ett namn med högst 100 tecken.
+                {{ 'adult.children.editSheet.nameError' | transloco }}
               </span>
             }
           </div>
@@ -395,10 +409,13 @@
               (click)="closeEditChild()"
               class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
             >
-              Avbryt
+              {{ 'common.actions.cancel' | transloco }}
             </button>
             <button type="submit" adultPrimaryButton [disabled]="isUpdatingChild()">
-              {{ isUpdatingChild() ? 'Sparar…' : 'Spara nytt namn' }}
+              {{
+                (isUpdatingChild() ? 'adult.children.editSheet.saving' : 'adult.children.editSheet.save')
+                  | transloco
+              }}
             </button>
           </div>
         </form>
@@ -422,7 +439,7 @@
                 id="child-deactivation-question"
                 class="text-sm font-semibold text-adult-danger-text"
               >
-                Är du säker på att {{ selectedChild.name }} ska avaktiveras?
+                {{ 'adult.children.editSheet.deactivateQuestion' | transloco: { name: selectedChild.name } }}
               </p>
               <div class="mt-3 flex gap-2">
                 <button
@@ -432,7 +449,7 @@
                   [disabled]="isDeactivatingChild()"
                   class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
                 >
-                  Avbryt
+                  {{ 'common.actions.cancel' | transloco }}
                 </button>
                 <button
                   type="button"
@@ -441,7 +458,12 @@
                   (click)="deactivateChild()"
                   [disabled]="isDeactivatingChild()"
                 >
-                  {{ isDeactivatingChild() ? 'Avaktiverar…' : 'Ja, avaktivera' }}
+                  {{
+                    (isDeactivatingChild()
+                      ? 'adult.children.editSheet.deactivating'
+                      : 'adult.children.editSheet.deactivateConfirm'
+                    ) | transloco
+                  }}
                 </button>
               </div>
             </div>
@@ -452,7 +474,7 @@
               adultDangerOutlineButton
               (click)="requestDeactivation()"
             >
-              Avaktivera barn
+              {{ 'adult.children.editSheet.deactivateButton' | transloco }}
             </button>
           }
         </div>
@@ -463,12 +485,12 @@
       <app-adult-sheet
         panelId="create-child-panel"
         headingId="create-child-title"
-        title="Lägg till ett barn"
-        closeLabel="Stäng formuläret"
+        [title]="'adult.children.createSheet.title' | transloco"
+        [closeLabel]="'adult.children.createSheet.close' | transloco"
         (close)="closeForm()"
       >
         <p class="-mt-2 mb-4 text-sm text-adult-text-secondary">
-          Uppgifterna används bara inom din familj.
+          {{ 'adult.children.createSheet.intro' | transloco }}
         </p>
 
         @if (formError()) {
@@ -483,13 +505,13 @@
         <form [formGroup]="childForm" (ngSubmit)="submitChild()" class="grid gap-4" novalidate>
           <div role="group">
             <label class="block text-sm font-semibold text-adult-text">
-              Barnets namn
+              {{ 'adult.children.createSheet.nameLabel' | transloco }}
               <input
                 id="create-child-name"
                 formControlName="name"
                 type="text"
                 autocomplete="off"
-                placeholder="Till exempel Maja"
+                [placeholder]="'adult.children.createSheet.namePlaceholder' | transloco"
                 [attr.aria-invalid]="
                   childForm.controls.name.touched && childForm.controls.name.invalid
                 "
@@ -502,20 +524,20 @@
                 id="create-child-name-error"
                 class="mt-1.5 block text-sm font-normal text-adult-danger-text"
               >
-                Skriv barnets namn.
+                {{ 'adult.children.createSheet.nameError' | transloco }}
               </span>
             }
           </div>
           <div role="group">
             <label class="block text-sm font-semibold text-adult-text">
-              Användarnamn
+              {{ 'adult.children.createSheet.usernameLabel' | transloco }}
               <input
                 id="create-child-username"
                 formControlName="userName"
                 type="text"
                 autocomplete="off"
                 autocapitalize="none"
-                placeholder="Till exempel maja"
+                [placeholder]="'adult.children.createSheet.usernamePlaceholder' | transloco"
                 [attr.aria-invalid]="
                   childForm.controls.userName.touched && childForm.controls.userName.invalid
                 "
@@ -527,26 +549,26 @@
               id="create-child-username-help"
               class="mt-1.5 block text-xs font-normal text-adult-text-secondary"
             >
-              Barnvänligt och unikt inom familjen.
+              {{ 'adult.children.createSheet.usernameHint' | transloco }}
             </span>
             @if (childForm.controls.userName.touched && childForm.controls.userName.invalid) {
               <span
                 id="create-child-username-error"
                 class="mt-1 block text-sm font-normal text-adult-danger-text"
               >
-                Skriv ett användarnamn.
+                {{ 'adult.children.createSheet.usernameError' | transloco }}
               </span>
             }
           </div>
           <div role="group">
             <label class="block text-sm font-semibold text-adult-text">
-              Lösenord
+              {{ 'adult.children.createSheet.passwordLabel' | transloco }}
               <input
                 id="create-child-password"
                 formControlName="password"
                 type="password"
                 autocomplete="new-password"
-                placeholder="Minst 8 tecken"
+                [placeholder]="'adult.children.createSheet.passwordPlaceholder' | transloco"
                 [attr.aria-invalid]="
                   childForm.controls.password.touched && childForm.controls.password.invalid
                 "
@@ -558,26 +580,26 @@
               id="create-child-password-help"
               class="mt-1.5 block text-xs font-normal text-adult-text-secondary"
             >
-              Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.
+              {{ 'adult.children.createSheet.passwordHint' | transloco }}
             </span>
             @if (childForm.controls.password.touched && childForm.controls.password.invalid) {
               <span
                 id="create-child-password-error"
                 class="mt-1 block text-sm font-normal text-adult-danger-text"
               >
-                Lösenordet uppfyller inte kraven.
+                {{ 'adult.children.createSheet.passwordError' | transloco }}
               </span>
             }
           </div>
           <div role="group">
             <label class="block text-sm font-semibold text-adult-text">
-              Upprepa lösenordet
+              {{ 'adult.children.createSheet.confirmPasswordLabel' | transloco }}
               <input
                 id="create-child-confirm-password"
                 formControlName="confirmPassword"
                 type="password"
                 autocomplete="new-password"
-                placeholder="Skriv lösenordet igen"
+                [placeholder]="'adult.children.createSheet.confirmPasswordPlaceholder' | transloco"
                 [attr.aria-invalid]="
                   childForm.controls.confirmPassword.touched &&
                   (childForm.controls.confirmPassword.invalid ||
@@ -596,9 +618,10 @@
                 class="mt-1.5 block text-sm font-normal text-adult-danger-text"
               >
                 {{
-                  childForm.controls.confirmPassword.invalid
-                    ? 'Upprepa lösenordet.'
-                    : 'Lösenorden är inte lika.'
+                  (childForm.controls.confirmPassword.invalid
+                    ? 'adult.children.createSheet.confirmPasswordRequired'
+                    : 'adult.children.createSheet.confirmPasswordMismatch'
+                  ) | transloco
                 }}
               </span>
             }
@@ -609,10 +632,15 @@
               (click)="closeForm()"
               class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
             >
-              Avbryt
+              {{ 'common.actions.cancel' | transloco }}
             </button>
             <button type="submit" adultPrimaryButton [disabled]="isSubmitting()">
-              {{ isSubmitting() ? 'Skapar kontot…' : 'Skapa barnkonto' }}
+              {{
+                (isSubmitting()
+                  ? 'adult.children.createSheet.submitting'
+                  : 'adult.children.createSheet.submit'
+                ) | transloco
+              }}
             </button>
           </div>
         </form>
@@ -625,7 +653,7 @@
           id="children-title"
           class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase"
         >
-          Familjens barn
+          {{ 'adult.children.list.title' | transloco }}
         </h2>
         @if (!isLoading() && !loadError() && children().length) {
           <app-adult-badge variant="count" [value]="children().length" />
@@ -637,7 +665,7 @@
           <div
             class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-surface"
           ></div>
-          <span class="sr-only">Hämtar familjens barn…</span>
+          <span class="sr-only">{{ 'adult.children.list.loadingSr' | transloco }}</span>
           <div
             class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-surface"
           ></div>
@@ -649,14 +677,14 @@
         >
           <p class="text-sm font-medium text-adult-danger-text">{{ loadError() }}</p>
           <button type="button" adultDangerOutlineButton class="mt-3" (click)="loadChildren()">
-            Försök igen
+            {{ 'common.actions.retry' | transloco }}
           </button>
         </div>
       } @else if (children().length === 0) {
         <div class="mt-2 rounded-lg border border-adult-border bg-adult-surface p-6 text-center">
-          <h3 class="text-[15px] font-semibold text-adult-text">Inga barn är tillagda ännu</h3>
+          <h3 class="text-[15px] font-semibold text-adult-text">{{ 'adult.children.list.emptyTitle' | transloco }}</h3>
           <p class="mt-1 text-sm text-adult-text-secondary">
-            Skapa familjens första barnkonto för att senare kunna tilldela sysslor.
+            {{ 'adult.children.list.emptySubtitle' | transloco }}
           </p>
           <button
             id="create-child-empty-trigger"
@@ -665,7 +693,7 @@
             class="mt-4"
             (click)="openForm()"
           >
-            + Lägg till första barnet
+            {{ 'adult.children.list.addFirst' | transloco }}
           </button>
         </div>
       } @else {
@@ -679,7 +707,7 @@
                 (click)="openEditChild(child)"
                 [attr.aria-controls]="editingChild()?.id === child.id ? 'edit-child-panel' : null"
                 [attr.aria-expanded]="editingChild()?.id === child.id"
-                [attr.aria-label]="'Hantera ' + child.name"
+                [attr.aria-label]="'adult.children.list.manageAria' | transloco: { name: child.name }"
                 class="grid min-h-11 min-w-11 shrink-0 -m-2 place-items-center rounded-lg text-adult-text-secondary transition hover:bg-adult-bg"
               >
                 <svg
@@ -696,7 +724,7 @@
                   <path d="M13 6l3 3" />
                 </svg>
               </button>
-              <p class="text-sm font-medium text-adult-text-secondary">Aktivt barnkonto</p>
+              <p class="text-sm font-medium text-adult-text-secondary">{{ 'adult.children.list.activeAccount' | transloco }}</p>
               <div class="mt-2 flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -709,7 +737,12 @@
                   [attr.aria-expanded]="pairingCode()?.childId === child.id"
                   [disabled]="generatingCodeFor() === child.id"
                 >
-                  {{ generatingCodeFor() === child.id ? 'Skapar…' : 'Koppla enhet' }}
+                  {{
+                    (generatingCodeFor() === child.id
+                      ? 'adult.children.list.pairing'
+                      : 'adult.children.list.pairButton'
+                    ) | transloco
+                  }}
                 </button>
                 <button
                   type="button"
@@ -721,7 +754,7 @@
                   "
                   [attr.aria-expanded]="deviceSessionsChild()?.id === child.id"
                 >
-                  Visa enheter
+                  {{ 'adult.children.list.viewDevices' | transloco }}
                 </button>
               </div>
             </app-adult-tile>

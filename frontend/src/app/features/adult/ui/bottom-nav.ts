@@ -1,17 +1,18 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 
 interface AdultNavItem {
-  label: string;
+  labelKey: string;
   route: string;
   icon: 'home' | 'list' | 'star' | 'gear';
 }
 
 const NAV_ITEMS: AdultNavItem[] = [
-  { label: 'Hem', route: '/vuxen', icon: 'home' },
-  { label: 'Sysslor', route: '/vuxen/sysslor', icon: 'list' },
-  { label: 'Belöningar', route: '/vuxen/belöningar', icon: 'star' },
-  { label: 'Inställningar', route: '/vuxen/installningar', icon: 'gear' },
+  { labelKey: 'adult.nav.home', route: '/vuxen', icon: 'home' },
+  { labelKey: 'adult.nav.chores', route: '/vuxen/sysslor', icon: 'list' },
+  { labelKey: 'adult.nav.rewards', route: '/vuxen/belöningar', icon: 'star' },
+  { labelKey: 'adult.nav.settings', route: '/vuxen/installningar', icon: 'gear' },
 ];
 
 /** The 4-item adult tab bar: Hem, Sysslor, Belöningar, Inställningar.
@@ -22,7 +23,7 @@ const NAV_ITEMS: AdultNavItem[] = [
   template: `
     <nav
       class="fixed inset-x-0 bottom-0 z-50 border-t border-adult-border bg-adult-surface/95 px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:static md:w-20 md:border-t-0 md:border-r md:px-2 md:pt-6"
-      aria-label="Huvudnavigation"
+      [attr.aria-label]="navAriaLabel()"
     >
       <div
         class="mx-auto grid w-full max-w-lg grid-cols-4 gap-1 md:h-full md:w-auto md:grid-cols-1 md:justify-start md:gap-3"
@@ -76,10 +77,20 @@ const NAV_ITEMS: AdultNavItem[] = [
 })
 export class AdultBottomNav {
   private readonly router = inject(Router);
+  private readonly transloco = inject(TranslocoService);
+  readonly navAriaLabel = computed(() => {
+    this.transloco.activeLang();
+    return this.transloco.translate('adult.nav.ariaLabel');
+  });
   readonly items = computed(() => {
+    this.transloco.activeLang();
     // Router.url percent-encodes Swedish route characters (e.g. ö); decode before
     // comparing so /vuxen/belöningar receives its active state.
     const currentUrl = decodeURIComponent(this.router.url.split(/[?#]/, 1)[0]);
-    return NAV_ITEMS.map((item) => ({ ...item, active: currentUrl === item.route }));
+    return NAV_ITEMS.map((item) => ({
+      ...item,
+      label: this.transloco.translate(item.labelKey),
+      active: currentUrl === item.route,
+    }));
   });
 }

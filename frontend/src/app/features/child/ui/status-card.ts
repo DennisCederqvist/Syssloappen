@@ -1,4 +1,5 @@
 import { Component, input } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 export type ChildStatusCardKind = 'pending' | 'needsRedo';
 
@@ -8,6 +9,7 @@ export type ChildStatusCardKind = 'pending' | 'needsRedo';
  * variant of the same component. */
 @Component({
   selector: 'app-child-status-card',
+  imports: [TranslocoPipe],
   template: `
     <article
       [id]="cardId()"
@@ -20,7 +22,7 @@ export type ChildStatusCardKind = 'pending' | 'needsRedo';
         </h3>
         <span
           class="flex shrink-0 items-center gap-1 rounded-full bg-child-nav-bg px-2.5 py-1 text-sm font-bold text-child-text"
-          [attr.aria-label]="points() + ' poäng'"
+          [attr.aria-label]="'child.common.pointsAria' | transloco: { points: points() }"
         >
           <svg
             viewBox="0 0 20 20"
@@ -41,13 +43,13 @@ export type ChildStatusCardKind = 'pending' | 'needsRedo';
 
       @if (kind() === 'pending') {
         <p class="mt-4 rounded-2xl bg-amber-50 p-4 text-sm leading-6 font-semibold text-amber-900">
-          Bra jobbat! En vuxen tittar på uppgiften innan poängen delas ut.
+          {{ 'child.statusCard.pendingMessage' | transloco }}
         </p>
       } @else {
         <div class="mt-4 rounded-2xl bg-red-50 p-4 text-red-950">
-          <p class="text-sm font-bold">Kommentar från en vuxen</p>
+          <p class="text-sm font-bold">{{ 'child.statusCard.needsRedoLabel' | transloco }}</p>
           <p class="mt-1 leading-6">
-            {{ message() || 'Försök en gång till och rapportera när du är klar.' }}
+            {{ message() || ('child.statusCard.needsRedoFallback' | transloco) }}
           </p>
         </div>
       }

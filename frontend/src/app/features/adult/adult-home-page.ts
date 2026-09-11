@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { AdultApprovalCard } from './ui/approval-card';
@@ -31,6 +32,7 @@ interface ChildOverview extends ChildSummary {
     AdultBadge,
     AdultPrimaryButton,
     AdultDangerOutlineButton,
+    TranslocoPipe,
   ],
   templateUrl: './adult-home-page.html',
 })
@@ -39,6 +41,7 @@ export class AdultHomePage {
   private readonly childrenService = inject(ChildrenService);
   private readonly choresService = inject(ChoresService);
   private readonly rewardRedemptionsService = inject(RewardRedemptionsService);
+  private readonly transloco = inject(TranslocoService);
   readonly displayName = computed(
     () => this.auth.user()?.displayName || this.auth.user()?.email?.split('@')[0] || 'familj',
   );
@@ -71,7 +74,7 @@ export class AdultHomePage {
         this.assignments.set(assignments);
         this.rewardRedemptions.set(rewardRedemptions);
       },
-      error: () => this.loadError.set('Översikten kunde inte hämtas. Försök igen.'),
+      error: () => this.loadError.set(this.transloco.translate('adult.home.loadError')),
     });
   }
 
@@ -108,7 +111,7 @@ export class AdultHomePage {
         this.rewardRedemptions.update((items) =>
           items.map((current) => (current.id === updated.id ? updated : current)),
         ),
-      error: () => this.loadError.set('Belöningsönskan kunde inte hanteras. Försök igen.'),
+      error: () => this.loadError.set(this.transloco.translate('adult.home.rewardChangeError')),
       complete: () => this.busyRewardRedemptionId.set(null),
     });
   }
@@ -138,7 +141,7 @@ export class AdultHomePage {
           this.rejectComments.update(({ [item.assignmentId]: _, ...rest }) => rest);
         }
       },
-      error: () => this.loadError.set('Granskningen kunde inte sparas. Försök igen.'),
+      error: () => this.loadError.set(this.transloco.translate('adult.home.reviewError')),
       complete: () => this.busyAssignmentId.set(null),
     });
   }

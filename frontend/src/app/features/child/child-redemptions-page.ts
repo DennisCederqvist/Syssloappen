@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { ChildCardMotion } from './ui/card-motion';
@@ -15,17 +16,21 @@ const RECENT_FINAL_ITEMS_LIMIT = 6;
 
 @Component({
   selector: 'app-child-redemptions-page',
-  imports: [ChildSideNav, ChildPageHeader, ChildRedemptionCard],
+  imports: [ChildSideNav, ChildPageHeader, ChildRedemptionCard, TranslocoPipe],
   templateUrl: './child-redemptions-page.html',
 })
 export class ChildRedemptionsPage implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly service = inject(ChildChoresService);
+  private readonly transloco = inject(TranslocoService);
   private readonly motion = new ChildCardMotion(() =>
     [...this.activeItems(), ...this.recentFinalItems()].map((item) => item.id),
   );
 
-  readonly childName = computed(() => this.auth.user()?.name || 'där');
+  readonly childName = computed(() => {
+    this.transloco.activeLang();
+    return this.auth.user()?.name || this.transloco.translate('child.common.fallbackName');
+  });
   readonly wobblingRedemptionId = this.motion.wobblingId;
   readonly items = signal<RewardRedemption[]>([]);
   readonly availablePoints = signal(0);
@@ -62,7 +67,7 @@ export class ChildRedemptionsPage implements OnInit, OnDestroy {
           this.items.set(redemptions);
           this.availablePoints.set(rewards.availablePoints);
         },
-        error: () => this.error.set('Dina önskningar kunde inte hämtas.'),
+        error: () => this.error.set(this.transloco.translate('child.redemptions.loadError')),
       });
   }
 

@@ -8,6 +8,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { focusAfterRender } from '../../../shared/focus';
 import { AdultBadge } from '../ui/badge';
@@ -43,12 +44,14 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
     AdultPageHeader,
     AdultSheet,
     AdultTile,
+    TranslocoPipe,
   ],
   templateUrl: './adult-children-page.html',
 })
 export class AdultChildrenPage implements OnInit {
   private readonly childrenService = inject(ChildrenService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly transloco = inject(TranslocoService);
 
   readonly children = signal<ChildSummary[]>([]);
   readonly isLoading = signal(true);
@@ -115,7 +118,7 @@ export class AdultChildrenPage implements OnInit {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (children) => this.children.set(children),
-        error: () => this.loadError.set('Barnen kunde inte hämtas. Försök igen.'),
+        error: () => this.loadError.set(this.transloco.translate('adult.children.loadError')),
       });
   }
 
@@ -166,13 +169,15 @@ export class AdultChildrenPage implements OnInit {
           focusAfterRender('created-child-message');
         },
         error: (error: HttpErrorResponse) => {
-          if (error.status === 409) {
-            this.formError.set('Användarnamnet används redan av ett barn i familjen.');
-          } else if (error.status === 400) {
-            this.formError.set('Kontrollera namn, användarnamn och lösenord.');
-          } else {
-            this.formError.set('Barnkontot kunde inte skapas. Försök igen om en liten stund.');
-          }
+          this.formError.set(
+            this.transloco.translate(
+              error.status === 409
+                ? 'adult.children.createError.conflict'
+                : error.status === 400
+                  ? 'adult.children.createError.validation'
+                  : 'adult.children.createError.generic',
+            ),
+          );
         },
       });
   }
@@ -193,9 +198,11 @@ export class AdultChildrenPage implements OnInit {
         },
         error: (error: HttpErrorResponse) =>
           this.pairingError.set(
-            error.status === 404
-              ? 'Barnet är inte längre aktivt eller saknar ett konto.'
-              : 'Koden kunde inte skapas. Försök igen om en liten stund.',
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.children.pairingError.notFound'
+                : 'adult.children.pairingError.generic',
+            ),
           ),
       });
   }
@@ -213,7 +220,7 @@ export class AdultChildrenPage implements OnInit {
       await navigator.clipboard.writeText(code);
       this.pairingCodeCopied.set(true);
     } catch {
-      this.pairingError.set('Koden kunde inte kopieras automatiskt. Kopiera den manuellt.');
+      this.pairingError.set(this.transloco.translate('adult.children.pairingCopyError'));
     }
   }
 
@@ -274,9 +281,11 @@ export class AdultChildrenPage implements OnInit {
         },
         error: (error: HttpErrorResponse) =>
           this.revocationError.set(
-            error.status === 404
-              ? 'Enheten finns inte längre. Uppdatera listan och försök igen.'
-              : 'Enheten kunde inte loggas ut. Försök igen om en liten stund.',
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.children.revocationError.notFound'
+                : 'adult.children.revocationError.generic',
+            ),
           ),
       });
   }
@@ -337,15 +346,17 @@ export class AdultChildrenPage implements OnInit {
           );
           this.editingChild.set(updatedChild);
           this.editChildForm.setValue({ name: updatedChild.name });
-          this.editChildSuccess.set('Namnet är uppdaterat.');
+          this.editChildSuccess.set(this.transloco.translate('adult.children.editSuccess'));
         },
         error: (error: HttpErrorResponse) =>
           this.editChildError.set(
-            error.status === 404
-              ? 'Barnet är inte längre aktivt eller finns inte i din familj.'
-              : error.status === 400
-                ? 'Skriv ett namn med högst 100 tecken.'
-                : 'Namnet kunde inte uppdateras. Försök igen om en liten stund.',
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.children.editError.notFound'
+                : error.status === 400
+                  ? 'adult.children.editError.validation'
+                  : 'adult.children.editError.generic',
+            ),
           ),
       });
   }
@@ -380,14 +391,18 @@ export class AdultChildrenPage implements OnInit {
           this.editingChild.set(null);
           this.editChildForm.reset();
           this.confirmingDeactivation.set(false);
-          this.deactivationSuccess.set(`${child.name} är avaktiverad och visas inte längre.`);
+          this.deactivationSuccess.set(
+            this.transloco.translate('adult.children.deactivateSuccess', { name: child.name }),
+          );
           focusAfterRender('child-deactivation-success');
         },
         error: (error: HttpErrorResponse) =>
           this.deactivationError.set(
-            error.status === 404
-              ? 'Barnet är redan avaktiverat eller finns inte i din familj.'
-              : 'Barnet kunde inte avaktiveras. Försök igen om en liten stund.',
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.children.deactivateError.notFound'
+                : 'adult.children.deactivateError.generic',
+            ),
           ),
       });
   }
@@ -410,9 +425,11 @@ export class AdultChildrenPage implements OnInit {
         error: (error: HttpErrorResponse) => {
           if (this.deviceSessionsChild()?.id !== child.id) return;
           this.deviceSessionsError.set(
-            error.status === 404
-              ? 'Barnet finns inte längre i den aktiva familjevyn.'
-              : 'De kopplade enheterna kunde inte hämtas. Försök igen.',
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.children.deviceSessionsError.notFound'
+                : 'adult.children.deviceSessionsError.generic',
+            ),
           );
         },
       });

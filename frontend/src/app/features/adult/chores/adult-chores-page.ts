@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize, forkJoin } from 'rxjs';
 import { focusAfterRender } from '../../../shared/focus';
 import { ChildSummary } from '../children/children.models';
@@ -26,11 +27,13 @@ import { ChoresService } from './chores.service';
     AdultPageHeader,
     AdultSheet,
     AdultTile,
+    TranslocoPipe,
   ],
   templateUrl: './adult-chores-page.html',
 })
 export class AdultChoresPage implements OnInit {
   private readonly choresService = inject(ChoresService);
+  private readonly transloco = inject(TranslocoService);
   private archiveUndoTimer: number | null = null;
   private archiveUndoClearTimer: number | null = null;
   private successTimer: number | null = null;
@@ -126,7 +129,7 @@ export class AdultChoresPage implements OnInit {
           this.children.set(children);
           this.assignments.set(assignments);
         },
-        error: () => this.loadError.set('Sysslorna kunde inte hämtas. Försök igen.'),
+        error: () => this.loadError.set(this.transloco.translate('adult.chores.loadError')),
       });
   }
 
@@ -174,14 +177,18 @@ export class AdultChoresPage implements OnInit {
             [...chores, chore].sort((a, b) => a.title.localeCompare(b.title, 'sv')),
           );
           this.closeChoreForm();
-          this.showSuccess(`${chore.title} är skapad och kan nu tilldelas.`);
+          this.showSuccess(
+            this.transloco.translate('adult.chores.createSuccess', { title: chore.title }),
+          );
           this.openAssignmentForm(chore.id);
         },
         error: (error: HttpErrorResponse) =>
           this.choreError.set(
-            error.status === 400
-              ? 'Kontrollera titel, beskrivning och poäng.'
-              : 'Sysslan kunde inte skapas. Försök igen.',
+            this.transloco.translate(
+              error.status === 400
+                ? 'adult.chores.createError.validation'
+                : 'adult.chores.createError.generic',
+            ),
           ),
       });
   }
@@ -240,16 +247,20 @@ export class AdultChoresPage implements OnInit {
               .sort((a, b) => a.title.localeCompare(b.title, 'sv')),
           );
           this.closeEditChore();
-          this.showSuccess(`${updated.title} är uppdaterad.`);
+          this.showSuccess(
+            this.transloco.translate('adult.chores.updateSuccess', { title: updated.title }),
+          );
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
           this.editChoreError.set(
-            error.status === 404
-              ? 'Sysslan är inte längre aktiv eller finns inte i din familj.'
-              : error.status === 400
-                ? 'Kontrollera titel, beskrivning och poäng.'
-                : 'Sysslan kunde inte uppdateras. Försök igen.',
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.chores.updateError.notFound'
+                : error.status === 400
+                  ? 'adult.chores.updateError.validation'
+                  : 'adult.chores.updateError.generic',
+            ),
           ),
       });
   }
@@ -283,14 +294,18 @@ export class AdultChoresPage implements OnInit {
           if (this.editingChore()?.id === chore.id) this.closeEditChore();
           if (this.assignmentForm.controls.choreId.value === chore.id) this.closeAssignmentForm();
           this.confirmingDeactivationId.set(null);
-          this.showSuccess(`${chore.title} är bortplockad från uppgiftsbanken.`);
+          this.showSuccess(
+            this.transloco.translate('adult.chores.deactivateSuccess', { title: chore.title }),
+          );
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
           this.deactivationError.set(
-            error.status === 404
-              ? 'Sysslan är redan bortplockad eller finns inte i din familj.'
-              : 'Sysslan kunde inte plockas bort. Försök igen.',
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.chores.deactivateError.notFound'
+                : 'adult.chores.deactivateError.generic',
+            ),
           ),
       });
   }
@@ -323,7 +338,7 @@ export class AdultChoresPage implements OnInit {
     const chore = this.chores().find((item) => item.id === request.choreId);
     const child = this.children().find((item) => item.id === request.childId);
     if (!chore || !child) {
-      this.assignmentError.set('Välj en syssla och ett aktivt barn.');
+      this.assignmentError.set(this.transloco.translate('adult.chores.assignmentValidation'));
       return;
     }
     this.isAssigning.set(true);
@@ -355,14 +370,21 @@ export class AdultChoresPage implements OnInit {
             ...assignments,
           ]);
           this.closeAssignmentForm();
-          this.showSuccess(`${chore.title} är tilldelad till ${child.name}.`);
+          this.showSuccess(
+            this.transloco.translate('adult.chores.assignSuccess', {
+              choreTitle: chore.title,
+              childName: child.name,
+            }),
+          );
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
           this.assignmentError.set(
-            error.status === 404
-              ? 'Sysslan eller barnet finns inte längre i din familj.'
-              : 'Sysslan kunde inte tilldelas. Försök igen.',
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.chores.assignError.notFound'
+                : 'adult.chores.assignError.generic',
+            ),
           ),
       });
   }
@@ -400,16 +422,23 @@ export class AdultChoresPage implements OnInit {
             assignments.filter((item) => item.assignmentId !== assignment.assignmentId),
           );
           this.confirmingAssignmentCancellationId.set(null);
-          this.showSuccess(`${assignment.choreTitle} är borttagen från ${assignment.childName}.`);
+          this.showSuccess(
+            this.transloco.translate('adult.chores.cancelAssignmentSuccess', {
+              choreTitle: assignment.choreTitle,
+              childName: assignment.childName,
+            }),
+          );
           focusAfterRender('adult-chores-success');
         },
         error: (error: HttpErrorResponse) =>
           this.assignmentCancellationError.set(
-            error.status === 404
-              ? 'Tilldelningen finns inte längre i din familj.'
-              : error.status === 409
-                ? 'Tilldelningen har redan godkänts eller ändrats och kan inte tas bort.'
-                : 'Tilldelningen kunde inte tas bort. Försök igen.',
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.chores.cancelAssignmentError.notFound'
+                : error.status === 409
+                  ? 'adult.chores.cancelAssignmentError.conflict'
+                  : 'adult.chores.cancelAssignmentError.generic',
+            ),
           ),
       });
   }
@@ -426,7 +455,7 @@ export class AdultChoresPage implements OnInit {
             ? { ...item, adultArchivedAt: new Date().toISOString() } : item));
           this.showArchiveUndo(assignment.assignmentId);
         },
-        error: () => this.historyError.set('Historiken kunde inte döljas. Försök igen.'),
+        error: () => this.historyError.set(this.transloco.translate('adult.chores.archiveError')),
       });
   }
 
@@ -442,23 +471,19 @@ export class AdultChoresPage implements OnInit {
             ? { ...item, adultArchivedAt: null } : item));
           this.clearArchiveUndo();
         },
-        error: () => this.historyError.set('Historiken kunde inte återställas. Försök igen.'),
+        error: () => this.historyError.set(this.transloco.translate('adult.chores.restoreError')),
       });
   }
 
   assignmentStatusLabel(status: AdultAssignment['status']): string {
-    switch (status) {
-      case 'Assigned':
-        return 'Tilldelad';
-      case 'PendingApproval':
-        return 'Väntar på granskning';
-      case 'NeedsRedo':
-        return 'Behöver göras om';
-      case 'Approved':
-        return 'Godkänd';
-      case 'Cancelled':
-        return 'Borttagen';
-    }
+    const key = {
+      Assigned: 'assigned',
+      PendingApproval: 'pendingApproval',
+      NeedsRedo: 'needsRedo',
+      Approved: 'approved',
+      Cancelled: 'cancelled',
+    }[status];
+    return this.transloco.translate(`adult.chores.status.${key}`);
   }
 
   private showSuccess(message: string): void {

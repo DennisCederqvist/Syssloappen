@@ -1,7 +1,7 @@
 <div class="page-enter min-h-dvh overflow-x-hidden bg-adult-bg pb-24 md:flex md:pb-0">
   <app-adult-bottom-nav />
   <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-adult-page-header title="Sysslor">
+    <app-adult-page-header [title]="'adult.chores.pageTitle' | transloco">
       <button
         headerAction
         id="new-chore-trigger"
@@ -11,7 +11,7 @@
         [attr.aria-controls]="showChoreForm() ? 'new-chore-panel' : null"
         [attr.aria-expanded]="showChoreForm()"
       >
-        + Ny syssla
+        {{ 'adult.chores.newChoreButton' | transloco }}
       </button>
     </app-adult-page-header>
 
@@ -31,8 +31,8 @@
       <app-adult-sheet
         panelId="new-chore-panel"
         headingId="new-chore-title"
-        title="Skapa syssla"
-        closeLabel="Stäng formuläret"
+        [title]="'adult.chores.createSheet.title' | transloco"
+        [closeLabel]="'adult.chores.createSheet.close' | transloco"
         (close)="closeChoreForm()"
       >
         @if (choreError()) {
@@ -45,12 +45,12 @@
         }
         <form [formGroup]="choreForm" (ngSubmit)="createChore()" class="grid gap-4" novalidate>
           <label class="block text-sm font-semibold text-adult-text">
-            Titel
+            {{ 'adult.chores.createSheet.titleLabel' | transloco }}
             <input
               id="new-chore-name"
               formControlName="title"
               type="text"
-              placeholder="Till exempel Mata katten"
+              [placeholder]="'adult.chores.createSheet.titlePlaceholder' | transloco"
               [attr.aria-invalid]="
                 choreForm.controls.title.touched && choreForm.controls.title.invalid
               "
@@ -59,29 +59,32 @@
             />
             @if (choreForm.controls.title.touched && choreForm.controls.title.invalid) {
               <span id="new-chore-name-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
-                Skriv en titel med högst 100 tecken.
+                {{ 'adult.chores.createSheet.titleError' | transloco }}
               </span>
             }
           </label>
           <label class="block text-sm font-semibold text-adult-text">
-            Poäng
+            {{ 'adult.chores.createSheet.pointsLabel' | transloco }}
             <select
               formControlName="points"
               class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
             >
-              <option [ngValue]="5">5 poäng</option>
-              <option [ngValue]="10">10 poäng</option>
-              <option [ngValue]="15">15 poäng</option>
-              <option [ngValue]="20">20 poäng</option>
+              <option [ngValue]="5">{{ 'adult.chores.pointsOption' | transloco: { points: 5 } }}</option>
+              <option [ngValue]="10">{{ 'adult.chores.pointsOption' | transloco: { points: 10 } }}</option>
+              <option [ngValue]="15">{{ 'adult.chores.pointsOption' | transloco: { points: 15 } }}</option>
+              <option [ngValue]="20">{{ 'adult.chores.pointsOption' | transloco: { points: 20 } }}</option>
             </select>
           </label>
           <label class="block text-sm font-semibold text-adult-text">
-            Beskrivning <span class="font-normal text-adult-text-secondary">(valfri)</span>
+            {{ 'adult.chores.createSheet.descriptionLabel' | transloco }}
+            <span class="font-normal text-adult-text-secondary">{{
+              'adult.chores.createSheet.descriptionOptional' | transloco
+            }}</span>
             <textarea
               id="new-chore-description"
               formControlName="description"
               rows="3"
-              placeholder="En kort och tydlig instruktion"
+              [placeholder]="'adult.chores.createSheet.descriptionPlaceholder' | transloco"
               [attr.aria-invalid]="
                 choreForm.controls.description.touched && choreForm.controls.description.invalid
               "
@@ -90,7 +93,7 @@
             ></textarea>
             @if (choreForm.controls.description.touched && choreForm.controls.description.invalid) {
               <span id="new-chore-description-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
-                Beskrivningen får innehålla högst 500 tecken.
+                {{ 'adult.chores.createSheet.descriptionError' | transloco }}
               </span>
             }
           </label>
@@ -100,10 +103,15 @@
               (click)="closeChoreForm()"
               class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
             >
-              Avbryt
+              {{ 'common.actions.cancel' | transloco }}
             </button>
             <button type="submit" adultPrimaryButton [disabled]="isCreatingChore()">
-              {{ isCreatingChore() ? 'Skapar…' : 'Skapa syssla' }}
+              {{
+                (isCreatingChore()
+                  ? 'adult.chores.createSheet.submitting'
+                  : 'adult.chores.createSheet.submit'
+                ) | transloco
+              }}
             </button>
           </div>
         </form>
@@ -114,8 +122,8 @@
       <app-adult-sheet
         panelId="assignment-panel"
         headingId="assign-title"
-        title="Tilldela syssla"
-        closeLabel="Stäng tilldelningen"
+        [title]="'adult.chores.assign.title' | transloco"
+        [closeLabel]="'adult.chores.assign.close' | transloco"
         (close)="closeAssignmentForm()"
       >
         @if (assignmentError()) {
@@ -128,7 +136,7 @@
         }
         <form [formGroup]="assignmentForm" (ngSubmit)="createAssignment()" class="grid gap-4" novalidate>
           <label class="block text-sm font-semibold text-adult-text">
-            Syssla
+            {{ 'adult.chores.assign.choreLabel' | transloco }}
             <select
               id="assignment-chore"
               formControlName="choreId"
@@ -138,19 +146,21 @@
               aria-describedby="assignment-chore-error"
               class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
             >
-              <option [ngValue]="0">Välj syssla</option>
+              <option [ngValue]="0">{{ 'adult.chores.assign.choosePlaceholder' | transloco }}</option>
               @for (chore of chores(); track chore.id) {
-                <option [ngValue]="chore.id">{{ chore.title }} · {{ chore.points }} p</option>
+                <option [ngValue]="chore.id">
+                  {{ 'adult.chores.assign.choreOption' | transloco: { title: chore.title, points: chore.points } }}
+                </option>
               }
             </select>
             @if (assignmentForm.controls.choreId.touched && assignmentForm.controls.choreId.invalid) {
               <span id="assignment-chore-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
-                Välj en syssla.
+                {{ 'adult.chores.assign.choreError' | transloco }}
               </span>
             }
           </label>
           <label class="block text-sm font-semibold text-adult-text">
-            Barn
+            {{ 'adult.chores.assign.childLabel' | transloco }}
             <select
               id="assignment-child"
               formControlName="childId"
@@ -160,20 +170,20 @@
               aria-describedby="assignment-child-error"
               class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
             >
-              <option [ngValue]="0">Välj barn</option>
+              <option [ngValue]="0">{{ 'adult.chores.assign.childPlaceholder' | transloco }}</option>
               @for (child of children(); track child.id) {
                 <option [ngValue]="child.id">{{ child.name }}</option>
               }
             </select>
             @if (assignmentForm.controls.childId.touched && assignmentForm.controls.childId.invalid) {
               <span id="assignment-child-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
-                Välj ett aktivt barn.
+                {{ 'adult.chores.assign.childError' | transloco }}
               </span>
             }
           </label>
           <div>
             <label class="block text-sm font-semibold text-adult-text">
-              Datum
+              {{ 'adult.chores.assign.dateLabel' | transloco }}
               <input
                 id="assignment-due-date"
                 formControlName="dueDate"
@@ -183,12 +193,12 @@
               />
             </label>
             <span id="assignment-due-date-help" class="mt-1.5 block text-sm font-normal text-adult-text-secondary">
-              Sysslan visas för barnet på det här datumet.
+              {{ 'adult.chores.assign.dateHint' | transloco }}
             </span>
           </div>
           @if (children().length === 0) {
             <p class="rounded-lg bg-adult-points-bg p-3 text-sm text-adult-points-text">
-              Lägg till ett aktivt barn innan du tilldelar en syssla.
+              {{ 'adult.chores.assign.noActiveChildren' | transloco }}
             </p>
           }
           <div class="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -197,10 +207,13 @@
               (click)="closeAssignmentForm()"
               class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
             >
-              Avbryt
+              {{ 'common.actions.cancel' | transloco }}
             </button>
             <button type="submit" adultPrimaryButton [disabled]="isAssigning() || children().length === 0">
-              {{ isAssigning() ? 'Tilldelar…' : 'Tilldela sysslan' }}
+              {{
+                (isAssigning() ? 'adult.chores.assign.submitting' : 'adult.chores.assign.submit')
+                  | transloco
+              }}
             </button>
           </div>
         </form>
@@ -211,12 +224,12 @@
       <app-adult-sheet
         panelId="edit-chore-panel"
         headingId="edit-chore-title"
-        title="Redigera syssla"
-        closeLabel="Stäng redigeringen"
+        [title]="'adult.chores.editSheet.title' | transloco"
+        [closeLabel]="'adult.chores.editSheet.close' | transloco"
         (close)="closeEditChore()"
       >
         <p class="-mt-2 mb-4 text-sm text-adult-text-secondary">
-          Nya poäng gäller framtida tilldelningar. Tidigare poäng ändras inte.
+          {{ 'adult.chores.editSheet.note' | transloco }}
         </p>
         @if (editChoreError()) {
           <div
@@ -228,7 +241,7 @@
         }
         <form [formGroup]="editChoreForm" (ngSubmit)="updateChore()" class="grid gap-4" novalidate>
           <label class="block text-sm font-semibold text-adult-text">
-            Titel
+            {{ 'adult.chores.createSheet.titleLabel' | transloco }}
             <input
               id="edit-chore-name"
               formControlName="title"
@@ -241,24 +254,27 @@
             />
             @if (editChoreForm.controls.title.touched && editChoreForm.controls.title.invalid) {
               <span id="edit-chore-name-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
-                Skriv en titel med högst 100 tecken.
+                {{ 'adult.chores.createSheet.titleError' | transloco }}
               </span>
             }
           </label>
           <label class="block text-sm font-semibold text-adult-text">
-            Poäng
+            {{ 'adult.chores.createSheet.pointsLabel' | transloco }}
             <select
               formControlName="points"
               class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
             >
-              <option [ngValue]="5">5 poäng</option>
-              <option [ngValue]="10">10 poäng</option>
-              <option [ngValue]="15">15 poäng</option>
-              <option [ngValue]="20">20 poäng</option>
+              <option [ngValue]="5">{{ 'adult.chores.pointsOption' | transloco: { points: 5 } }}</option>
+              <option [ngValue]="10">{{ 'adult.chores.pointsOption' | transloco: { points: 10 } }}</option>
+              <option [ngValue]="15">{{ 'adult.chores.pointsOption' | transloco: { points: 15 } }}</option>
+              <option [ngValue]="20">{{ 'adult.chores.pointsOption' | transloco: { points: 20 } }}</option>
             </select>
           </label>
           <label class="block text-sm font-semibold text-adult-text">
-            Beskrivning <span class="font-normal text-adult-text-secondary">(valfri)</span>
+            {{ 'adult.chores.createSheet.descriptionLabel' | transloco }}
+            <span class="font-normal text-adult-text-secondary">{{
+              'adult.chores.createSheet.descriptionOptional' | transloco
+            }}</span>
             <textarea
               id="edit-chore-description"
               formControlName="description"
@@ -275,7 +291,7 @@
               editChoreForm.controls.description.invalid
             ) {
               <span id="edit-chore-description-error" class="mt-1.5 block text-sm font-normal text-adult-danger-text">
-                Beskrivningen får innehålla högst 500 tecken.
+                {{ 'adult.chores.createSheet.descriptionError' | transloco }}
               </span>
             }
           </label>
@@ -285,10 +301,13 @@
               (click)="closeEditChore()"
               class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
             >
-              Avbryt
+              {{ 'common.actions.cancel' | transloco }}
             </button>
             <button type="submit" adultPrimaryButton [disabled]="isUpdatingChore()">
-              {{ isUpdatingChore() ? 'Sparar…' : 'Spara ändringar' }}
+              {{
+                (isUpdatingChore() ? 'adult.chores.editSheet.saving' : 'adult.chores.editSheet.submit')
+                  | transloco
+              }}
             </button>
           </div>
         </form>
@@ -301,7 +320,7 @@
               [attr.aria-labelledby]="'chore-deactivation-question-' + selectedChore.id"
             >
               <p [id]="'chore-deactivation-question-' + selectedChore.id" class="text-sm font-semibold text-adult-danger-text">
-                Plocka bort sysslan?
+                {{ 'adult.chores.editSheet.deactivateQuestion' | transloco }}
               </p>
               @if (deactivationError()) {
                 <p class="mt-2 text-sm font-medium text-adult-danger-text" role="alert">
@@ -316,7 +335,7 @@
                   [disabled]="deactivatingChoreId() === selectedChore.id"
                   class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
                 >
-                  Avbryt
+                  {{ 'common.actions.cancel' | transloco }}
                 </button>
                 <button
                   type="button"
@@ -325,7 +344,12 @@
                   (click)="deactivateChore(selectedChore)"
                   [disabled]="deactivatingChoreId() === selectedChore.id"
                 >
-                  {{ deactivatingChoreId() === selectedChore.id ? 'Plockar bort…' : 'Ja, plocka bort' }}
+                  {{
+                    (deactivatingChoreId() === selectedChore.id
+                      ? 'adult.chores.editSheet.deactivating'
+                      : 'adult.chores.editSheet.deactivateConfirm'
+                    ) | transloco
+                  }}
                 </button>
               </div>
             </div>
@@ -336,7 +360,7 @@
               adultDangerOutlineButton
               (click)="requestDeactivation(selectedChore.id)"
             >
-              Ta bort syssla
+              {{ 'adult.chores.editSheet.deactivateButton' | transloco }}
             </button>
           }
         </div>
@@ -345,25 +369,25 @@
 
     <section class="mt-2" aria-labelledby="chores-title">
       <h2 id="chores-title" class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">
-        Uppgiftsbank
+        {{ 'adult.chores.list.title' | transloco }}
       </h2>
       @if (isLoading()) {
         <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3" role="status">
           <div class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-surface"></div>
-          <span class="sr-only">Hämtar familjens sysslor och tilldelningar…</span>
+          <span class="sr-only">{{ 'adult.chores.list.loadingSr' | transloco }}</span>
           <div class="h-28 animate-pulse rounded-lg border border-adult-border bg-adult-surface"></div>
         </div>
       } @else if (loadError()) {
         <div class="mt-2 rounded-lg border border-adult-danger-border bg-adult-danger-bg p-4" role="alert">
           <p class="text-sm font-medium text-adult-danger-text">{{ loadError() }}</p>
           <button type="button" adultDangerOutlineButton class="mt-3" (click)="loadPage()">
-            Försök igen
+            {{ 'common.actions.retry' | transloco }}
           </button>
         </div>
       } @else if (chores().length === 0) {
         <div class="mt-2 rounded-lg border border-adult-border bg-adult-surface p-6 text-center">
-          <h3 class="text-[15px] font-semibold text-adult-text">Inga sysslor ännu</h3>
-          <p class="mt-1 text-sm text-adult-text-secondary">Skapa en tydlig första uppgift för familjen.</p>
+          <h3 class="text-[15px] font-semibold text-adult-text">{{ 'adult.chores.list.emptyTitle' | transloco }}</h3>
+          <p class="mt-1 text-sm text-adult-text-secondary">{{ 'adult.chores.list.emptySubtitle' | transloco }}</p>
         </div>
       } @else {
         <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -376,7 +400,7 @@
                 (click)="openEditChore(chore)"
                 [attr.aria-controls]="editingChore()?.id === chore.id ? 'edit-chore-panel' : null"
                 [attr.aria-expanded]="editingChore()?.id === chore.id"
-                [attr.aria-label]="'Redigera ' + chore.title"
+                [attr.aria-label]="'adult.chores.list.editAria' | transloco: { title: chore.title }"
                 class="grid min-h-11 min-w-11 shrink-0 -m-2 place-items-center rounded-lg text-adult-text-secondary transition hover:bg-adult-bg"
               >
                 <svg
@@ -409,7 +433,7 @@
                     showAssignmentForm() && assignmentForm.controls.choreId.value === chore.id
                   "
                 >
-                  Tilldela
+                  {{ 'adult.chores.list.assignButton' | transloco }}
                 </button>
               </div>
             </app-adult-tile>
@@ -420,7 +444,7 @@
             class="flex min-h-28 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-adult-border text-adult-text-secondary transition hover:border-adult-accent/40 hover:text-adult-accent-dark"
           >
             <span class="text-xl leading-none" aria-hidden="true">+</span>
-            <span class="text-sm font-medium">Ny syssla</span>
+            <span class="text-sm font-medium">{{ 'adult.chores.list.addNew' | transloco }}</span>
           </button>
         </div>
       }

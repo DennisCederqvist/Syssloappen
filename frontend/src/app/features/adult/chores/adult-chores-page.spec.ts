@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
+import { provideTranslocoTesting } from '../../../core/i18n/testing';
 import { ChildrenService } from '../children/children.service';
 import { AdultChoresPage } from './adult-chores-page';
 import { CreateAssignmentRequest, CreateChoreRequest, UpdateChoreRequest } from './chores.models';
@@ -61,6 +62,7 @@ describe('AdultChoresPage', () => {
       imports: [AdultChoresPage],
       providers: [
         provideRouter([]),
+        provideTranslocoTesting(),
         { provide: ChoresService, useClass: FakeChoresService },
         { provide: ChildrenService, useClass: FakeChildrenService },
       ],

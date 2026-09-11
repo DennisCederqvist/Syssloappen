@@ -1,4 +1,5 @@
 import { Component, input, output } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
 
 export type ChildTaskCardPalette = ChildCardPalette;
@@ -14,6 +15,7 @@ export type ChildTaskCardPalette = ChildCardPalette;
  * ChildStatusCard instead. */
 @Component({
   selector: 'app-child-task-card',
+  imports: [TranslocoPipe],
   template: `
     <article
       [id]="cardId()"
@@ -32,7 +34,7 @@ export type ChildTaskCardPalette = ChildCardPalette;
         </h3>
         <span
           class="flex shrink-0 items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-sm font-bold text-child-text"
-          [attr.aria-label]="points() + ' poäng'"
+          [attr.aria-label]="'child.common.pointsAria' | transloco: { points: points() }"
         >
           <svg
             viewBox="0 0 20 20"
@@ -57,7 +59,7 @@ export type ChildTaskCardPalette = ChildCardPalette;
 
       @if (reviewComment()) {
         <div class="mt-4 rounded-2xl bg-white/70 p-4 text-child-text">
-          <p class="text-sm font-bold">Kommentar från en vuxen</p>
+          <p class="text-sm font-bold">{{ 'child.taskCard.reviewCommentLabel' | transloco }}</p>
           <p class="mt-1 text-[15px] leading-6">{{ reviewComment() }}</p>
         </div>
       }
@@ -70,10 +72,10 @@ export type ChildTaskCardPalette = ChildCardPalette;
         type="button"
         (click)="done.emit()"
         [disabled]="submitting()"
-        [attr.aria-label]="'Rapportera ' + title() + ' som klar'"
+        [attr.aria-label]="'child.taskCard.submitAria' | transloco: { title: title() }"
         class="mt-5 min-h-14 w-full rounded-full bg-[linear-gradient(180deg,var(--color-child-cta-from),var(--color-child-cta-to))] text-base font-bold text-child-text shadow-[4px_6px_0_var(--color-child-cta-shadow)] transition active:translate-x-[2px] active:translate-y-[3px] active:shadow-[1px_2px_0_var(--color-child-cta-shadow)] disabled:cursor-wait disabled:opacity-70"
       >
-        {{ submitting() ? 'Rapporterar…' : 'Jag är klar!' }}
+        {{ (submitting() ? 'child.taskCard.submitting' : 'child.taskCard.submit') | transloco }}
       </button>
     </article>
   `,
