@@ -1,9 +1,11 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SkiaSharp;
 using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.Auth;
@@ -141,6 +143,71 @@ public sealed class RewardsEndpointsTests : IDisposable
         var stored = await scope.ServiceProvider.GetRequiredService<AppDbContext>().Rewards.AsNoTracking().SingleAsync();
         Assert.Equal(reward.Id, stored.Id);
         Assert.False(stored.IsActive);
+    }
+
+    [Fact]
+    public async Task Adult_can_upload_an_image_which_is_compressed_and_stored()
+    {
+        using var adult = CreateClient();
+        await RegisterAndLoginAdult(adult, "Familjen Ilves", "rewards.image@example.test");
+        var reward = await CreateRewardResponse(adult, "Godis", 20);
+
+        var response = await adult.PostAsync($"/api/rewards/{reward.Id}/image", BuildImageFormContent(4000, 3000));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updated = (await response.Content.ReadFromJsonAsync<RewardResponse>())!;
+        Assert.NotNull(updated.ImageUrl);
+        Assert.StartsWith("/reward-images/", updated.ImageUrl);
+
+        // The oversized source image must have been resized and re-encoded as WebP server-side,
+        // regardless of what the client uploaded — this is what protects the storage budget.
+        var saved = Assert.Single(factory.RewardImageStorage.SavedFiles);
+        Assert.EndsWith(".webp", saved.FileName);
+        Assert.True(saved.ByteCount < 200 * 1024);
+    }
+
+    [Fact]
+    public async Task Non_image_upload_is_rejected()
+    {
+        using var adult = CreateClient();
+        await RegisterAndLoginAdult(adult, "Familjen Jonsson", "rewards.badimage@example.test");
+        var reward = await CreateRewardResponse(adult, "Godis", 20);
+
+        using var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent([1, 2, 3, 4]);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("text/plain");
+        content.Add(fileContent, "file", "not-an-image.txt");
+
+        var response = await adult.PostAsync($"/api/rewards/{reward.Id}/image", content);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty(factory.RewardImageStorage.SavedFiles);
+    }
+
+    [Fact]
+    public async Task Manipulated_id_cannot_upload_an_image_to_another_households_reward()
+    {
+        using var first = CreateClient();
+        using var second = CreateClient();
+        await RegisterAndLoginAdult(first, "Familjen Karlsson", "rewards.imagefirst@example.test");
+        await RegisterAndLoginAdult(second, "Familjen Lund", "rewards.imagesecond@example.test");
+        var reward = await CreateRewardResponse(second, "Filmkväll", 50);
+
+        var response = await first.PostAsync($"/api/rewards/{reward.Id}/image", BuildImageFormContent(100, 100));
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    private static MultipartFormDataContent BuildImageFormContent(int width, int height)
+    {
+        using var bitmap = new SKBitmap(width, height);
+        using var canvas = new SKCanvas(bitmap);
+        canvas.Clear(SKColors.CornflowerBlue);
+        using var image = SKImage.FromBitmap(bitmap);
+        using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+
+        var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(encoded.ToArray());
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        content.Add(fileContent, "file", "photo.png");
+        return content;
     }
 
     public void Dispose() => factory.Dispose();

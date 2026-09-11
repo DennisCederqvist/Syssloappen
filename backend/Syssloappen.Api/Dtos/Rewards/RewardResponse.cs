@@ -6,4 +6,5 @@ public sealed record RewardResponse(
     string? Description,
     int PointsCost,
     int StockQuantity,
+    string? ImageUrl,
     DateTime CreatedAt);

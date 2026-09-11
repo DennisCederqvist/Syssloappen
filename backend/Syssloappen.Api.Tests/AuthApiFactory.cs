@@ -8,12 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Syssloappen.Api.Data;
+using Syssloappen.Api.Services;
 
 namespace Syssloappen.Api.Tests;
 
 public sealed class AuthApiFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection connection = new("Data Source=:memory:");
+    public readonly FakeRewardImageStorage RewardImageStorage = new();
 
     public AuthApiFactory()
     {
@@ -37,6 +39,9 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<IDbContextOptionsConfiguration<AppDbContext>>();
 
             services.AddDbContext<AppDbContext>(options => options.UseSqlite(connection));
+
+            services.RemoveAll<IRewardImageStorage>();
+            services.AddSingleton<IRewardImageStorage>(RewardImageStorage);
 
             // The open in-memory connection keeps this temporary SQL database alive for one test.
             var options = new DbContextOptionsBuilder<AppDbContext>()

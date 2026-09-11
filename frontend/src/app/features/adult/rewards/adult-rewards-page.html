@@ -1,9 +1,9 @@
 <div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
   <app-adult-bottom-nav />
   <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-adult-page-header title="Belöningar">
+    <app-adult-page-header [title]="'adult.rewards.pageTitle' | transloco">
       <button headerAction type="button" adultPrimaryButton (click)="openCreate()">
-        + Ny belöning
+        {{ 'adult.rewards.newButton' | transloco }}
       </button>
     </app-adult-page-header>
 
@@ -19,12 +19,21 @@
       </div>
     }
 
+    @if (imageError()) {
+      <div
+        role="alert"
+        class="mt-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+      >
+        {{ imageError() }}
+      </div>
+    }
+
     @if (showForm()) {
       <app-adult-sheet
         panelId="reward-form-panel"
         headingId="reward-form-title"
-        [title]="editing() ? 'Redigera belöning' : 'Skapa belöning'"
-        closeLabel="Stäng formuläret"
+        [title]="(editing() ? 'adult.rewards.formSheet.editTitle' : 'adult.rewards.formSheet.createTitle') | transloco"
+        [closeLabel]="'adult.rewards.formSheet.close' | transloco"
         (close)="closeForm()"
       >
         @if (formError()) {
@@ -37,7 +46,7 @@
         }
         <form class="grid gap-4" [formGroup]="rewardForm" (ngSubmit)="save()">
           <label class="block text-sm font-semibold text-adult-text" for="reward-name">
-            Namn
+            {{ 'adult.rewards.formSheet.nameLabel' | transloco }}
             <input
               id="reward-name"
               formControlName="name"
@@ -48,7 +57,10 @@
             />
           </label>
           <label class="block text-sm font-semibold text-adult-text" for="reward-description">
-            Beskrivning <span class="font-normal text-adult-text-secondary">(valfri)</span>
+            {{ 'adult.rewards.formSheet.descriptionLabel' | transloco }}
+            <span class="font-normal text-adult-text-secondary">{{
+              'adult.rewards.formSheet.descriptionOptional' | transloco
+            }}</span>
             <textarea
               id="reward-description"
               formControlName="description"
@@ -57,7 +69,7 @@
             ></textarea>
           </label>
           <label class="block text-sm font-semibold text-adult-text" for="reward-points">
-            Poängpris
+            {{ 'adult.rewards.formSheet.pointsLabel' | transloco }}
             <input
               id="reward-points"
               type="number"
@@ -68,7 +80,7 @@
             />
           </label>
           <label class="block text-sm font-semibold text-adult-text" for="reward-stock">
-            Antal i lager
+            {{ 'adult.rewards.formSheet.stockLabel' | transloco }}
             <input
               id="reward-stock"
               type="number"
@@ -78,16 +90,46 @@
               class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
             />
           </label>
+          <label class="block text-sm font-semibold text-adult-text" for="reward-image">
+            {{ 'adult.rewards.formSheet.imageLabel' | transloco }}
+            <span class="font-normal text-adult-text-secondary">{{
+              'adult.rewards.formSheet.descriptionOptional' | transloco
+            }}</span>
+            <div class="mt-1.5 flex items-center gap-3">
+              @if (imagePreviewUrl(); as previewUrl) {
+                <img
+                  [src]="previewUrl"
+                  alt=""
+                  class="size-16 shrink-0 rounded-lg border border-adult-border object-cover"
+                />
+              }
+              <input
+                id="reward-image"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                (change)="selectImage($event)"
+                class="min-h-11 flex-1 text-sm font-normal text-adult-text"
+              />
+            </div>
+          </label>
           <div class="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button
               type="button"
               (click)="closeForm()"
               class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-medium text-adult-text-secondary"
             >
-              Avbryt
+              {{ 'common.actions.cancel' | transloco }}
             </button>
             <button type="submit" adultPrimaryButton [disabled]="busyId() !== null">
-              {{ busyId() !== null ? 'Sparar…' : editing() ? 'Spara ändringar' : 'Skapa belöning' }}
+              {{
+                (busyId() !== null
+                  ? 'adult.rewards.formSheet.saving'
+                  : editing()
+                    ? 'adult.rewards.formSheet.submitEdit'
+                    : 'adult.rewards.formSheet.submitCreate'
+                ) | transloco
+              }}
             </button>
           </div>
         </form>
@@ -99,7 +141,7 @@
                 class="rounded-lg border border-adult-danger-border bg-adult-danger-bg p-3"
                 role="group"
               >
-                <p class="text-sm font-semibold text-adult-danger-text">Plocka bort belöningen?</p>
+                <p class="text-sm font-semibold text-adult-danger-text">{{ 'adult.rewards.deactivate.question' | transloco }}</p>
                 <div class="mt-3 flex gap-2">
                   <button
                     [id]="'cancel-deactivate-reward-' + selectedReward.id"
@@ -107,7 +149,7 @@
                     (click)="cancelDeactivate()"
                     class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary"
                   >
-                    Avbryt
+                    {{ 'common.actions.cancel' | transloco }}
                   </button>
                   <button
                     type="button"
@@ -115,7 +157,7 @@
                     class="flex-1"
                     (click)="deactivate(selectedReward)"
                   >
-                    Ja, plocka bort
+                    {{ 'adult.rewards.deactivate.confirmYes' | transloco }}
                   </button>
                 </div>
               </div>
@@ -126,7 +168,7 @@
                 adultDangerOutlineButton
                 (click)="requestDeactivate(selectedReward.id)"
               >
-                Ta bort belöning
+                {{ 'adult.rewards.deactivate.button' | transloco }}
               </button>
             }
           </div>
@@ -139,14 +181,14 @@
         id="rewards-title"
         class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase"
       >
-        Familjens lista
+        {{ 'adult.rewards.list.title' | transloco }}
       </h2>
       @if (isLoading()) {
         <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3" role="status">
           <div
             class="h-24 animate-pulse rounded-lg border border-adult-border bg-adult-surface"
           ></div>
-          <span class="sr-only">Hämtar belöningar…</span>
+          <span class="sr-only">{{ 'adult.rewards.list.loadingSr' | transloco }}</span>
           <div
             class="h-24 animate-pulse rounded-lg border border-adult-border bg-adult-surface"
           ></div>
@@ -158,23 +200,27 @@
         >
           <p class="text-sm font-medium text-adult-danger-text">{{ loadError() }}</p>
           <button type="button" adultDangerOutlineButton class="mt-3" (click)="load()">
-            Försök igen
+            {{ 'common.actions.retry' | transloco }}
           </button>
         </div>
       } @else if (rewards().length === 0) {
         <div class="mt-2 rounded-lg border border-adult-border bg-adult-surface p-6 text-center">
-          <h3 class="text-[15px] font-semibold text-adult-text">Inga belöningar ännu</h3>
-          <p class="mt-1 text-sm text-adult-text-secondary">Skapa familjens första mål.</p>
+          <h3 class="text-[15px] font-semibold text-adult-text">{{ 'adult.rewards.list.emptyTitle' | transloco }}</h3>
+          <p class="mt-1 text-sm text-adult-text-secondary">{{ 'adult.rewards.list.emptySubtitle' | transloco }}</p>
         </div>
       } @else {
         <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
           @for (reward of rewards(); track reward.id) {
-            <app-adult-tile [title]="reward.name" avatarLabel="🎁">
+            <app-adult-tile
+              [title]="reward.name"
+              avatarLabel="🎁"
+              [avatarImageUrl]="reward.imageUrl"
+            >
               <button
                 tileAction
                 type="button"
                 (click)="openEdit(reward)"
-                [attr.aria-label]="'Redigera ' + reward.name"
+                [attr.aria-label]="'adult.rewards.list.editAria' | transloco: { name: reward.name }"
                 class="grid min-h-11 min-w-11 shrink-0 -m-2 place-items-center rounded-lg text-adult-text-secondary transition hover:bg-adult-bg"
               >
                 <svg
@@ -194,7 +240,7 @@
               <div class="mt-1 flex items-center justify-between gap-2">
                 <app-adult-badge variant="points" [value]="reward.pointsCost" />
                 <span class="text-sm font-medium text-adult-text-secondary">
-                  Lager: {{ reward.stockQuantity }}
+                  {{ 'adult.rewards.list.stockLabel' | transloco: { count: reward.stockQuantity } }}
                 </span>
               </div>
             </app-adult-tile>
@@ -205,7 +251,7 @@
             class="flex min-h-24 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-adult-border text-adult-text-secondary transition hover:border-adult-accent/40 hover:text-adult-accent-dark"
           >
             <span class="text-xl leading-none" aria-hidden="true">+</span>
-            <span class="text-sm font-medium">Ny belöning</span>
+            <span class="text-sm font-medium">{{ 'adult.rewards.list.addNew' | transloco }}</span>
           </button>
         </div>
       }

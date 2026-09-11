@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
+using Syssloappen.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +73,19 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// "Local" writes to wwwroot for dev; "Supabase" uploads to Supabase Storage for deployed
+// environments. See docs/HANDOFF.md for the Storage:* configuration keys.
+builder.Services.Configure<SupabaseStorageOptions>(
+    builder.Configuration.GetSection(SupabaseStorageOptions.SectionName));
+if (builder.Configuration["Storage:Provider"] == "Supabase")
+{
+    builder.Services.AddHttpClient<IRewardImageStorage, SupabaseRewardImageStorage>();
+}
+else
+{
+    builder.Services.AddScoped<IRewardImageStorage, LocalDiskRewardImageStorage>();
+}
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -88,6 +102,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

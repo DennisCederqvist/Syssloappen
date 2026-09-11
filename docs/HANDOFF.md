@@ -310,6 +310,16 @@ Aktuella migrationer:
 - `AddChoreSoftDelete` lägger till `Chores.IsActive` med standardvärdet `true`. Migrationen är applicerad i `syssloappen_dev`.
 - `AddChoreAssignmentCancellation` lägger till nullable `ChoreAssignments.CancelledByUserId` och `CancelledAt`, index samt en restriktiv Adult-FK. Migrationen är applicerad i `syssloappen_dev`.
 - `AddRewardsCatalog` skapar `Rewards` med Household-, skaparkonto-, namn-, beskrivnings-, poängpris-, aktiv- och tidsfält, positiv-pris-constraint, index och restriktiv skapare-FK. Migrationen är applicerad i `syssloappen_dev`.
+- `AddRewardImage` lägger till nullable `Rewards.ImageUrl` (`character varying(2048)`). Migrationen är applicerad i `syssloappen_dev`.
+
+### Bilduppladdning för belöningar
+
+`POST /api/rewards/{rewardId}/image` tar emot en bild (JPEG/PNG/WebP, max 10 MB), komprimerar och skalar ner den server-side (`RewardImageProcessor`, SkiaSharp, max 800px långsida, WebP kvalitet 75) och sparar den via `IRewardImageStorage`. Vilken lagringsimplementation som används styrs av konfigurationsnyckeln `Storage:Provider`:
+
+- **`Local`** (standard, används om nyckeln saknas): skriver till `wwwroot/reward-images/` och serveras ut via `UseStaticFiles()`. Inget extra behövs för lokal utveckling — `frontend/proxy.conf.json` proxar redan `/reward-images` till API:t på samma sätt som `/api`.
+- **`Supabase`**: laddar upp till en Supabase Storage-bucket via dess REST-API. Kräver konfiguration under `Storage:Supabase` (`Url`, `ServiceKey`, `Bucket`) — läggs till som miljövariabler i den driftsatta miljön (se avsnittet om produktionsdrift när det finns), aldrig i Git. `ServiceKey` är en hemlighet på samma sätt som databasens anslutningssträng.
+
+Ingen HEIC/HEIF-avkodning stöds (SkiaSharp saknar det) — mobilwebbläsare konverterar kamerabilder till JPEG för ett vanligt `<input type="file">`-formulär, så det vanliga kameraflödet fungerar, men ett oöversatt HEIC-foto valt direkt från bildbiblioteket avvisas med 415/400.
 
 Vanliga kommandon från repots rot:
 

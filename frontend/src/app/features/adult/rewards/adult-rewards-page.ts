@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { focusAfterRender } from '../../../shared/focus';
 import { AdultBadge } from '../ui/badge';
@@ -23,12 +24,14 @@ import { RewardsService } from './rewards.service';
     AdultPageHeader,
     AdultSheet,
     AdultTile,
+    TranslocoPipe,
   ],
   templateUrl: './adult-rewards-page.html',
 })
 export class AdultRewardsPage implements OnInit {
   private readonly rewardsService = inject(RewardsService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly transloco = inject(TranslocoService);
   private successTimer: number | null = null;
   private successClearTimer: number | null = null;
   readonly rewards = signal<Reward[]>([]);
@@ -42,6 +45,10 @@ export class AdultRewardsPage implements OnInit {
   readonly confirmingId = signal<number | null>(null);
   readonly openRewardMenuId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
+  readonly pendingImageFile = signal<File | null>(null);
+  readonly imagePreviewUrl = signal<string | null>(null);
+  readonly uploadingImage = signal(false);
+  readonly imageError = signal('');
   readonly rewardForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
     description: ['', Validators.maxLength(500)],
@@ -60,7 +67,7 @@ export class AdultRewardsPage implements OnInit {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (rewards) => this.rewards.set(rewards),
-        error: () => this.loadError.set('Belöningarna kunde inte hämtas. Försök igen.'),
+        error: () => this.loadError.set(this.transloco.translate('adult.rewards.loadError')),
       });
   }
   openCreate(): void {
@@ -68,6 +75,7 @@ export class AdultRewardsPage implements OnInit {
     this.editing.set(null);
     this.formError.set('');
     this.rewardForm.reset({ name: '', description: '', pointsCost: 1, stockQuantity: 1 });
+    this.resetImageState(null);
     focusAfterRender('reward-name');
   }
   openEdit(reward: Reward): void {
@@ -80,6 +88,7 @@ export class AdultRewardsPage implements OnInit {
       pointsCost: reward.pointsCost,
       stockQuantity: reward.stockQuantity,
     });
+    this.resetImageState(reward.imageUrl);
     focusAfterRender('reward-name');
   }
   closeForm(): void {
@@ -87,6 +96,22 @@ export class AdultRewardsPage implements OnInit {
     this.editing.set(null);
     this.formError.set('');
     this.rewardForm.reset({ name: '', description: '', pointsCost: 1, stockQuantity: 1 });
+    this.resetImageState(null);
+  }
+  selectImage(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    if (!file) return;
+    this.imageError.set('');
+    const previous = this.pendingImageFile();
+    if (previous) URL.revokeObjectURL(this.imagePreviewUrl()!);
+    this.pendingImageFile.set(file);
+    this.imagePreviewUrl.set(URL.createObjectURL(file));
+  }
+  private resetImageState(existingImageUrl: string | null): void {
+    if (this.pendingImageFile()) URL.revokeObjectURL(this.imagePreviewUrl()!);
+    this.pendingImageFile.set(null);
+    this.imagePreviewUrl.set(existingImageUrl);
+    this.imageError.set('');
   }
   save(): void {
     if (this.rewardForm.invalid) {
@@ -115,22 +140,28 @@ export class AdultRewardsPage implements OnInit {
       : this.rewardsService.createReward(request);
     operation.pipe(finalize(() => this.busyId.set(null))).subscribe({
       next: (reward) => {
-        this.rewards.update((items) =>
-          [...items.filter((item) => item.id !== reward.id), reward].sort((a, b) =>
-            a.name.localeCompare(b.name, 'sv'),
-          ),
-        );
+        this.applyRewardToList(reward);
+        const pendingImage = this.pendingImageFile();
+        if (pendingImage) this.uploadPendingImage(reward.id, pendingImage);
         this.editing.set(null);
         this.showForm.set(false);
         this.rewardForm.reset({ name: '', description: '', pointsCost: 1, stockQuantity: 1 });
-        this.showSuccess(`${reward.name} är ${existing ? 'uppdaterad' : 'skapad'}.`);
+        this.resetImageState(null);
+        this.showSuccess(
+          this.transloco.translate(
+            existing ? 'adult.rewards.saveSuccessUpdated' : 'adult.rewards.saveSuccessCreated',
+            { name: reward.name },
+          ),
+        );
         focusAfterRender('rewards-success');
       },
       error: (error: HttpErrorResponse) =>
         this.formError.set(
-          error.status === 400
-            ? 'Kontrollera namn, beskrivning och poängpris.'
-            : 'Belöningen kunde inte sparas. Försök igen.',
+          this.transloco.translate(
+            error.status === 400
+              ? 'adult.rewards.saveError.validation'
+              : 'adult.rewards.saveError.generic',
+          ),
         ),
     });
   }
@@ -158,10 +189,32 @@ export class AdultRewardsPage implements OnInit {
         next: () => {
           this.rewards.update((items) => items.filter((item) => item.id !== reward.id));
           this.confirmingId.set(null);
-          this.showSuccess(`${reward.name} är bortplockad från belöningslistan.`);
+          this.showSuccess(
+            this.transloco.translate('adult.rewards.deactivateSuccess', { name: reward.name }),
+          );
           focusAfterRender('rewards-success');
         },
-        error: () => this.formError.set('Belöningen kunde inte plockas bort. Försök igen.'),
+        error: () =>
+          this.formError.set(this.transloco.translate('adult.rewards.deactivateError')),
+      });
+  }
+
+  private applyRewardToList(reward: Reward): void {
+    this.rewards.update((items) =>
+      [...items.filter((item) => item.id !== reward.id), reward].sort((a, b) =>
+        a.name.localeCompare(b.name, 'sv'),
+      ),
+    );
+  }
+  private uploadPendingImage(rewardId: number, file: File): void {
+    this.uploadingImage.set(true);
+    this.rewardsService
+      .uploadImage(rewardId, file)
+      .pipe(finalize(() => this.uploadingImage.set(false)))
+      .subscribe({
+        next: (reward) => this.applyRewardToList(reward),
+        error: () =>
+          this.imageError.set(this.transloco.translate('adult.rewards.formSheet.imageUploadError')),
       });
   }
 

@@ -9,4 +9,5 @@ public sealed record RewardRedemptionResponse(
     DateTime? ReviewedAt,
     DateTime? DeliveredAt,
     string? Comment,
-    int AvailablePoints);
+    int AvailablePoints,
+    string? ImageUrl);

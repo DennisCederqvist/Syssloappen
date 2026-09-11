@@ -28,6 +28,7 @@ export interface ChildReward {
   name: string;
   description: string | null;
   pointsCost: number;
+  imageUrl: string | null;
 }
 export interface ChildRewards {
   availablePoints: number;
@@ -46,4 +47,5 @@ export interface RewardRedemption {
   deliveredAt: string | null;
   comment: string | null;
   availablePoints: number;
+  imageUrl: string | null;
 }

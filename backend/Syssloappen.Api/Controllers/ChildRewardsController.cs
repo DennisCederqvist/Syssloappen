@@ -21,7 +21,7 @@ public sealed class ChildRewardsController(AppDbContext db, UserManager<Applicat
         var rewards = await db.Rewards.AsNoTracking().Where(r => r.HouseholdId == child.HouseholdId && r.IsActive && r.StockQuantity > 0
                 && !db.RewardRedemptions.Any(redemption => redemption.ChildId == child.Id && redemption.RewardId == r.Id
                     && (redemption.Status == RewardRedemptionStatus.Requested || redemption.Status == RewardRedemptionStatus.Approved)))
-            .OrderBy(r => r.Name).Select(r => new ChildRewardResponse(r.Id, r.Name, r.Description, r.PointsCost)).ToListAsync();
+            .OrderBy(r => r.Name).Select(r => new ChildRewardResponse(r.Id, r.Name, r.Description, r.PointsCost, r.ImageUrl)).ToListAsync();
         return Ok(new ChildRewardsResponse(await AvailablePoints(child), rewards));
     }
 
@@ -88,5 +88,5 @@ public sealed class ChildRewardsController(AppDbContext db, UserManager<Applicat
             .ToListAsync();
         return Ok(redemptions.Select(redemption => ToResponse(redemption, available)).ToList());
     }
-    private static RewardRedemptionResponse ToResponse(RewardRedemption redemption, int available) => new(redemption.Id, redemption.RewardId, redemption.Reward.Name, redemption.PointsCost, redemption.Status.ToString(), redemption.RequestedAt, redemption.ReviewedAt, redemption.DeliveredAt, redemption.Comment, available);
+    private static RewardRedemptionResponse ToResponse(RewardRedemption redemption, int available) => new(redemption.Id, redemption.RewardId, redemption.Reward.Name, redemption.PointsCost, redemption.Status.ToString(), redemption.RequestedAt, redemption.ReviewedAt, redemption.DeliveredAt, redemption.Comment, available, redemption.Reward.ImageUrl);
 }

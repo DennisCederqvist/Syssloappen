@@ -236,6 +236,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(reward => reward.Description)
                 .HasMaxLength(500);
 
+            entity.Property(reward => reward.ImageUrl)
+                .HasMaxLength(2048);
+
             entity.Property(reward => reward.CreatedByUserId)
                 .IsRequired();
 

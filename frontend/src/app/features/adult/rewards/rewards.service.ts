@@ -19,4 +19,9 @@ export class RewardsService {
   deactivateReward(id: number): Observable<void> {
     return this.http.delete<void>(`/api/rewards/${id}`);
   }
+  uploadImage(id: number, file: File): Observable<Reward> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<Reward>(`/api/rewards/${id}/image`, formData);
+  }
 }

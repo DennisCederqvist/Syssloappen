@@ -4,6 +4,7 @@ export interface Reward {
   description: string | null;
   pointsCost: number;
   stockQuantity: number;
+  imageUrl: string | null;
   createdAt: string;
 }
 

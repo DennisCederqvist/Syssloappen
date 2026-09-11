@@ -11,7 +11,13 @@ import { RouterLink } from '@angular/router';
     <ng-template #body>
       <div class="flex items-start justify-between gap-2">
         <div class="flex min-w-0 items-center gap-2">
-          @if (avatarLabel()) {
+          @if (avatarImageUrl(); as imageUrl) {
+            <img
+              [src]="imageUrl"
+              alt=""
+              class="size-9 shrink-0 rounded-full object-cover"
+            />
+          } @else if (avatarLabel()) {
             <span
               class="grid size-9 shrink-0 place-items-center rounded-full bg-adult-accent-soft text-sm font-semibold text-adult-accent-dark"
               aria-hidden="true"
@@ -45,5 +51,6 @@ import { RouterLink } from '@angular/router';
 export class AdultTile {
   readonly title = input.required<string>();
   readonly avatarLabel = input<string | null>(null);
+  readonly avatarImageUrl = input<string | null>(null);
   readonly routerLink = input<string | unknown[] | null>(null);
 }

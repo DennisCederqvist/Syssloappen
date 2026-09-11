@@ -4,7 +4,7 @@
   <main class="mx-auto w-full max-w-5xl flex-1 px-5 py-6 sm:px-8 md:py-8">
     <app-child-page-header
       [name]="childName()"
-      subtitle="Dina önskade belöningar"
+      [subtitle]="'child.redemptions.subtitle' | transloco"
       [points]="availablePoints()"
     />
 
@@ -13,7 +13,7 @@
         class="mt-7 flex min-h-40 items-center justify-center rounded-[30px] bg-white p-6 text-center shadow-[4px_6px_0_rgba(0,0,0,0.04)]"
         role="status"
       >
-        <p class="font-semibold text-child-text-secondary">Hämtar dina önskningar…</p>
+        <p class="font-semibold text-child-text-secondary">{{ 'child.redemptions.loadingText' | transloco }}</p>
       </div>
     } @else if (error()) {
       <div
@@ -26,22 +26,22 @@
           (click)="load()"
           class="mt-4 min-h-11 rounded-full bg-[linear-gradient(180deg,var(--color-child-cta-from),var(--color-child-cta-to))] px-5 font-bold text-child-text shadow-[4px_6px_0_var(--color-child-cta-shadow)]"
         >
-          Försök igen
+          {{ 'common.actions.retry' | transloco }}
         </button>
       </div>
     } @else if (items().length === 0) {
       <div
         class="mt-7 flex min-h-48 flex-col items-center justify-center rounded-[30px] bg-child-card-mint p-6 text-center shadow-[4px_6px_0_var(--color-child-card-mint-shadow)]"
       >
-        <h3 class="font-display text-xl font-semibold text-child-text">Inga önskningar ännu</h3>
+        <h3 class="font-display text-xl font-semibold text-child-text">{{ 'child.redemptions.emptyTitle' | transloco }}</h3>
         <p class="mt-2 max-w-md text-child-text-secondary">
-          Önska en belöning under Belöningar så dyker den upp här.
+          {{ 'child.redemptions.emptyBody' | transloco }}
         </p>
       </div>
     } @else {
       @if (activeItems().length > 0) {
-        <section class="mt-7" aria-label="Aktuella önskningar">
-          <h2 class="font-display text-xl font-semibold text-child-text">Aktuella önskningar</h2>
+        <section class="mt-7" [attr.aria-label]="'child.redemptions.activeAriaLabel' | transloco">
+          <h2 class="font-display text-xl font-semibold text-child-text">{{ 'child.redemptions.activeTitle' | transloco }}</h2>
           <div class="mt-4 grid gap-5 sm:grid-cols-2">
             @for (item of activeItems(); track item.id; let i = $index) {
               <app-child-redemption-card
@@ -50,6 +50,7 @@
                 [pointsCost]="item.pointsCost"
                 [status]="item.status"
                 [comment]="item.comment"
+                [imageUrl]="item.imageUrl"
                 [palette]="paletteFor(i)"
                 [tiltDeg]="tiltFor(item.id)"
                 [wobbling]="wobblingRedemptionId() === item.id"
@@ -59,8 +60,8 @@
         </section>
       }
       @if (recentFinalItems().length > 0) {
-        <section class="mt-8" aria-label="Senaste besked">
-          <h2 class="font-display text-xl font-semibold text-child-text">Senaste besked</h2>
+        <section class="mt-8" [attr.aria-label]="'child.redemptions.recentAriaLabel' | transloco">
+          <h2 class="font-display text-xl font-semibold text-child-text">{{ 'child.redemptions.recentTitle' | transloco }}</h2>
           <div class="mt-4 grid gap-5 sm:grid-cols-2">
             @for (item of recentFinalItems(); track item.id; let i = $index) {
               <app-child-redemption-card
@@ -69,6 +70,7 @@
                 [pointsCost]="item.pointsCost"
                 [status]="item.status"
                 [comment]="item.comment"
+                [imageUrl]="item.imageUrl"
                 [palette]="paletteFor(i + activeItems().length)"
                 [tiltDeg]="tiltFor(item.id)"
                 [wobbling]="wobblingRedemptionId() === item.id"

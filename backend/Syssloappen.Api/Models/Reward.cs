@@ -22,6 +22,8 @@ public sealed class Reward
 
     public int StockQuantity { get; set; } = 1;
 
+    public string? ImageUrl { get; set; }
+
     public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAt { get; set; }

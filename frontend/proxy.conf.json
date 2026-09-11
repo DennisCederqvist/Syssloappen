@@ -3,5 +3,10 @@
     "target": "http://localhost:5047",
     "secure": false,
     "changeOrigin": true
+  },
+  "/reward-images": {
+    "target": "http://localhost:5047",
+    "secure": false,
+    "changeOrigin": true
   }
 }
