@@ -247,6 +247,7 @@
       "updateSuccess": "{{title}} är uppdaterad.",
       "deactivateSuccess": "{{title}} är bortplockad från uppgiftsbanken.",
       "assignSuccess": "{{choreTitle}} är tilldelad till {{childName}}.",
+      "assignRecurringSuccess": "{{choreTitle}} kommer nu återkommande att tilldelas {{childName}}.",
       "cancelAssignmentSuccess": "{{choreTitle}} är borttagen från {{childName}}.",
       "createError": {
         "validation": "Kontrollera titel, beskrivning och poäng.",
@@ -310,7 +311,19 @@
         "dateHint": "Sysslan visas för barnet på det här datumet.",
         "noActiveChildren": "Lägg till ett aktivt barn innan du tilldelar en syssla.",
         "submit": "Tilldela sysslan",
-        "submitting": "Tilldelar…"
+        "submitting": "Tilldelar…",
+        "recurringToggle": "Gör återkommande",
+        "frequencyLabel": "Hur ofta",
+        "frequency": {
+          "daily": "Varje dag",
+          "weekly": "Varje vecka",
+          "monthly": "Varje månad",
+          "custom": "Anpassad"
+        },
+        "weekdayLabel": "Veckodag",
+        "customDaysLabel": "Välj dagar",
+        "customDaysRequired": "Välj minst en veckodag.",
+        "dayOfMonthLabel": "Dag i månaden"
       },
       "editSheet": {
         "title": "Redigera syssla",
@@ -322,6 +335,34 @@
         "deactivateConfirm": "Ja, plocka bort",
         "deactivating": "Plockar bort…",
         "deactivateButton": "Ta bort syssla"
+      },
+      "recurrence": {
+        "listTitle": "Återkommande tilldelningar",
+        "scheduleDaily": "Varje dag",
+        "scheduleWeekly": "Varje {{weekday}}",
+        "scheduleMonthly": "Den {{day}}:e varje månad",
+        "scheduleCustom": "Anpassad: {{days}}",
+        "stopButton": "Sluta upprepa",
+        "stopping": "Stoppar…",
+        "stopError": "Kunde inte stoppa upprepningen. Försök igen.",
+        "weekday": {
+          "0": "måndag",
+          "1": "tisdag",
+          "2": "onsdag",
+          "3": "torsdag",
+          "4": "fredag",
+          "5": "lördag",
+          "6": "söndag"
+        },
+        "weekdayShort": {
+          "0": "Mån",
+          "1": "Tis",
+          "2": "Ons",
+          "3": "Tor",
+          "4": "Fre",
+          "5": "Lör",
+          "6": "Sön"
+        }
       },
       "list": {
         "title": "Uppgiftsbank",

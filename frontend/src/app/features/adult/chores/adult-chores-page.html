@@ -196,6 +196,93 @@
               {{ 'adult.chores.assign.dateHint' | transloco }}
             </span>
           </div>
+
+          <label class="flex items-center gap-2 text-sm font-semibold text-adult-text">
+            <input
+              type="checkbox"
+              [checked]="isRecurring()"
+              (change)="isRecurring.set($any($event.target).checked)"
+              class="size-5 rounded border-adult-border"
+            />
+            {{ 'adult.chores.assign.recurringToggle' | transloco }}
+          </label>
+
+          @if (isRecurring()) {
+            <div class="grid gap-3 rounded-lg border border-adult-border p-3">
+              <label class="block text-sm font-semibold text-adult-text">
+                {{ 'adult.chores.assign.frequencyLabel' | transloco }}
+                <select
+                  [ngModel]="recurrenceFrequency()"
+                  (ngModelChange)="recurrenceFrequency.set($event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+                >
+                  <option value="Daily">{{ 'adult.chores.assign.frequency.daily' | transloco }}</option>
+                  <option value="Weekly">{{ 'adult.chores.assign.frequency.weekly' | transloco }}</option>
+                  <option value="Monthly">{{ 'adult.chores.assign.frequency.monthly' | transloco }}</option>
+                  <option value="Custom">{{ 'adult.chores.assign.frequency.custom' | transloco }}</option>
+                </select>
+              </label>
+
+              @if (recurrenceFrequency() === 'Weekly') {
+                <label class="block text-sm font-semibold text-adult-text">
+                  {{ 'adult.chores.assign.weekdayLabel' | transloco }}
+                  <select
+                    [ngModel]="recurrenceWeekday()"
+                    (ngModelChange)="recurrenceWeekday.set($event)"
+                    [ngModelOptions]="{ standalone: true }"
+                    class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+                  >
+                    @for (day of [0, 1, 2, 3, 4, 5, 6]; track day) {
+                      <option [ngValue]="day">{{ 'adult.chores.recurrence.weekday.' + day | transloco }}</option>
+                    }
+                  </select>
+                </label>
+              }
+
+              @if (recurrenceFrequency() === 'Custom') {
+                <div>
+                  <span class="block text-sm font-semibold text-adult-text">
+                    {{ 'adult.chores.assign.customDaysLabel' | transloco }}
+                  </span>
+                  <div class="mt-1.5 flex flex-wrap gap-2">
+                    @for (day of [0, 1, 2, 3, 4, 5, 6]; track day) {
+                      <button
+                        type="button"
+                        (click)="toggleCustomDay(day)"
+                        [attr.aria-pressed]="isCustomDaySelected(day)"
+                        class="min-h-11 min-w-11 rounded-lg border px-3 text-sm font-medium"
+                        [class.border-adult-accent]="isCustomDaySelected(day)"
+                        [class.bg-adult-accent-soft]="isCustomDaySelected(day)"
+                        [class.text-adult-accent-dark]="isCustomDaySelected(day)"
+                        [class.border-adult-border]="!isCustomDaySelected(day)"
+                        [class.text-adult-text-secondary]="!isCustomDaySelected(day)"
+                      >
+                        {{ 'adult.chores.recurrence.weekdayShort.' + day | transloco }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (recurrenceFrequency() === 'Monthly') {
+                <label class="block text-sm font-semibold text-adult-text">
+                  {{ 'adult.chores.assign.dayOfMonthLabel' | transloco }}
+                  <select
+                    [ngModel]="recurrenceDayOfMonth()"
+                    (ngModelChange)="recurrenceDayOfMonth.set($event)"
+                    [ngModelOptions]="{ standalone: true }"
+                    class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+                  >
+                    @for (day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]; track day) {
+                      <option [ngValue]="day">{{ day }}</option>
+                    }
+                  </select>
+                </label>
+              }
+            </div>
+          }
+
           @if (children().length === 0) {
             <p class="rounded-lg bg-adult-points-bg p-3 text-sm text-adult-points-text">
               {{ 'adult.chores.assign.noActiveChildren' | transloco }}
@@ -311,6 +398,42 @@
             </button>
           </div>
         </form>
+
+        @if (recurrencesForChore(selectedChore.id).length > 0) {
+          <div class="mt-6 border-t border-adult-border pt-4">
+            <h3 class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">
+              {{ 'adult.chores.recurrence.listTitle' | transloco }}
+            </h3>
+            @if (recurrenceStopError()) {
+              <p class="mt-2 text-sm font-medium text-adult-danger-text" role="alert">
+                {{ recurrenceStopError() }}
+              </p>
+            }
+            <div class="mt-2 grid gap-2">
+              @for (recurrence of recurrencesForChore(selectedChore.id); track recurrence.id) {
+                <div class="flex items-center justify-between gap-3 rounded-lg border border-adult-border p-3">
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-semibold text-adult-text">{{ recurrence.childName }}</p>
+                    <p class="text-sm text-adult-text-secondary">{{ recurrenceScheduleLabel(recurrence) }}</p>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="stopRecurrence(recurrence)"
+                    [disabled]="stoppingRecurrenceId() === recurrence.id"
+                    class="min-h-11 shrink-0 rounded-lg border border-adult-border px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
+                  >
+                    {{
+                      (stoppingRecurrenceId() === recurrence.id
+                        ? 'adult.chores.recurrence.stopping'
+                        : 'adult.chores.recurrence.stopButton'
+                      ) | transloco
+                    }}
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
 
         <div class="mt-6 border-t border-adult-border pt-4">
           @if (confirmingDeactivationId() === selectedChore.id) {

@@ -247,6 +247,7 @@
       "updateSuccess": "{{title}} has been updated.",
       "deactivateSuccess": "{{title}} has been removed from the chore bank.",
       "assignSuccess": "{{choreTitle}} has been assigned to {{childName}}.",
+      "assignRecurringSuccess": "{{choreTitle}} will now recur for {{childName}}.",
       "cancelAssignmentSuccess": "{{choreTitle}} has been removed from {{childName}}.",
       "createError": {
         "validation": "Check the title, description, and points.",
@@ -310,7 +311,19 @@
         "dateHint": "The chore will be shown to the child on this date.",
         "noActiveChildren": "Add an active child before assigning a chore.",
         "submit": "Assign the chore",
-        "submitting": "Assigning…"
+        "submitting": "Assigning…",
+        "recurringToggle": "Make it recurring",
+        "frequencyLabel": "How often",
+        "frequency": {
+          "daily": "Every day",
+          "weekly": "Every week",
+          "monthly": "Every month",
+          "custom": "Custom"
+        },
+        "weekdayLabel": "Weekday",
+        "customDaysLabel": "Choose days",
+        "customDaysRequired": "Choose at least one weekday.",
+        "dayOfMonthLabel": "Day of the month"
       },
       "editSheet": {
         "title": "Edit chore",
@@ -322,6 +335,34 @@
         "deactivateConfirm": "Yes, remove it",
         "deactivating": "Removing…",
         "deactivateButton": "Remove chore"
+      },
+      "recurrence": {
+        "listTitle": "Recurring assignments",
+        "scheduleDaily": "Every day",
+        "scheduleWeekly": "Every {{weekday}}",
+        "scheduleMonthly": "The {{day}} of every month",
+        "scheduleCustom": "Custom: {{days}}",
+        "stopButton": "Stop repeating",
+        "stopping": "Stopping…",
+        "stopError": "Couldn't stop the recurrence. Please try again.",
+        "weekday": {
+          "0": "Monday",
+          "1": "Tuesday",
+          "2": "Wednesday",
+          "3": "Thursday",
+          "4": "Friday",
+          "5": "Saturday",
+          "6": "Sunday"
+        },
+        "weekdayShort": {
+          "0": "Mon",
+          "1": "Tue",
+          "2": "Wed",
+          "3": "Thu",
+          "4": "Fri",
+          "5": "Sat",
+          "6": "Sun"
+        }
       },
       "list": {
         "title": "Chore bank",

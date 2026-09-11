@@ -44,6 +44,9 @@ class FakeChoresService {
     this.cancelAssignmentCalls.push(assignmentId);
     return of(undefined);
   }
+  getRecurrences() {
+    return of([]);
+  }
 }
 
 class FakeChildrenService {

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { ChoreRecurrence, CreateChoreRecurrenceRequest } from './chore-recurrence.models';
 import {
   AdultAssignment,
   Chore,
@@ -72,5 +73,17 @@ export class ChoresService {
       `/api/chore-assignments/${assignmentId}/reject`,
       request,
     );
+  }
+
+  getRecurrences(): Observable<ChoreRecurrence[]> {
+    return this.http.get<ChoreRecurrence[]>('/api/chore-recurrences');
+  }
+
+  createRecurrence(request: CreateChoreRecurrenceRequest): Observable<ChoreRecurrence> {
+    return this.http.post<ChoreRecurrence>('/api/chore-recurrences', request);
+  }
+
+  deleteRecurrence(recurrenceId: number): Observable<void> {
+    return this.http.delete<void>(`/api/chore-recurrences/${recurrenceId}`);
   }
 }

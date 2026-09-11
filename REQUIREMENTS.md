@@ -452,7 +452,27 @@ så att barnets lista visar rätt uppgifter för dagen utan att skapa stress kri
 - [x] Framtida sysslor ska inte visas för barnet.
 - [x] Äldre sysslor ska inte märkas som försenade.
 - [x] Sysslor i `PendingApproval` ska visas separat från barnets aktiva sysslor tills de har granskats.
-- [x] Återkommande sysslor är uttryckligen en senare arbetsdel.
+- [x] Återkommande sysslor är en senare arbetsdel, se US-036.
+
+---
+
+## US-036 – Vuxen gör en tilldelning återkommande
+
+**Som vuxen**
+vill jag kunna göra en syssla återkommande för ett barn
+så att jag inte manuellt behöver tilldela samma syssla varje dag.
+
+### Acceptance Criteria
+
+- [x] En Adult ska kunna välja en enkel upprepning: varje dag, en vald veckodag (varje vecka), en vald dag i månaden (varje månad), eller en valfri kombination av veckodagar (anpassad).
+- [x] Upprepningen gäller en specifik kombination av syssla och barn, inte sysslan som helhet — samma syssla kan vara återkommande för ett barn men inte ett annat.
+- [x] Varje förekomst blir en separat datumstyrd `ChoreAssignment` med eget statusflöde och poängsnapshot, precis som en manuell tilldelning.
+- [x] Systemet får aldrig skapa dubbla förekomster för samma upprepning och datum.
+- [x] Skapas en återkommande tilldelning vars schema matchar dagens datum, ska dagens förekomst skapas direkt utan väntan.
+- [x] Barnets vy ska fortsatt bara visa dagens och tidigare oavslutade sysslor, utan försenad-markering eller framtida sysslor.
+- [x] En Adult ska kunna se och stoppa en aktiv upprepning. Att stoppa en upprepning ska bara förhindra framtida förekomster; redan skapade tilldelningar, deras historik och poäng ska bevaras oförändrade.
+- [x] Manipulering av Chore-ID, Child-ID eller Household-fält får inte skapa eller stoppa en upprepning i en annan familj.
+- [x] Avancerade regler som intervall (till exempel varannan vecka), undantag, tidszonshantering utöver befintlig lokal-tid-logik och kalenderimport ligger utanför denna arbetsdel.
 
 ---
 
@@ -914,26 +934,12 @@ Följande funktioner kan vara intressanta senare men ska **inte byggas innan kä
 
 ## Återkommande sysslor
 
-Återkommande sysslor är beslutad som nästa möjliga produktdel, men ska inte implementeras förrän ett separat produktbeslut tas.
+Implementerad enligt US-036 (varje dag, varje vecka, varje månad, anpassade veckodagar). Kvarstående, avsiktligt uteslutna delar för en framtida utökning:
 
-- En Adult ska kunna välja en enkel upprepning, först `varje dag` eller valda veckodagar.
-- Varje förekomst ska bli en separat datumstyrd `ChoreAssignment` med eget statusflöde och poängsnapshot.
-- Systemet får aldrig skapa dubbla förekomster för samma mall, barn och datum.
-- Barnets vy ska även då bara visa dagens och tidigare oavslutade sysslor, utan försenad-markering eller framtida sysslor.
-- Avancerade regler som intervall, undantag, tidszoner och kalenderimport ligger utanför första delen.
-
-Exempel:
-
-```text
-Mata katten
-Varje dag
-
-Ta ut soporna
-Varje tisdag
-
-Städa rummet
-Varje söndag
-```
+- Intervall utöver "varje" (till exempel varannan vecka).
+- Undantag för enskilda datum (till exempel hoppa över en dag pga resa).
+- En redigera-upprepning-endpoint — idag ändras ett schema genom att stoppa den gamla upprepningen och skapa en ny.
+- Kalenderimport.
 
 ---
 

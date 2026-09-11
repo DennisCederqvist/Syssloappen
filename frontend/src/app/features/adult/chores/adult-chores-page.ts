@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize, forkJoin } from 'rxjs';
 import { focusAfterRender } from '../../../shared/focus';
@@ -12,13 +12,22 @@ import { AdultDangerOutlineButton, AdultPrimaryButton, AdultSecondaryTintButton 
 import { AdultPageHeader } from '../ui/page-header';
 import { AdultSheet } from '../ui/sheet';
 import { AdultTile } from '../ui/tile';
+import {
+  ChoreRecurrence,
+  ChoreRecurrenceFrequency,
+  CreateChoreRecurrenceRequest,
+} from './chore-recurrence.models';
 import { AdultAssignment, Chore } from './chores.models';
 import { ChoresService } from './chores.service';
+
+// Mon=0..Sun=6 in the UI, converted to the backend's Mon=1..Sun=64 bitmask on submit.
+const WEEKDAY_BITS = [1, 2, 4, 8, 16, 32, 64];
 
 @Component({
   selector: 'app-adult-chores-page',
   imports: [
     ReactiveFormsModule,
+    FormsModule,
     AdultBadge,
     AdultBottomNav,
     AdultDangerOutlineButton,
@@ -44,6 +53,14 @@ export class AdultChoresPage implements OnInit {
   readonly chores = signal<Chore[]>([]);
   readonly children = signal<ChildSummary[]>([]);
   readonly assignments = signal<AdultAssignment[]>([]);
+  readonly recurrences = signal<ChoreRecurrence[]>([]);
+  readonly isRecurring = signal(false);
+  readonly recurrenceFrequency = signal<ChoreRecurrenceFrequency>('Daily');
+  readonly recurrenceWeekday = signal(0);
+  readonly recurrenceCustomDays = signal<ReadonlySet<number>>(new Set());
+  readonly recurrenceDayOfMonth = signal(1);
+  readonly stoppingRecurrenceId = signal<number | null>(null);
+  readonly recurrenceStopError = signal('');
   readonly isLoading = signal(true);
   readonly loadError = signal('');
   readonly showChoreForm = signal(false);
@@ -121,13 +138,15 @@ export class AdultChoresPage implements OnInit {
       chores: this.choresService.getChores(),
       children: this.childrenService.getActiveChildren(),
       assignments: this.choresService.getAssignments(),
+      recurrences: this.choresService.getRecurrences(),
     })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: ({ chores, children, assignments }) => {
+        next: ({ chores, children, assignments, recurrences }) => {
           this.chores.set(chores);
           this.children.set(children);
           this.assignments.set(assignments);
+          this.recurrences.set(recurrences);
         },
         error: () => this.loadError.set(this.transloco.translate('adult.chores.loadError')),
       });
@@ -315,6 +334,7 @@ export class AdultChoresPage implements OnInit {
       returnFocusId ?? (choreId ? `assign-chore-${choreId}` : 'open-assignment-trigger');
     this.assignmentForm.setValue({ choreId, childId: 0, dueDate: this.todayInputValue() });
     this.assignmentError.set('');
+    this.resetRecurrenceState();
     this.showAssignmentForm.set(true);
     focusAfterRender('assignment-panel');
   }
@@ -323,7 +343,29 @@ export class AdultChoresPage implements OnInit {
     this.showAssignmentForm.set(false);
     this.assignmentError.set('');
     this.assignmentForm.reset({ choreId: 0, childId: 0, dueDate: this.todayInputValue() });
+    this.resetRecurrenceState();
     focusAfterRender(this.assignmentReturnFocusId);
+  }
+
+  private resetRecurrenceState(): void {
+    this.isRecurring.set(false);
+    this.recurrenceFrequency.set('Daily');
+    this.recurrenceWeekday.set(0);
+    this.recurrenceCustomDays.set(new Set());
+    this.recurrenceDayOfMonth.set(1);
+  }
+
+  toggleCustomDay(dayIndex: number): void {
+    this.recurrenceCustomDays.update((days) => {
+      const next = new Set(days);
+      if (next.has(dayIndex)) next.delete(dayIndex);
+      else next.add(dayIndex);
+      return next;
+    });
+  }
+
+  isCustomDaySelected(dayIndex: number): boolean {
+    return this.recurrenceCustomDays().has(dayIndex);
   }
 
   createAssignment(): void {
@@ -341,6 +383,12 @@ export class AdultChoresPage implements OnInit {
       this.assignmentError.set(this.transloco.translate('adult.chores.assignmentValidation'));
       return;
     }
+
+    if (this.isRecurring()) {
+      this.createRecurringAssignment(chore, child, request.dueDate);
+      return;
+    }
+
     this.isAssigning.set(true);
     this.assignmentError.set('');
     this.choresService
@@ -386,6 +434,102 @@ export class AdultChoresPage implements OnInit {
                 : 'adult.chores.assignError.generic',
             ),
           ),
+      });
+  }
+
+  private createRecurringAssignment(chore: Chore, child: ChildSummary, startDate: string): void {
+    const frequency = this.recurrenceFrequency();
+    const request: CreateChoreRecurrenceRequest = {
+      choreId: chore.id,
+      childId: child.id,
+      frequency,
+      startDate,
+      daysOfWeekMask:
+        frequency === 'Weekly'
+          ? WEEKDAY_BITS[this.recurrenceWeekday()]
+          : frequency === 'Custom'
+            ? [...this.recurrenceCustomDays()].reduce((mask, day) => mask | WEEKDAY_BITS[day], 0)
+            : null,
+      dayOfMonth: frequency === 'Monthly' ? this.recurrenceDayOfMonth() : null,
+    };
+
+    if (frequency === 'Custom' && this.recurrenceCustomDays().size === 0) {
+      this.assignmentError.set(this.transloco.translate('adult.chores.assign.customDaysRequired'));
+      return;
+    }
+
+    this.isAssigning.set(true);
+    this.assignmentError.set('');
+    this.choresService
+      .createRecurrence(request)
+      .pipe(finalize(() => this.isAssigning.set(false)))
+      .subscribe({
+        next: (recurrence) => {
+          this.recurrences.update((items) => [...items, recurrence]);
+          // The recurrence may have just generated today's occurrence server-side;
+          // refetch rather than guess at the shape of what was (or wasn't) created.
+          this.choresService.getAssignments().subscribe((assignments) => this.assignments.set(assignments));
+          this.closeAssignmentForm();
+          this.showSuccess(
+            this.transloco.translate('adult.chores.assignRecurringSuccess', {
+              choreTitle: chore.title,
+              childName: child.name,
+            }),
+          );
+          focusAfterRender('adult-chores-success');
+        },
+        error: (error: HttpErrorResponse) =>
+          this.assignmentError.set(
+            this.transloco.translate(
+              error.status === 404
+                ? 'adult.chores.assignError.notFound'
+                : 'adult.chores.assignError.generic',
+            ),
+          ),
+      });
+  }
+
+  recurrencesForChore(choreId: number): ChoreRecurrence[] {
+    return this.recurrences().filter((recurrence) => recurrence.choreId === choreId);
+  }
+
+  recurrenceScheduleLabel(recurrence: ChoreRecurrence): string {
+    switch (recurrence.frequency) {
+      case 'Daily':
+        return this.transloco.translate('adult.chores.recurrence.scheduleDaily');
+      case 'Weekly': {
+        const dayIndex = WEEKDAY_BITS.indexOf(recurrence.daysOfWeekMask ?? 0);
+        return this.transloco.translate('adult.chores.recurrence.scheduleWeekly', {
+          weekday: this.transloco.translate(`adult.chores.recurrence.weekday.${dayIndex}`),
+        });
+      }
+      case 'Monthly':
+        return this.transloco.translate('adult.chores.recurrence.scheduleMonthly', {
+          day: recurrence.dayOfMonth,
+        });
+      case 'Custom': {
+        const mask = recurrence.daysOfWeekMask ?? 0;
+        const days = WEEKDAY_BITS.map((bit, index) => (mask & bit ? index : null))
+          .filter((index): index is number => index !== null)
+          .map((index) => this.transloco.translate(`adult.chores.recurrence.weekdayShort.${index}`))
+          .join(', ');
+        return this.transloco.translate('adult.chores.recurrence.scheduleCustom', { days });
+      }
+    }
+  }
+
+  stopRecurrence(recurrence: ChoreRecurrence): void {
+    if (this.stoppingRecurrenceId() !== null) return;
+    this.stoppingRecurrenceId.set(recurrence.id);
+    this.recurrenceStopError.set('');
+    this.choresService
+      .deleteRecurrence(recurrence.id)
+      .pipe(finalize(() => this.stoppingRecurrenceId.set(null)))
+      .subscribe({
+        next: () =>
+          this.recurrences.update((items) => items.filter((item) => item.id !== recurrence.id)),
+        error: () =>
+          this.recurrenceStopError.set(this.transloco.translate('adult.chores.recurrence.stopError')),
       });
   }
 
