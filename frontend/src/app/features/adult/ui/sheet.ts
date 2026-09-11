@@ -8,13 +8,17 @@ import { Component, HostListener, input, output } from '@angular/core';
 @Component({
   selector: 'app-adult-sheet',
   template: `
-    <div class="fixed inset-0 z-50 flex justify-center md:items-center md:bg-black/30 md:p-4">
+    <div
+      class="fixed inset-0 z-50 flex justify-center md:items-center md:bg-black/30 md:p-4"
+      (click)="close.emit()"
+    >
       <div
         [id]="panelId()"
         tabindex="-1"
         role="dialog"
         aria-modal="true"
         [attr.aria-labelledby]="headingId()"
+        (click)="$event.stopPropagation()"
         class="flex h-full w-full flex-col overflow-y-auto bg-adult-surface outline-none md:h-auto md:max-h-[85vh] md:max-w-lg md:rounded-lg md:border md:border-adult-border md:shadow-xl"
       >
         <header
