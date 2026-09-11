@@ -19,6 +19,9 @@ public sealed class SupabaseRewardImageStorage(HttpClient httpClient, IOptions<S
 
         using var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.ServiceKey);
+        // Supabase's Storage API requires both headers — Authorization alone is rejected with
+        // "Invalid Compact JWS", confirmed against a real project while wiring this up.
+        request.Headers.Add("apikey", config.ServiceKey);
         request.Headers.Add("x-upsert", "true");
         request.Content = new ByteArrayContent(webpContent);
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("image/webp");

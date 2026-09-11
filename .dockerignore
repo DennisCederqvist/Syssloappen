@@ -1,0 +1,10 @@
+# Host-machine build artifacts must never be copied into the image — they carry absolute
+# Windows paths and a different restore graph than the container's own fresh restore, which
+# corrupts `dotnet publish` (NETSDK1064) if copied in after `dotnet restore` runs in-container.
+**/bin/
+**/obj/
+node_modules/
+frontend/dist/
+frontend/.angular/
+.git/
+.vs/

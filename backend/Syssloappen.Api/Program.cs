@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
@@ -73,6 +74,18 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Render (and most container hosts) terminate HTTPS at an edge proxy and forward plain HTTP to
+// the container. Without this, the app sees every request as HTTP and UseHttpsRedirection below
+// would redirect-loop, and the Secure cookie policy would refuse to set the auth cookie. The
+// proxy's address isn't known in advance, so trust the forwarded headers unconditionally — safe
+// here because the container is only reachable through that proxy.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 // "Local" writes to wwwroot for dev; "Supabase" uploads to Supabase Storage for deployed
 // environments. See docs/HANDOFF.md for the Storage:* configuration keys.
 builder.Services.Configure<SupabaseStorageOptions>(
@@ -89,6 +102,8 @@ else
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseForwardedHeaders();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -102,12 +117,19 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+// Outside Development, wwwroot also holds the built Angular app (see Dockerfile) — served as
+// static files, with unmatched non-API routes falling back to index.html for client-side routing.
+app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+if (!app.Environment.IsDevelopment())
+{
+    app.MapFallbackToFile("index.html");
+}
 
 using (var scope = app.Services.CreateScope())
 {
