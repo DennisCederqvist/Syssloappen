@@ -90,12 +90,12 @@
               class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
             />
           </label>
-          <label class="block text-sm font-semibold text-adult-text" for="reward-image">
+          <div class="block text-sm font-semibold text-adult-text">
             {{ 'adult.rewards.formSheet.imageLabel' | transloco }}
             <span class="font-normal text-adult-text-secondary">{{
               'adult.rewards.formSheet.descriptionOptional' | transloco
             }}</span>
-            <div class="mt-1.5 flex items-center gap-3">
+            <div class="mt-1.5 flex flex-wrap items-center gap-3">
               @if (imagePreviewUrl(); as previewUrl) {
                 <img
                   [src]="previewUrl"
@@ -103,15 +103,42 @@
                   class="size-16 shrink-0 rounded-lg border border-adult-border object-cover"
                 />
               }
+              <div class="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  (click)="galleryInput.click()"
+                  class="min-h-11 rounded-lg bg-adult-accent-soft px-4 text-sm font-semibold text-adult-accent-dark"
+                >
+                  {{ 'adult.rewards.formSheet.chooseImage' | transloco }}
+                </button>
+                <button
+                  type="button"
+                  (click)="cameraInput.click()"
+                  class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-semibold text-adult-text"
+                >
+                  {{ 'adult.rewards.formSheet.takePhoto' | transloco }}
+                </button>
+              </div>
+              <!-- Two separate inputs, not one shared `capture` toggle: on mobile, `capture`
+                   forces the OS straight into the camera with no way to pick an existing photo,
+                   so each affordance gets its own hidden input instead. -->
               <input
-                id="reward-image"
+                #galleryInput
                 type="file"
                 accept="image/*"
                 (change)="selectImage($event)"
-                class="min-h-11 flex-1 text-sm font-normal text-adult-text file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-lg file:border-0 file:bg-adult-accent-soft file:px-4 file:text-sm file:font-semibold file:text-adult-accent-dark"
+                class="hidden"
+              />
+              <input
+                #cameraInput
+                type="file"
+                accept="image/*"
+                capture="environment"
+                (change)="selectImage($event)"
+                class="hidden"
               />
             </div>
-          </label>
+          </div>
           <div class="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button
               type="button"
