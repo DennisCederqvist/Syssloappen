@@ -1,6 +1,6 @@
 # Syssloappen - Project Handoff
 
-Senast uppdaterad: 2026-09-06
+Senast uppdaterad: 2026-09-11
 
 Läs alltid `REQUIREMENTS.md` först. Den här filen kompletterar kraven med projektets aktuella tekniska status och fattade beslut.
 
@@ -249,6 +249,9 @@ Genomgången användartestades och godkändes 2026-08-26 utan upptäckta blocker
 - Microsoft Identity och EF Core `10.0.11`
 - Npgsql Entity Framework Core provider `10.0.3`
 - Lokalt `dotnet-ef`-verktyg `10.0.11` via `dotnet-tools.json`
+- `@jsverse/transloco` `8.4.0` för i18n
+- `SkiaSharp` (+ `SkiaSharp.NativeAssets.Linux`) för server-side bildkomprimering — inte ImageSharp, se avsnittet om belöningsfoto
+- Produktionsdrift: Supabase (Postgres + Storage), Render (Docker-baserad Web Service), GitHub (källkod + auto-deploy)
 
 Frontendprojektet använder Angular 22, standalone components, reactive forms och Tailwind CSS 4. Angulars dev-server proxyar `/api` till API:t på `http://localhost:5047`. Autentiseringstjänsten använder backendens HttpOnly-cookie, och route guards väljer rätt startsida för `Adult` respektive `Child` utan att ersätta backendens behörighetskontroller.
 
@@ -311,6 +314,7 @@ Aktuella migrationer:
 - `AddChoreAssignmentCancellation` lägger till nullable `ChoreAssignments.CancelledByUserId` och `CancelledAt`, index samt en restriktiv Adult-FK. Migrationen är applicerad i `syssloappen_dev`.
 - `AddRewardsCatalog` skapar `Rewards` med Household-, skaparkonto-, namn-, beskrivnings-, poängpris-, aktiv- och tidsfält, positiv-pris-constraint, index och restriktiv skapare-FK. Migrationen är applicerad i `syssloappen_dev`.
 - `AddRewardImage` lägger till nullable `Rewards.ImageUrl` (`character varying(2048)`). Migrationen är applicerad i `syssloappen_dev`.
+- `EnableRowLevelSecurity` aktiverar RLS (utan policies) på samtliga 19 tabeller i `public`-schemat, ett rent deny-all för Supabases PostgREST-API. Migrationen är applicerad i både `syssloappen_dev` och den produktionsdrivna Supabase-databasen.
 
 ### Bilduppladdning för belöningar
 
@@ -440,7 +444,56 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-### Child-vyns grafiska genomgång (`feature/child-view-redesign`) — Idag, Belöningar och Önskningar klara, väntar på merge
+### Child-vyns grafiska genomgång — mergad till `main`
+
+> Uppdatering 2026-09-11: Mergad till `main` tillsammans med allt nedanstående arbete från samma session (i18n, belönings­bilder, produktionsdrift). Branchen `feature/child-view-redesign` och dess fjärrkopia är borttagna efter att ha bekräftats helt mergad.
+
+### Svenska/engelska språkstöd (i18n)
+
+Hela frontend har fått en körtids-språkväxlare mellan svenska och engelska, byggd med `@jsverse/transloco`:
+
+- Ett enda nyckelpar `frontend/public/i18n/sv.json` / `en.json`, namngivet per funktionsområde (`common.*`, `auth.*`, `adult.*`, `child.*`, `session.*`). Svenska är standardspråk och exakt samma text som fanns hårdkodad innan, kopierad ordagrant — retrofiten var medvetet en ren extraktion, inte en omskrivning, så inget befintligt beteende eller någon existerande testtext ändrades av den.
+- `LanguageService` (`frontend/src/app/core/i18n/`) håller aktivt språk i en signal, sparar valet i `localStorage` (`syssloappen.lang`) och laddas via `provideAppInitializer` innan första rendering.
+- Både Adult- och Child-vyn har sin egen språkväljare (samma tjänst, olika utseende per designsystem) i respektive Inställningar-sida.
+- Alla sidor, delade komponenter (bottom nav, sheets, kort) och `.ts`-komposerade strängar (valideringsmeddelanden, felmeddelanden, pluralformer) är migrerade — inklusive den engelska pluralformen som saknas i svenskan (`1 syssla` vs `N sysslor`), löst med separata nycklar snarare än ICU-plural.
+- En vanlig fallgrop dokumenterad i `frontend/src/app/core/i18n/testing.ts`: Transloco laddar bara ett språk när något faktiskt renderar en `| transloco`-pipe-bindning; ett testfall vars `beforeEach` anropar `component.ngOnInit()` direkt istället för `fixture.detectChanges()` får rå nyckeltext tillbaka från `.translate()`-anrop.
+- Verifierat i flera separata liveverifieringar (skärmdumpar av både svensk och engelsk rendering på samtliga sidor) samt build/test/e2e efter varje steg.
+
+### Belöningsfoto: uppladdning, komprimering och lagring
+
+US-070/US-071:s tidigare medvetet uteslutna bilddel är nu implementerad:
+
+- `POST /api/rewards/{rewardId}/image` tar emot JPEG/PNG/WebP (max 10 MB), avkodar och skalar ner den server-side till max 800 px på längsta sidan och kodar om till WebP kvalitet 75 med SkiaSharp (inte ImageSharp — se nedan) innan den sparas. Detta är den enda platsen storleksbudgeten faktiskt skyddas; klientens egen komprimering (om någon) litas aldrig på.
+- Lagring sker bakom `IRewardImageStorage`, valt via `Storage:Provider`: `Local` (skriver till `wwwroot/reward-images/`, standard för lokal utveckling) eller `Supabase` (laddar upp till en Supabase Storage-bucket via dess REST-API, kräver `Storage:Supabase:{Url,ServiceKey,Bucket}`).
+- Byts belöningens bild ut, eller tas belöningen bort helt, raderas den gamla filen ur lagringen (`IRewardImageStorage.DeleteAsync`) — annars skulle gamla bilder bara hopa sig för evigt. Vid borttagning nollställs även `Reward.ImageUrl` så att en historisk redemption-post inte pekar på en fil som inte längre finns.
+- Mobilt kameraflöde har två separata dolda file-inputs bakom två synliga knappar ("Ta bild" med `capture="environment"`, "Välj bild" utan) — en enda input med `capture` visade sig tvinga vissa mobilwebbläsare rakt in i kameran utan möjlighet att välja en befintlig bild.
+- **ImageSharp byttes till SkiaSharp** innan den ens hann användas i produktion: ImageSharp kräver numera registrering för en (troligen gratis, men ändå) licensnyckel för de flesta användningsområden. SkiaSharp är fri MIT/BSD-licens utan någon sådan spärr.
+- Bilden visas nu i vuxnas belöningslista (`AdultTile` har fått ett `avatarImageUrl`-input) samt i barnets `ChildRewardCard`/`ChildRedemptionCard` (ersätter den streckade platshållarrutan när en bild finns).
+- Rader-nivå-säkerhet (Row Level Security) är aktiverad på samtliga 19 tabeller i `public`-schemat (migrationen `EnableRowLevelSecurity`) — se avsnittet om Supabase nedan för varför.
+
+### Produktionsdrift: Supabase, Render och GitHub
+
+Appen (kallas i produktion "Sysslo") körs nu på riktigt, inte bara lokalt:
+
+- **Databas**: Supabase Postgres. Anslutningssträngen pekar på Supabases "connection pooler" (session-läge, port 5432) och skickas som miljövariabeln `ConnectionStrings__SyssloappenDatabase` i den driftsatta miljön — den lokala utvecklingsdatabasen och dess User Secret är helt oförändrade och opåverkade.
+- **Filer**: Supabase Storage, bucket `reward-images` (public-read), se ovan.
+- **Säkerhet**: Supabases inbyggda linter flaggade att RLS saknades på alla tabeller — viktigt eftersom Supabases PostgREST-API exponerar samma tabeller direkt för vem som helst med bara den publika ("publishable") nyckeln, helt vid sidan av appens egen ASP.NET Core Identity/HouseholdId-behörighet. Appen använder aldrig PostgREST (bara Npgsql/EF Core direkt mot databasen som ägande roll, vilket alltid kringgår RLS), så att aktivera RLS utan några policies är ett rent deny-all för PostgRESTs anon-roll utan att påverka appen — verifierat både genom att en anonym PostgREST-läsning nu ger tomt resultat och att appens egna 155 backendtester samt en riktig registrering/inloggning mot Supabase fortsatt fungerar oförändrat.
+- **API-hosting**: Render (gratis Web Service, Docker-baserad), på `https://sysslo.onrender.com`. `backend/Syssloappen.Api/Dockerfile` bygger både Angular-frontend och ASP.NET Core API i en enda image — API:t serverar den byggda Angular-appen som statiska filer med SPA-fallback (`UseDefaultFiles`/`UseStaticFiles`/`MapFallbackToFile`), så frontend och API delar samma ursprung i produktion och behöver varken CORS eller cross-site-cookies.
+  - `ForwardedHeaders`-middleware krävs eftersom Render (liksom de flesta värdplattformar) terminerar HTTPS vid en edge-proxy och skickar vidare vanlig HTTP till containern; utan det skulle appen tro varje anrop var HTTP och antingen redirect-loopa (`UseHttpsRedirection`) eller vägra sätta den säkra cookien.
+  - Den minimala `aspnet:10.0`-runtime-imagen saknar `libfontconfig1`, ett beroende SkiaSharps nativa bibliotek kräver bara för att kunna laddas — upptäcktes som ett 500-fel i produktion vid första bilduppladdningen, reproducerat lokalt i en identisk container och fixat genom att installera paketet i Dockerfilens runtime-steg.
+  - Ett `.dockerignore` behövdes också: utan det kopierade det andra `COPY`-steget in värddatorns egna `bin`/`obj`-mappar (med absoluta Windows-sökvägar) ovanpå containerns egen färska `dotnet restore`, vilket gav `NETSDK1064` vid `dotnet publish`.
+- **Kod**: GitHub (`DennisCederqvist/Syssloappen`), Render bygger om automatiskt vid varje push till `main`.
+- Verifierat genomgående med riktiga anrop mot den faktiska Supabase-databasen och Storage-bucketen (inte bara mockar/fakes) för varje känslig del: migrationsbootstrap, RLS-blockering, bilduppladdning, byte och borttagning av bild.
+
+### Efterföljande buggfixar (samma driftsättningsomgång)
+
+Upptäckta av användaren efter första produktionsdeployen, alla fixade, verifierade (inklusive live mot Supabase där relevant) och pushade:
+
+- Vuxen-inloggning satte `isPersistent: false`, så hela sessionen försvann bara webbläsaren stängdes helt (inte bara fliken) — ändrat till en riktig beständig cookie.
+- Barnets enhetssession hade en absolut 30-dagarsgräns räknad från parkopplingstillfället, oavsett användning — en enhet som användes dagligen loggades ändå ut efter en månad. `AbsoluteExpiresAt` skjuts nu fram vid varje förnyelse, så gränsen blir en inaktivitetsgräns (30 dagar utan användning), inte en hård gräns från inloggningen.
+- Listan över kopplade enheter kunde bara växa — en redan utloggad/utgången rad hade ingen åtgärd alls. `DELETE`-endpointen tar nu bort raden permanent om den redan är inaktiv (en fortsatt aktiv session avloggas fortfarande bara mjukt, oförändrat), och UI:t visar en "Ta bort"-knapp för exakt de raderna.
+
+Se `REQUIREMENTS.md` för hur detta påverkar checkboxarna under US-070/US-071 (bilduppladdning) och de nya breda kriterierna för i18n respektive produktionsdrift.
 
 Referens: `docs/barnvy mockup.png` (användarens egen mockup) och den nya `docs/child-view-redesign/child-view-design-spec.md`. Målet var samma sorts genomgång som adult-vyn fick (se sektionen nedanför denna), men i motsatt riktning — lekfullt och "bubbligt" snarare än lugnt och tool-like, riktat mot barn ca 6–10 år.
 
@@ -558,7 +611,7 @@ US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-0
 
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
 - Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Adult-vyn för sysslor och tilldelningar, barnets riktiga startsida och Adult-granskningen är färdiga och användartestade.
-- US-070:s bildfria belöningskatalog är implementerad. Poängreservation och belöningsförfrågningar enligt US-071–US-072 återstår; bilduppladdning kommer sist när format, storleksgränser och lagring har beslutats.
+- US-070–US-072 (belöningskatalog, poängreservation, förfrågningar och bilduppladdning) är nu implementerade i sin helhet, inklusive bilduppladdning med server-side komprimering och Supabase Storage.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
 - PostgreSQL-smoke-körningarna, inklusive transportfelsökningen inför den godkända Child-vy-körningen, skapade flera isolerade test-Households i `syssloappen_dev`. Alla namn och konton är smoke-märkta; testlösenorden genererades endast i minnet och är inte dokumenterade.

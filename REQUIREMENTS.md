@@ -602,9 +602,9 @@ så att familjen själv kan bestämma vad poängen betyder.
 - [x] En belöning ska ha ett namn, exempelvis `Litet gosedjur` eller `Lite godis`.
 - [x] En belöning ska ha ett positivt poängpris i heltal.
 - [x] En belöning ska kunna ha en valfri beskrivning.
-- [ ] En Adult ska valfritt kunna lägga till en bild till belöningen.
+- [x] En Adult ska valfritt kunna lägga till en bild till belöningen.
 - [x] Belöningsflödet ska fungera även utan bild.
-- [ ] Bildformat, filstorlek och lagring ska valideras och beslutas innan bilduppladdning implementeras.
+- [x] Bildformat, filstorlek och lagring ska valideras och beslutas innan bilduppladdning implementeras.
 - [x] Belöningen ska automatiskt kopplas till den autentiserade Adult-användarens Household.
 - [x] Klienten får inte styra Household, skapare, ID eller tidsuppgifter.
 - [x] En Adult får endast se och administrera belöningar i sitt eget Household.
@@ -622,7 +622,7 @@ så att jag kan använda mina intjänade poäng.
 
 - [x] Barnet måste vara autentiserat och aktivt.
 - [x] Barnet ska endast se aktiva belöningar från sitt eget Household.
-- [ ] Barnet ska se belöningens namn, poängpris, valfria beskrivning och eventuell bild.
+- [x] Barnet ska se belöningens namn, poängpris, valfria beskrivning och eventuell bild.
 - [x] Tillgängliga poäng ska beräknas som intjänade poäng minus reserverade och slutligt använda poäng.
 - [x] Barnets primära poängsaldo ska visa tillgängliga poäng, inte enbart historiskt intjänade poäng.
 - [x] Backend ska kontrollera att barnet har tillräckligt många tillgängliga poäng.
@@ -637,7 +637,7 @@ så att jag kan använda mina intjänade poäng.
 - [x] En belöning med barnets redan väntande förfrågan ska inte visas som valbar för samma barn förrän förfrågan har hanterats.
 - [x] Barnet ska kunna se sina egna belöningsförfrågningar och om de väntar på vuxenhantering, är godkända, får avslag eller är utlämnade.
 
-Status: barnvyns grafiska genomgång (`feature/child-view-redesign`, se `docs/HANDOFF.md`) lade till en bildplatshållare på varje belönings- och önskningskort inför den kommande bilduppladdningen ovan — själva uppladdningen (adult-UI, backend-fält, lagring) är fortfarande inte byggd, så kriterierna om bild ovan är medvetet oförändrade.
+Status: bilduppladdning är nu implementerad (se `docs/HANDOFF.md`) — server-side komprimering till WebP, pluggbar lagring (lokal disk för utveckling, Supabase Storage i produktion), och rendering i både Adult- och Child-vyn. Gammal bild raderas ur lagringen vid byte eller borttagning av belöningen.
 
 ---
 
@@ -781,7 +781,8 @@ CreatedByUserId
 Name
 Description
 PointsCost
-ImageReference
+StockQuantity
+ImageUrl
 IsActive
 CreatedAt
 ```
@@ -938,7 +939,7 @@ Varje söndag
 
 ## Belöningsbutik
 
-Familjedefinierade belöningar och belöningsförfrågningar enligt US-070–US-072 är implementerade. Bilduppladdning är fortfarande en senare, separat del.
+Familjedefinierade belöningar och belöningsförfrågningar enligt US-070–US-072 är implementerade, inklusive bilduppladdning.
 
 ```text
 Lite godis          25 poäng
