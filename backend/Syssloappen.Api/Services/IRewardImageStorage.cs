@@ -9,4 +9,9 @@ namespace Syssloappen.Api.Services;
 public interface IRewardImageStorage
 {
     Task<string> SaveAsync(byte[] webpContent, string fileName, CancellationToken cancellationToken = default);
+
+    /// <summary>Removes a previously-saved image given the URL <see cref="SaveAsync"/> returned
+    /// for it. Best-effort — callers should not fail the whole request if this fails, since the
+    /// new image is already saved by the time this runs.</summary>
+    Task DeleteAsync(string url, CancellationToken cancellationToken = default);
 }

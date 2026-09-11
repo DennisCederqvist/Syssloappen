@@ -7,10 +7,17 @@ namespace Syssloappen.Api.Tests;
 public sealed class FakeRewardImageStorage : IRewardImageStorage
 {
     public List<(string FileName, int ByteCount)> SavedFiles { get; } = [];
+    public List<string> DeletedUrls { get; } = [];
 
     public Task<string> SaveAsync(byte[] webpContent, string fileName, CancellationToken cancellationToken = default)
     {
         SavedFiles.Add((fileName, webpContent.Length));
         return Task.FromResult($"/reward-images/{fileName}");
+    }
+
+    public Task DeleteAsync(string url, CancellationToken cancellationToken = default)
+    {
+        DeletedUrls.Add(url);
+        return Task.CompletedTask;
     }
 }

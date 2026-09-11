@@ -166,6 +166,26 @@ public sealed class RewardsEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Replacing_a_rewards_image_deletes_the_previous_one()
+    {
+        using var adult = CreateClient();
+        await RegisterAndLoginAdult(adult, "Familjen Molin", "rewards.replaceimage@example.test");
+        var reward = await CreateRewardResponse(adult, "Godis", 20);
+
+        var first = await adult.PostAsync($"/api/rewards/{reward.Id}/image", BuildImageFormContent(100, 100));
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        var firstUrl = (await first.Content.ReadFromJsonAsync<RewardResponse>())!.ImageUrl!;
+
+        var second = await adult.PostAsync($"/api/rewards/{reward.Id}/image", BuildImageFormContent(100, 100));
+        Assert.Equal(HttpStatusCode.OK, second.StatusCode);
+        var secondUrl = (await second.Content.ReadFromJsonAsync<RewardResponse>())!.ImageUrl!;
+
+        Assert.NotEqual(firstUrl, secondUrl);
+        Assert.Equal(2, factory.RewardImageStorage.SavedFiles.Count);
+        Assert.Equal(firstUrl, Assert.Single(factory.RewardImageStorage.DeletedUrls));
+    }
+
+    [Fact]
     public async Task Non_image_upload_is_rejected()
     {
         using var adult = CreateClient();

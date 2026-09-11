@@ -36,4 +36,22 @@ public sealed class SupabaseRewardImageStorage(HttpClient httpClient, IOptions<S
 
         return $"{config.Url}/storage/v1/object/public/{objectPath}";
     }
+
+    public async Task DeleteAsync(string url, CancellationToken cancellationToken = default)
+    {
+        var config = options.Value;
+        var publicPrefix = $"{config.Url}/storage/v1/object/public/";
+        if (!url.StartsWith(publicPrefix, StringComparison.Ordinal)) return;
+
+        var objectPath = url[publicPrefix.Length..];
+        var requestUri = $"{config.Url}/storage/v1/object/{objectPath}";
+
+        using var request = new HttpRequestMessage(HttpMethod.Delete, requestUri);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.ServiceKey);
+        request.Headers.Add("apikey", config.ServiceKey);
+
+        // Best-effort: the new image is already saved by the time this runs, so a failure to
+        // delete the old one just leaves an orphaned file rather than breaking the request.
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+    }
 }

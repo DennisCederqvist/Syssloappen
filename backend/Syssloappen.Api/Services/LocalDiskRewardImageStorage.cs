@@ -24,4 +24,18 @@ public sealed class LocalDiskRewardImageStorage(IWebHostEnvironment environment)
 
         return $"/{RelativeFolder}/{fileName}";
     }
+
+    public Task DeleteAsync(string url, CancellationToken cancellationToken = default)
+    {
+        var fileName = url[(url.LastIndexOf('/') + 1)..];
+        var webRootPath = environment.WebRootPath;
+        if (string.IsNullOrEmpty(webRootPath))
+        {
+            webRootPath = Path.Combine(environment.ContentRootPath, "wwwroot");
+        }
+
+        var filePath = Path.Combine(webRootPath, RelativeFolder, fileName);
+        if (File.Exists(filePath)) File.Delete(filePath);
+        return Task.CompletedTask;
+    }
 }

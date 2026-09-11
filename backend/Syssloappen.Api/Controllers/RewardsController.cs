@@ -173,9 +173,16 @@ public sealed class RewardsController(
             return ValidationProblem(ModelState);
         }
 
+        var previousImageUrl = reward.ImageUrl;
         var fileName = $"{Guid.NewGuid()}.webp";
         reward.ImageUrl = await imageStorage.SaveAsync(webpContent, fileName, HttpContext.RequestAborted);
         await dbContext.SaveChangesAsync();
+
+        if (previousImageUrl is not null)
+        {
+            await imageStorage.DeleteAsync(previousImageUrl, HttpContext.RequestAborted);
+        }
+
         return Ok(ToResponse(reward));
     }
 
