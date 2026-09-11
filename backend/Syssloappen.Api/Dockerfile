@@ -20,6 +20,14 @@ RUN dotnet publish backend/Syssloappen.Api/Syssloappen.Api.csproj -c Release -o 
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
+
+# SkiaSharp's native library (used by RewardImageProcessor) fails to load on the minimal aspnet
+# image without fontconfig — confirmed via DllNotFoundException: "libfontconfig.so.1: cannot
+# open shared object file" the first time an image was uploaded on a real deploy.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libfontconfig1 \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=backend-build /app/publish .
 COPY --from=frontend-build /src/frontend/dist/syssloappen/browser ./wwwroot
 
