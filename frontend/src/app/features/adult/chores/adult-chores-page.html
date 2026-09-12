@@ -1,19 +1,20 @@
 <div class="page-enter min-h-dvh overflow-x-hidden bg-adult-bg pb-24 md:flex md:pb-0">
   <app-adult-bottom-nav />
   <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-adult-page-header [title]="'adult.chores.pageTitle' | transloco">
+    <app-adult-page-header [title]="'adult.chores.pageTitle' | transloco" />
+
+    <div class="mt-4 flex justify-end">
       <button
-        headerAction
         id="new-chore-trigger"
         type="button"
-        adultHeaderActionButton
+        adultPrimaryButton
         (click)="openChoreForm()"
         [attr.aria-controls]="showChoreForm() ? 'new-chore-panel' : null"
         [attr.aria-expanded]="showChoreForm()"
       >
         {{ 'adult.chores.newChoreButton' | transloco }}
       </button>
-    </app-adult-page-header>
+    </div>
 
     @if (successMessage()) {
       <div

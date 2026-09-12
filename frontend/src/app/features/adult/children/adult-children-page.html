@@ -1,19 +1,20 @@
 <div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
   <app-adult-bottom-nav />
   <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-adult-page-header [title]="'adult.children.pageTitle' | transloco">
+    <app-adult-page-header [title]="'adult.children.pageTitle' | transloco" />
+
+    <div class="mt-4 flex justify-end">
       <button
-        headerAction
         id="create-child-trigger"
         type="button"
-        adultHeaderActionButton
+        adultPrimaryButton
         (click)="openForm()"
         [attr.aria-controls]="showForm() ? 'create-child-panel' : null"
         [attr.aria-expanded]="showForm()"
       >
         {{ 'adult.children.addButton' | transloco }}
       </button>
-    </app-adult-page-header>
+    </div>
 
     @if (createdChild(); as child) {
       <section

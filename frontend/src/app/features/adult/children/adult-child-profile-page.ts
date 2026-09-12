@@ -6,7 +6,7 @@ import { finalize, forkJoin } from 'rxjs';
 import { AdultApprovalCard } from '../ui/approval-card';
 import { AdultBadge } from '../ui/badge';
 import { AdultBottomNav } from '../ui/bottom-nav';
-import { AdultDangerOutlineButton, AdultHeaderActionButton, AdultPrimaryButton } from '../ui/buttons';
+import { AdultDangerOutlineButton, AdultPrimaryButton } from '../ui/buttons';
 import { AdultPageHeader } from '../ui/page-header';
 import { AdultSheet } from '../ui/sheet';
 import { AdultAssignment, Chore } from '../chores/chores.models';
@@ -22,7 +22,6 @@ import { ChildrenService } from './children.service';
     AdultBadge,
     AdultBottomNav,
     AdultDangerOutlineButton,
-    AdultHeaderActionButton,
     AdultPrimaryButton,
     AdultPageHeader,
     AdultSheet,

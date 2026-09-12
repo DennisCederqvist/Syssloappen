@@ -6,7 +6,7 @@ import { finalize } from 'rxjs';
 import { focusAfterRender } from '../../../shared/focus';
 import { AdultBadge } from '../ui/badge';
 import { AdultBottomNav } from '../ui/bottom-nav';
-import { AdultDangerOutlineButton, AdultHeaderActionButton, AdultPrimaryButton } from '../ui/buttons';
+import { AdultDangerOutlineButton, AdultPrimaryButton } from '../ui/buttons';
 import { AdultPageHeader } from '../ui/page-header';
 import { AdultSheet } from '../ui/sheet';
 import { AdultTile } from '../ui/tile';
@@ -20,7 +20,6 @@ import { RewardsService } from './rewards.service';
     AdultBadge,
     AdultBottomNav,
     AdultDangerOutlineButton,
-    AdultHeaderActionButton,
     AdultPrimaryButton,
     AdultPageHeader,
     AdultSheet,
