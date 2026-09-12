@@ -181,6 +181,24 @@
     "manageAdults": {
       "title": "Manage adults",
       "subtitle": "Invite more adults and see who currently has access to the family.",
+      "familyCode": {
+        "title": "Family code",
+        "hint": "Children's devices can use this code to log in if they lose their usual login.",
+        "currentLabel": "Current code",
+        "notConfigured": "No family code has been created yet.",
+        "generateButton": "Create family code",
+        "rotateButton": "Generate new code",
+        "rotateQuestion": "Generate a new family code? The old code stops working immediately, so any child who logged in with the old code will need the new one.",
+        "rotateConfirm": "Generate new code",
+        "rotating": "Generating…",
+        "rotateError": "The family code couldn't be generated. Please try again.",
+        "loadError": "The family code status couldn't be loaded.",
+        "newCodeLabel": "New family code",
+        "newCodeHint": "Save this code now – it's only shown this once.",
+        "copy": "Copy code",
+        "copied": "Copied",
+        "copyError": "The code couldn't be copied automatically. Please copy it manually."
+      },
       "invitation": {
         "oneTimeCodeLabel": "One-time code",
         "validUntil": "Valid until {{date}}",

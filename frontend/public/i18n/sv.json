@@ -181,6 +181,24 @@
     "manageAdults": {
       "title": "Hantera vuxna",
       "subtitle": "Bjud in fler vuxna och se vem som just nu har tillgång till familjen.",
+      "familyCode": {
+        "title": "Familjekod",
+        "hint": "Barnens enheter kan använda den här koden för att logga in om de tappar sin vanliga inloggning.",
+        "currentLabel": "Nuvarande kod",
+        "notConfigured": "Ingen familjekod är skapad ännu.",
+        "generateButton": "Skapa familjekod",
+        "rotateButton": "Generera ny kod",
+        "rotateQuestion": "Generera en ny familjekod? Den gamla koden slutar fungera direkt, så barn som loggat in med den gamla koden behöver den nya.",
+        "rotateConfirm": "Generera ny kod",
+        "rotating": "Genererar…",
+        "rotateError": "Familjekoden kunde inte genereras. Försök igen.",
+        "loadError": "Familjekodens status kunde inte hämtas.",
+        "newCodeLabel": "Ny familjekod",
+        "newCodeHint": "Spara den här koden nu – den visas bara den här gången.",
+        "copy": "Kopiera kod",
+        "copied": "Kopierad",
+        "copyError": "Koden kunde inte kopieras automatiskt. Kopiera den manuellt."
+      },
       "invitation": {
         "oneTimeCodeLabel": "Engångskod",
         "validUntil": "Giltig till {{date}}",

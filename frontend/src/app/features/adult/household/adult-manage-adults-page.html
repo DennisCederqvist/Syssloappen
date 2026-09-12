@@ -6,6 +6,114 @@
       [subtitle]="'adult.manageAdults.subtitle' | transloco"
     />
 
+    <div class="mt-4 rounded-lg border border-adult-border bg-adult-surface p-5">
+      <h2 class="text-sm font-semibold text-adult-text">
+        {{ 'adult.manageAdults.familyCode.title' | transloco }}
+      </h2>
+      <p class="mt-1 text-sm text-adult-text-secondary">
+        {{ 'adult.manageAdults.familyCode.hint' | transloco }}
+      </p>
+
+      @if (familyCodeError()) {
+        <div
+          class="mt-3 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+          role="alert"
+        >
+          {{ familyCodeError() }}
+        </div>
+      }
+
+      @if (revealedFamilyCode(); as code) {
+        <div
+          class="mt-3 rounded-lg border border-adult-border bg-adult-accent-soft p-5 text-center"
+          aria-live="polite"
+        >
+          <p class="text-xs font-semibold tracking-wider text-adult-accent-dark uppercase">
+            {{ 'adult.manageAdults.familyCode.newCodeLabel' | transloco }}
+          </p>
+          <p class="mt-2 break-all text-2xl font-semibold tracking-[0.12em] text-adult-text">
+            {{ code }}
+          </p>
+          <p class="mt-2 text-sm text-adult-text-secondary">
+            {{ 'adult.manageAdults.familyCode.newCodeHint' | transloco }}
+          </p>
+          <button type="button" adultSecondaryTintButton class="mt-4" (click)="copyFamilyCode()">
+            {{
+              (familyCodeCopied()
+                ? 'adult.manageAdults.familyCode.copied'
+                : 'adult.manageAdults.familyCode.copy'
+              ) | transloco
+            }}
+          </button>
+        </div>
+      } @else if (familyCodeStatus(); as status) {
+        <div class="mt-3 rounded-lg border border-adult-border bg-adult-bg p-4">
+          @if (status.isConfigured) {
+            <p class="text-sm text-adult-text-secondary">
+              {{ 'adult.manageAdults.familyCode.currentLabel' | transloco }}
+            </p>
+            <p class="mt-1 text-xl font-semibold tracking-[0.12em] text-adult-text">
+              {{ status.maskedCode }}
+            </p>
+          } @else {
+            <p class="text-sm text-adult-text-secondary">
+              {{ 'adult.manageAdults.familyCode.notConfigured' | transloco }}
+            </p>
+          }
+        </div>
+
+        @if (confirmingFamilyCodeRotation()) {
+          <div
+            class="mt-3 rounded-lg border border-adult-danger-border bg-adult-danger-bg p-3"
+            role="group"
+            aria-labelledby="family-code-rotate-question"
+          >
+            <p id="family-code-rotate-question" class="text-sm font-semibold text-adult-danger-text">
+              {{ 'adult.manageAdults.familyCode.rotateQuestion' | transloco }}
+            </p>
+            <div class="mt-3 flex gap-2">
+              <button
+                type="button"
+                (click)="cancelFamilyCodeRotation()"
+                [disabled]="isRotatingFamilyCode()"
+                class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
+              >
+                {{ 'common.actions.cancel' | transloco }}
+              </button>
+              <button
+                type="button"
+                adultDangerOutlineButton
+                class="flex-1"
+                [disabled]="isRotatingFamilyCode()"
+                (click)="rotateFamilyCode()"
+              >
+                {{
+                  (isRotatingFamilyCode()
+                    ? 'adult.manageAdults.familyCode.rotating'
+                    : 'adult.manageAdults.familyCode.rotateConfirm'
+                  ) | transloco
+                }}
+              </button>
+            </div>
+          </div>
+        } @else {
+          <button
+            type="button"
+            adultSecondaryTintButton
+            class="mt-3"
+            (click)="requestFamilyCodeRotation()"
+          >
+            {{
+              (status.isConfigured
+                ? 'adult.manageAdults.familyCode.rotateButton'
+                : 'adult.manageAdults.familyCode.generateButton'
+              ) | transloco
+            }}
+          </button>
+        }
+      }
+    </div>
+
     @if (invitationError()) {
       <div
         class="mt-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"

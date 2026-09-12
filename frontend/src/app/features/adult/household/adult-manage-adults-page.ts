@@ -22,8 +22,9 @@ import {
 } from '../ui/buttons';
 import { AdultPageHeader } from '../ui/page-header';
 import { AdultSheet } from '../ui/sheet';
+import { FamilyCodeService } from './family-code.service';
 import { HouseholdAdultsService } from './household-adults.service';
-import { HouseholdAdult } from './household.models';
+import { FamilyCodeStatus, HouseholdAdult } from './household.models';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   return control.get('newPassword')?.value === control.get('confirmNewPassword')?.value
@@ -48,6 +49,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 })
 export class AdultManageAdultsPage implements OnInit {
   private readonly householdAdults = inject(HouseholdAdultsService);
+  private readonly familyCodeService = inject(FamilyCodeService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);
@@ -62,6 +64,13 @@ export class AdultManageAdultsPage implements OnInit {
   readonly isCreatingInvitation = signal(false);
   readonly invitationError = signal('');
   readonly invitationCopied = signal(false);
+
+  readonly familyCodeStatus = signal<FamilyCodeStatus | null>(null);
+  readonly revealedFamilyCode = signal<string | null>(null);
+  readonly isRotatingFamilyCode = signal(false);
+  readonly familyCodeError = signal('');
+  readonly familyCodeCopied = signal(false);
+  readonly confirmingFamilyCodeRotation = signal(false);
 
   readonly selectedAdult = signal<HouseholdAdult | null>(null);
   readonly confirmingDisconnect = signal(false);
@@ -96,6 +105,7 @@ export class AdultManageAdultsPage implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadFamilyCodeStatus();
   }
 
   load(): void {
@@ -108,6 +118,52 @@ export class AdultManageAdultsPage implements OnInit {
         next: (adults) => this.adults.set(adults),
         error: () => this.loadError.set(this.transloco.translate('adult.manageAdults.list.loadError')),
       });
+  }
+
+  loadFamilyCodeStatus(): void {
+    this.familyCodeService.getStatus().subscribe({
+      next: (status) => this.familyCodeStatus.set(status),
+      error: () =>
+        this.familyCodeError.set(this.transloco.translate('adult.manageAdults.familyCode.loadError')),
+    });
+  }
+
+  requestFamilyCodeRotation(): void {
+    this.confirmingFamilyCodeRotation.set(true);
+    this.familyCodeError.set('');
+  }
+
+  cancelFamilyCodeRotation(): void {
+    this.confirmingFamilyCodeRotation.set(false);
+  }
+
+  rotateFamilyCode(): void {
+    this.isRotatingFamilyCode.set(true);
+    this.familyCodeError.set('');
+    this.familyCodeCopied.set(false);
+    this.familyCodeService
+      .rotate()
+      .pipe(finalize(() => this.isRotatingFamilyCode.set(false)))
+      .subscribe({
+        next: (rotated) => {
+          this.revealedFamilyCode.set(rotated.familyCode);
+          this.confirmingFamilyCodeRotation.set(false);
+          this.loadFamilyCodeStatus();
+        },
+        error: () =>
+          this.familyCodeError.set(this.transloco.translate('adult.manageAdults.familyCode.rotateError')),
+      });
+  }
+
+  async copyFamilyCode(): Promise<void> {
+    const code = this.revealedFamilyCode();
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(code);
+      this.familyCodeCopied.set(true);
+    } catch {
+      this.familyCodeError.set(this.transloco.translate('adult.manageAdults.familyCode.copyError'));
+    }
   }
 
   createInvitation(): void {
