@@ -418,6 +418,10 @@
         "notFound": "Barnet är redan avaktiverat eller finns inte i din familj.",
         "generic": "Barnet kunde inte avaktiveras. Försök igen om en liten stund."
       },
+      "photoError": {
+        "validation": "Filen måste vara en JPEG-, PNG- eller WebP-bild på högst 10 MB.",
+        "generic": "Bilden kunde inte sparas. Försök igen."
+      },
       "deviceSessionsError": {
         "notFound": "Barnet finns inte längre i den aktiva familjevyn.",
         "generic": "De kopplade enheterna kunde inte hämtas. Försök igen."
@@ -474,6 +478,11 @@
         "title": "Hantera {{name}}",
         "close": "Stäng barnprofilen",
         "intro": "Ändra namnet som visas i familjen eller avaktivera profilen.",
+        "photoLabel": "Profilbild",
+        "choosePhoto": "Välj bild",
+        "uploadingPhoto": "Laddar upp…",
+        "removePhoto": "Ta bort bild",
+        "removingPhoto": "Tar bort…",
         "nameLabel": "Visningsnamn",
         "nameError": "Skriv ett namn med högst 100 tecken.",
         "save": "Spara nytt namn",

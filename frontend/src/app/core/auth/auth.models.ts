@@ -5,6 +5,7 @@ export interface CurrentUser {
   email?: string | null;
   childId?: number;
   name?: string;
+  photoUrl?: string | null;
   userName?: string;
   role: UserRole;
   householdId: number;

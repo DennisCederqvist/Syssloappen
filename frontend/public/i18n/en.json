@@ -418,6 +418,10 @@
         "notFound": "The child is already deactivated or doesn't exist in your family.",
         "generic": "The child couldn't be deactivated. Please try again shortly."
       },
+      "photoError": {
+        "validation": "The file must be a JPEG, PNG, or WebP image of 10MB or smaller.",
+        "generic": "The photo couldn't be saved. Please try again."
+      },
       "deviceSessionsError": {
         "notFound": "The child is no longer in the active family view.",
         "generic": "The paired devices couldn't be loaded. Please try again."
@@ -474,6 +478,11 @@
         "title": "Manage {{name}}",
         "close": "Close the child profile",
         "intro": "Change the name shown in the family or deactivate the profile.",
+        "photoLabel": "Profile photo",
+        "choosePhoto": "Choose photo",
+        "uploadingPhoto": "Uploading…",
+        "removePhoto": "Remove photo",
+        "removingPhoto": "Removing…",
         "nameLabel": "Display name",
         "nameError": "Enter a name of at most 100 characters.",
         "save": "Save new name",

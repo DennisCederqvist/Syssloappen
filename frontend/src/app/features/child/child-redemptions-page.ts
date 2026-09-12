@@ -31,6 +31,7 @@ export class ChildRedemptionsPage implements OnInit, OnDestroy {
     this.transloco.activeLang();
     return this.auth.user()?.name || this.transloco.translate('child.common.fallbackName');
   });
+  readonly childPhotoUrl = computed(() => this.auth.user()?.photoUrl ?? null);
   readonly wobblingRedemptionId = this.motion.wobblingId;
   readonly items = signal<RewardRedemption[]>([]);
   readonly availablePoints = signal(0);

@@ -10,4 +10,5 @@ public sealed record CurrentUserResponse(
     string? Nickname,
     string? DisplayName,
     int? ChildId,
-    string? Name);
+    string? Name,
+    string? PhotoUrl);

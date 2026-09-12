@@ -12,6 +12,8 @@ public sealed class ChildProfile
 
     public string Name { get; set; } = string.Empty;
 
+    public string? PhotoUrl { get; set; }
+
     public bool IsActive { get; set; } = true;
 
     public string? UserId { get; set; }

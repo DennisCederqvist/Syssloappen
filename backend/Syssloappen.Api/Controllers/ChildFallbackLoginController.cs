@@ -110,7 +110,8 @@ public sealed class ChildFallbackLoginController(
             child.Name,
             childUser.ChildUserName!,
             RoleNames.Child,
-            household.Id));
+            household.Id,
+            child.PhotoUrl));
     }
 
     private UnauthorizedObjectResult InvalidCredentials() => Unauthorized(

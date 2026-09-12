@@ -5,4 +5,5 @@ public sealed record PairChildDeviceResponse(
     string Name,
     string UserName,
     string Role,
-    int HouseholdId);
+    int HouseholdId,
+    string? PhotoUrl = null);

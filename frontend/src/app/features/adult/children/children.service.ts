@@ -41,4 +41,14 @@ export class ChildrenService {
   deactivateChild(childId: number): Observable<void> {
     return this.http.delete<void>(`/api/children/${childId}`);
   }
+
+  uploadPhoto(childId: number, file: File): Observable<ChildSummary> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ChildSummary>(`/api/children/${childId}/photo`, formData);
+  }
+
+  deletePhoto(childId: number): Observable<ChildSummary> {
+    return this.http.delete<ChildSummary>(`/api/children/${childId}/photo`);
+  }
 }

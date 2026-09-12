@@ -1,6 +1,7 @@
 export interface ChildSummary {
   id: number;
   name: string;
+  photoUrl: string | null;
 }
 
 export interface CreateChildRequest {

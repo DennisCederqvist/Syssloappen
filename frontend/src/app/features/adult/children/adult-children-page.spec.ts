@@ -15,7 +15,7 @@ class FakeChildrenService {
   deactivateCalls: number[] = [];
 
   getActiveChildren() {
-    return of([{ id: 1, name: 'Leo' }]);
+    return of([{ id: 1, name: 'Leo', photoUrl: null }]);
   }
 
   createChild(request: CreateChildRequest) {
@@ -49,7 +49,7 @@ class FakeChildrenService {
 
   updateChild(childId: number, request: UpdateChildRequest) {
     this.updateCalls.push({ childId, request });
-    return of({ id: childId, name: request.name });
+    return of({ id: childId, name: request.name, photoUrl: null });
   }
 
   deactivateChild(childId: number) {
@@ -109,8 +109,8 @@ describe('AdultChildrenPage', () => {
 
     expect(service.createCalls).toBe(1);
     expect(component.children()).toEqual([
-      { id: 1, name: 'Leo' },
-      { id: 2, name: 'Maja' },
+      { id: 1, name: 'Leo', photoUrl: null },
+      { id: 2, name: 'Maja', photoUrl: null },
     ]);
     expect(component.createdChild()?.userName).toBe('maja');
   });
@@ -148,15 +148,15 @@ describe('AdultChildrenPage', () => {
   });
 
   it('loads device sessions for the selected child', () => {
-    component.openDeviceSessions({ id: 1, name: 'Leo' });
+    component.openDeviceSessions({ id: 1, name: 'Leo', photoUrl: null });
 
     expect(service.deviceSessionCalls).toEqual([1]);
-    expect(component.deviceSessionsChild()).toEqual({ id: 1, name: 'Leo' });
+    expect(component.deviceSessionsChild()).toEqual({ id: 1, name: 'Leo', photoUrl: null });
     expect(component.deviceSessions()).toHaveLength(1);
   });
 
   it('revokes a confirmed device session and marks it logged out', () => {
-    component.openDeviceSessions({ id: 1, name: 'Leo' });
+    component.openDeviceSessions({ id: 1, name: 'Leo', photoUrl: null });
     const session = component.deviceSessions()[0];
     component.requestRevocation(session.sessionId);
 
@@ -170,18 +170,18 @@ describe('AdultChildrenPage', () => {
   });
 
   it('updates the selected child name in the visible list', () => {
-    component.openEditChild({ id: 1, name: 'Leo' });
+    component.openEditChild({ id: 1, name: 'Leo', photoUrl: null });
     component.editChildForm.setValue({ name: 'Leon' });
 
     component.updateChild();
 
     expect(service.updateCalls).toEqual([{ childId: 1, request: { name: 'Leon' } }]);
-    expect(component.children()).toContainEqual({ id: 1, name: 'Leon' });
-    expect(component.editingChild()).toEqual({ id: 1, name: 'Leon' });
+    expect(component.children()).toContainEqual({ id: 1, name: 'Leon', photoUrl: null });
+    expect(component.editingChild()).toEqual({ id: 1, name: 'Leon', photoUrl: null });
   });
 
   it('requires confirmation before deactivating and removes the child after success', () => {
-    component.openEditChild({ id: 1, name: 'Leo' });
+    component.openEditChild({ id: 1, name: 'Leo', photoUrl: null });
 
     component.deactivateChild();
     expect(service.deactivateCalls).toEqual([]);

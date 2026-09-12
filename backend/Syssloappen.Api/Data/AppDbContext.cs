@@ -122,6 +122,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasMaxLength(100)
                 .IsRequired();
 
+            entity.Property(child => child.PhotoUrl)
+                .HasMaxLength(2048);
+
             entity.Property(child => child.IsActive)
                 .HasDefaultValue(true);
 

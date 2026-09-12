@@ -4,6 +4,7 @@
   <main class="mx-auto w-full max-w-5xl flex-1 px-5 py-6 sm:px-8 md:py-8">
     <app-child-page-header
       [name]="childName()"
+      [photoUrl]="childPhotoUrl()"
       [subtitle]="'child.home.subtitle' | transloco"
       [points]="availablePoints()"
     />
