@@ -27,7 +27,7 @@ import { AppLanguage, LanguageService } from '../../../core/i18n/language.servic
           "
         >
           <span aria-hidden="true">{{ option === 'sv' ? '🇸🇪' : '🇬🇧' }}</span>
-          {{ ('common.settings.language.' + (option === 'sv' ? 'swedish' : 'english')) | transloco }}
+          <span>{{ option === 'sv' ? 'SV' : 'ENG' }}</span>
         </button>
       }
     </div>

@@ -15,9 +15,7 @@
     "loading": "Laddar…",
     "settings": {
       "language": {
-        "label": "Språk",
-        "swedish": "Svenska",
-        "english": "Engelska"
+        "label": "Språk"
       }
     }
   },

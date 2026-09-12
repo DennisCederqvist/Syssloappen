@@ -2,7 +2,8 @@ import { Component, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { AppLanguage, LanguageService } from '../../../core/i18n/language.service';
 
-/** Dense/tool-like SV|EN segmented toggle for the adult settings page. */
+/** Compact flag + short-code SV|ENG segmented toggle, used for the adult
+ * settings page and the login page alike. */
 @Component({
   selector: 'app-adult-language-toggle',
   imports: [TranslocoPipe],
@@ -17,12 +18,13 @@ import { AppLanguage, LanguageService } from '../../../core/i18n/language.servic
           type="button"
           [attr.aria-pressed]="lang.currentLang() === option"
           (click)="select(option)"
-          class="min-h-9 rounded-md px-3 text-sm font-medium transition"
+          class="inline-flex min-h-9 items-center gap-1 rounded-md px-2.5 text-sm font-medium transition"
           [class.bg-adult-accent]="lang.currentLang() === option"
           [class.text-white]="lang.currentLang() === option"
           [class.text-adult-text-secondary]="lang.currentLang() !== option"
         >
-          {{ ('common.settings.language.' + (option === 'sv' ? 'swedish' : 'english')) | transloco }}
+          <span aria-hidden="true">{{ option === 'sv' ? '🇸🇪' : '🇬🇧' }}</span>
+          <span>{{ option === 'sv' ? 'SV' : 'ENG' }}</span>
         </button>
       }
     </div>

@@ -15,9 +15,7 @@
     "loading": "Loading…",
     "settings": {
       "language": {
-        "label": "Language",
-        "swedish": "Swedish",
-        "english": "English"
+        "label": "Language"
       }
     }
   },
