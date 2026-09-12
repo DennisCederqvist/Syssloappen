@@ -5,7 +5,6 @@ import { AuthService } from '../../core/auth/auth.service';
 import { AdultApprovalCard } from './ui/approval-card';
 import { AdultBadge } from './ui/badge';
 import { AdultBottomNav } from './ui/bottom-nav';
-import { AdultPageHeader } from './ui/page-header';
 import { AdultPrimaryButton, AdultDangerOutlineButton } from './ui/buttons';
 import { AdultTile } from './ui/tile';
 import { ChildrenService } from './children/children.service';
@@ -26,7 +25,6 @@ interface ChildOverview extends ChildSummary {
   selector: 'app-adult-home-page',
   imports: [
     AdultBottomNav,
-    AdultPageHeader,
     AdultTile,
     AdultApprovalCard,
     AdultBadge,
