@@ -23,7 +23,23 @@ import { AppLanguage, LanguageService } from '../../../core/i18n/language.servic
           [class.text-white]="lang.currentLang() === option"
           [class.text-adult-text-secondary]="lang.currentLang() !== option"
         >
-          <span aria-hidden="true">{{ option === 'sv' ? '🇸🇪' : '🇬🇧' }}</span>
+          @if (option === 'sv') {
+            <svg viewBox="0 0 16 10" class="h-3 w-4.5 shrink-0 rounded-[2px]" aria-hidden="true">
+              <rect width="16" height="10" fill="#006AA7" />
+              <rect x="5" width="2" height="10" fill="#FECC00" />
+              <rect y="4" width="16" height="2" fill="#FECC00" />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 16 10" class="h-3 w-4.5 shrink-0 rounded-[2px]" aria-hidden="true">
+              <rect width="16" height="10" fill="#00247D" />
+              <path d="M0 0L16 10M16 0L0 10" stroke="#FFFFFF" stroke-width="2" />
+              <path d="M0 0L16 10M16 0L0 10" stroke="#CF142B" stroke-width="0.8" />
+              <rect x="6.5" width="3" height="10" fill="#FFFFFF" />
+              <rect y="3.5" width="16" height="3" fill="#FFFFFF" />
+              <rect x="7" width="2" height="10" fill="#CF142B" />
+              <rect y="4" width="16" height="2" fill="#CF142B" />
+            </svg>
+          }
           <span>{{ option === 'sv' ? 'SV' : 'ENG' }}</span>
         </button>
       }
