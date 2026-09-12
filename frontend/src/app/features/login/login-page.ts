@@ -15,6 +15,7 @@ import { CurrentUser, RegisterAdultResponse } from '../../core/auth/auth.models'
 import { AuthService } from '../../core/auth/auth.service';
 import { focusAfterRender } from '../../shared/focus';
 import { AdultPrimaryButton, AdultSecondaryTintButton } from '../adult/ui/buttons';
+import { AdultLanguageToggle } from '../adult/ui/language-toggle';
 
 type LoginMode = 'adult' | 'child';
 type AdultView = 'login' | 'register';
@@ -33,6 +34,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
     RouterLink,
     AdultPrimaryButton,
     AdultSecondaryTintButton,
+    AdultLanguageToggle,
     TranslocoPipe,
   ],
   templateUrl: './login-page.html',
