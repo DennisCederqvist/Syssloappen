@@ -214,7 +214,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.ToTable(table => table.HasCheckConstraint(
                 "CK_Chores_Points",
-                "\"Points\" IN (5, 10, 15, 20)"));
+                "\"Points\" > 0"));
 
             entity.HasIndex(chore => chore.HouseholdId);
 
@@ -320,7 +320,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.ToTable(table => table.HasCheckConstraint(
                 "CK_ChoreAssignments_Points",
-                "\"Points\" IN (5, 10, 15, 20)"));
+                "\"Points\" > 0"));
 
             entity.HasIndex(assignment => new
             {
@@ -423,7 +423,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.ToTable(table => table.HasCheckConstraint(
                 "CK_ChoreCompletions_PointsAwarded",
-                "\"PointsAwarded\" IN (5, 10, 15, 20)"));
+                "\"PointsAwarded\" > 0"));
 
             entity.HasIndex(completion => completion.AssignmentId)
                 .IsUnique();

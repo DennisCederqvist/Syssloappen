@@ -32,7 +32,7 @@ class FakeChoresService {
     return of({
       id: choreId,
       ...request,
-      points: request.points as 5 | 10 | 15 | 20,
+      points: request.points,
       createdAt: '',
     });
   }

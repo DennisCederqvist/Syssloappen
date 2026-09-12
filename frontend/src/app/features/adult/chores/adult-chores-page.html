@@ -63,17 +63,16 @@
               </span>
             }
           </label>
-          <label class="block text-sm font-semibold text-adult-text">
+          <label class="block text-sm font-semibold text-adult-text" for="new-chore-points">
             {{ 'adult.chores.createSheet.pointsLabel' | transloco }}
-            <select
+            <input
+              id="new-chore-points"
+              type="number"
+              min="1"
+              step="1"
               formControlName="points"
-              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
-            >
-              <option [ngValue]="5">{{ 'adult.chores.pointsOption' | transloco: { points: 5 } }}</option>
-              <option [ngValue]="10">{{ 'adult.chores.pointsOption' | transloco: { points: 10 } }}</option>
-              <option [ngValue]="15">{{ 'adult.chores.pointsOption' | transloco: { points: 15 } }}</option>
-              <option [ngValue]="20">{{ 'adult.chores.pointsOption' | transloco: { points: 20 } }}</option>
-            </select>
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
+            />
           </label>
           <label class="block text-sm font-semibold text-adult-text">
             {{ 'adult.chores.createSheet.descriptionLabel' | transloco }}
@@ -345,17 +344,16 @@
               </span>
             }
           </label>
-          <label class="block text-sm font-semibold text-adult-text">
+          <label class="block text-sm font-semibold text-adult-text" for="edit-chore-points">
             {{ 'adult.chores.createSheet.pointsLabel' | transloco }}
-            <select
+            <input
+              id="edit-chore-points"
+              type="number"
+              min="1"
+              step="1"
               formControlName="points"
-              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
-            >
-              <option [ngValue]="5">{{ 'adult.chores.pointsOption' | transloco: { points: 5 } }}</option>
-              <option [ngValue]="10">{{ 'adult.chores.pointsOption' | transloco: { points: 10 } }}</option>
-              <option [ngValue]="15">{{ 'adult.chores.pointsOption' | transloco: { points: 15 } }}</option>
-              <option [ngValue]="20">{{ 'adult.chores.pointsOption' | transloco: { points: 20 } }}</option>
-            </select>
+              class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border px-3 font-normal text-adult-text"
+            />
           </label>
           <label class="block text-sm font-semibold text-adult-text">
             {{ 'adult.chores.createSheet.descriptionLabel' | transloco }}

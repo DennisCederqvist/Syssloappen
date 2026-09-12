@@ -112,7 +112,7 @@ export class AdultChoresPage implements OnInit {
   readonly choreForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(100)]],
     description: ['', Validators.maxLength(500)],
-    points: [5, [Validators.required, Validators.pattern(/^(5|10|15|20)$/)]],
+    points: [5, [Validators.required, Validators.min(1), Validators.pattern(/^[0-9]+$/)]],
   });
 
   readonly assignmentForm = this.formBuilder.nonNullable.group({
@@ -124,7 +124,7 @@ export class AdultChoresPage implements OnInit {
   readonly editChoreForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(100)]],
     description: ['', Validators.maxLength(500)],
-    points: [5, [Validators.required, Validators.pattern(/^(5|10|15|20)$/)]],
+    points: [5, [Validators.required, Validators.min(1), Validators.pattern(/^[0-9]+$/)]],
   });
 
   ngOnInit(): void {

@@ -2,7 +2,7 @@ export interface Chore {
   id: number;
   title: string;
   description: string | null;
-  points: 5 | 10 | 15 | 20;
+  points: number;
   createdAt: string;
 }
 

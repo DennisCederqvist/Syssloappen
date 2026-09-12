@@ -282,7 +282,6 @@
         "cancelled": "Borttagen"
       },
       "newChoreButton": "+ Ny syssla",
-      "pointsOption": "{{points}} poäng",
       "createSheet": {
         "title": "Skapa syssla",
         "close": "Stäng formuläret",

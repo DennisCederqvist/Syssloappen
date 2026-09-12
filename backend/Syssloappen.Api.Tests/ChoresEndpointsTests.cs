@@ -242,7 +242,7 @@ public sealed class ChoresEndpointsTests : IDisposable
             HttpStatusCode.BadRequest,
             (await adultClient.PutAsJsonAsync(
                 $"/api/chores/{chore.Id}",
-                new UpdateChoreRequest { Title = "Giltig", Points = 6 })).StatusCode);
+                new UpdateChoreRequest { Title = "Giltig", Points = 0 })).StatusCode);
         Assert.Equal(
             HttpStatusCode.BadRequest,
             (await adultClient.PutAsJsonAsync(

@@ -282,7 +282,6 @@
         "cancelled": "Removed"
       },
       "newChoreButton": "+ New chore",
-      "pointsOption": "{{points}} points",
       "createSheet": {
         "title": "Create chore",
         "close": "Close the form",
