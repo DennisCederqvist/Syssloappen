@@ -2,7 +2,7 @@
   <app-adult-bottom-nav />
   <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
     <app-adult-page-header [title]="child()?.name || ('adult.childProfile.fallbackName' | transloco)">
-      <button headerAction type="button" adultPrimaryButton (click)="toggleAssignmentPicker()">
+      <button headerAction type="button" adultHeaderActionButton (click)="toggleAssignmentPicker()">
         {{ 'adult.childProfile.assignButton' | transloco }}
       </button>
     </app-adult-page-header>

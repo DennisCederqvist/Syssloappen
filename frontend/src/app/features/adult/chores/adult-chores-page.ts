@@ -8,7 +8,12 @@ import { ChildSummary } from '../children/children.models';
 import { ChildrenService } from '../children/children.service';
 import { AdultBadge } from '../ui/badge';
 import { AdultBottomNav } from '../ui/bottom-nav';
-import { AdultDangerOutlineButton, AdultPrimaryButton, AdultSecondaryTintButton } from '../ui/buttons';
+import {
+  AdultDangerOutlineButton,
+  AdultHeaderActionButton,
+  AdultPrimaryButton,
+  AdultSecondaryTintButton,
+} from '../ui/buttons';
 import { AdultPageHeader } from '../ui/page-header';
 import { AdultSheet } from '../ui/sheet';
 import { AdultTile } from '../ui/tile';
@@ -31,6 +36,7 @@ const WEEKDAY_BITS = [1, 2, 4, 8, 16, 32, 64];
     AdultBadge,
     AdultBottomNav,
     AdultDangerOutlineButton,
+    AdultHeaderActionButton,
     AdultPrimaryButton,
     AdultSecondaryTintButton,
     AdultPageHeader,

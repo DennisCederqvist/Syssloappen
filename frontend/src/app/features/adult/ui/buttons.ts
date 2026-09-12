@@ -31,3 +31,14 @@ export class AdultDangerOutlineButton {}
   },
 })
 export class AdultSecondaryTintButton {}
+
+/** Solid white on the green page header — "adultPrimaryButton" would be invisible
+ * (green-on-green) there, so header action buttons use this instead. */
+@Directive({
+  selector: '[adultHeaderActionButton]',
+  host: {
+    class:
+      'inline-flex min-h-11 items-center justify-center rounded-lg bg-white px-4 text-sm font-medium text-adult-accent-dark transition hover:bg-white/90 disabled:pointer-events-none disabled:opacity-50',
+  },
+})
+export class AdultHeaderActionButton {}

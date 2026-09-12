@@ -6,6 +6,7 @@ import { AdultApprovalCard } from './ui/approval-card';
 import { AdultBadge } from './ui/badge';
 import { AdultBottomNav } from './ui/bottom-nav';
 import { AdultPrimaryButton, AdultDangerOutlineButton } from './ui/buttons';
+import { AdultPageHeader } from './ui/page-header';
 import { AdultTile } from './ui/tile';
 import { ChildrenService } from './children/children.service';
 import { ChildSummary } from './children/children.models';
@@ -30,6 +31,7 @@ interface ChildOverview extends ChildSummary {
     AdultBadge,
     AdultPrimaryButton,
     AdultDangerOutlineButton,
+    AdultPageHeader,
     TranslocoPipe,
   ],
   templateUrl: './adult-home-page.html',

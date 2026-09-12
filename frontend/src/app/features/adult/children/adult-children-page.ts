@@ -13,7 +13,12 @@ import { finalize } from 'rxjs';
 import { focusAfterRender } from '../../../shared/focus';
 import { AdultBadge } from '../ui/badge';
 import { AdultBottomNav } from '../ui/bottom-nav';
-import { AdultDangerOutlineButton, AdultPrimaryButton, AdultSecondaryTintButton } from '../ui/buttons';
+import {
+  AdultDangerOutlineButton,
+  AdultHeaderActionButton,
+  AdultPrimaryButton,
+  AdultSecondaryTintButton,
+} from '../ui/buttons';
 import { AdultPageHeader } from '../ui/page-header';
 import { AdultSheet } from '../ui/sheet';
 import { AdultTile } from '../ui/tile';
@@ -39,6 +44,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
     AdultBadge,
     AdultBottomNav,
     AdultDangerOutlineButton,
+    AdultHeaderActionButton,
     AdultPrimaryButton,
     AdultSecondaryTintButton,
     AdultPageHeader,
