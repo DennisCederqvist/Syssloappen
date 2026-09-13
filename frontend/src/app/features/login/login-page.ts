@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, inject, OnDestroy, signal, viewChild } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -10,6 +10,7 @@ import {
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import QrScanner from 'qr-scanner';
 import { finalize, Observable } from 'rxjs';
 import { CurrentUser, RegisterAdultResponse } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
@@ -39,11 +40,13 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   ],
   templateUrl: './login-page.html',
 })
-export class LoginPage {
+export class LoginPage implements OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly transloco = inject(TranslocoService);
+  readonly qrVideo = viewChild<ElementRef<HTMLVideoElement>>('qrVideo');
+  private qrScanner: QrScanner | null = null;
   readonly mode = signal<LoginMode>('adult');
   readonly adultView = signal<AdultView>('login');
   readonly childLoginMode = signal<ChildLoginMode>('pairing');
@@ -51,6 +54,8 @@ export class LoginPage {
   readonly errorMessage = signal('');
   readonly registrationResult = signal<RegisterAdultResponse | null>(null);
   readonly familyCodeCopied = signal(false);
+  readonly isScanningQr = signal(false);
+  readonly qrScanError = signal('');
 
   readonly adultForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -87,6 +92,7 @@ export class LoginPage {
   selectMode(mode: LoginMode): void {
     this.mode.set(mode);
     this.errorMessage.set('');
+    this.stopQrScan();
   }
   selectAdultView(view: AdultView): void {
     this.adultView.set(view);
@@ -97,6 +103,49 @@ export class LoginPage {
   selectChildLoginMode(mode: ChildLoginMode): void {
     this.childLoginMode.set(mode);
     this.errorMessage.set('');
+    this.stopQrScan();
+  }
+
+  async startQrScan(): Promise<void> {
+    this.qrScanError.set('');
+    const videoElement = this.qrVideo()?.nativeElement;
+    if (!videoElement) return;
+
+    const hasCamera = await QrScanner.hasCamera();
+    if (!hasCamera) {
+      this.qrScanError.set(this.transloco.translate('auth.login.pairing.qrNoCamera'));
+      return;
+    }
+
+    this.isScanningQr.set(true);
+    this.qrScanner = new QrScanner(videoElement, (result) => this.onQrScanSuccess(result.data), {
+      highlightScanRegion: true,
+      highlightCodeOutline: true,
+    });
+    try {
+      await this.qrScanner.start();
+    } catch {
+      this.qrScanError.set(this.transloco.translate('auth.login.pairing.qrCameraError'));
+      this.stopQrScan();
+    }
+  }
+
+  stopQrScan(): void {
+    this.qrScanner?.destroy();
+    this.qrScanner = null;
+    this.isScanningQr.set(false);
+  }
+
+  private onQrScanSuccess(data: string): void {
+    const code = data.trim().toUpperCase();
+    if (code.length !== 8) return;
+    this.stopQrScan();
+    this.pairingForm.controls.code.setValue(code);
+    this.submitPairingCode();
+  }
+
+  ngOnDestroy(): void {
+    this.stopQrScan();
   }
   submitAdult(): void {
     if (this.adultForm.invalid) {

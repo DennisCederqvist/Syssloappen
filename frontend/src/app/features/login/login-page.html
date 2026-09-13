@@ -1,10 +1,12 @@
 <main
   class="page-enter mx-auto grid min-h-dvh w-full max-w-6xl bg-adult-bg lg:grid-cols-[1.05fr_0.95fr]"
 >
-  <section
-    class="relative hidden flex-col overflow-hidden bg-adult-accent p-12 text-white lg:flex"
-  >
-    <img src="logo/horizontal.png" alt="Sysslo" class="h-16 w-auto shrink-0 self-start object-contain" />
+  <section class="relative hidden flex-col overflow-hidden bg-adult-accent p-12 text-white lg:flex">
+    <img
+      src="logo/horizontal.png"
+      alt="Sysslo"
+      class="h-16 w-auto shrink-0 self-start object-contain"
+    />
 
     <div class="mt-16 max-w-md">
       <h2
@@ -446,10 +448,40 @@
           </button>
         </div>
         @if (childLoginMode() === 'pairing') {
+          <div class="space-y-5">
+            @if (isScanningQr()) {
+              <div class="overflow-hidden rounded-2xl border border-line bg-black">
+                <video #qrVideo class="aspect-square w-full object-cover"></video>
+              </div>
+              <p class="text-center text-sm leading-6 text-muted">
+                {{ 'auth.login.pairing.scanHint' | transloco }}
+              </p>
+              <button
+                type="button"
+                (click)="stopQrScan()"
+                class="min-h-14 w-full rounded-2xl border border-line bg-white px-5 font-extrabold text-adult-text shadow-sm"
+              >
+                {{ 'auth.login.pairing.scanStop' | transloco }}
+              </button>
+            } @else {
+              <button
+                type="button"
+                (click)="startQrScan()"
+                class="min-h-14 w-full rounded-2xl border border-line bg-white px-5 font-extrabold text-adult-text shadow-sm"
+              >
+                {{ 'auth.login.pairing.scanButton' | transloco }}
+              </button>
+              @if (qrScanError()) {
+                <p class="text-center text-sm text-red-700" role="alert">{{ qrScanError() }}</p>
+              }
+            }
+          </div>
+        }
+        @if (childLoginMode() === 'pairing' && !isScanningQr()) {
           <form
             [formGroup]="pairingForm"
             (ngSubmit)="submitPairingCode()"
-            class="space-y-5"
+            class="mt-5 space-y-5"
             novalidate
           >
             <label class="block font-bold"
@@ -469,9 +501,9 @@
                 class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-center text-lg font-black tracking-[0.2em] uppercase shadow-sm focus:border-brand-500"
               />
               @if (pairingForm.controls.code.touched && pairingForm.controls.code.invalid) {
-                <span id="pairing-code-error" class="mt-2 block text-sm text-red-700"
-                  >{{ 'auth.login.pairing.codeError' | transloco }}</span
-                >
+                <span id="pairing-code-error" class="mt-2 block text-sm text-red-700">{{
+                  'auth.login.pairing.codeError' | transloco
+                }}</span>
               }
             </label>
             <button
@@ -506,9 +538,9 @@
                 class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base tracking-wider uppercase shadow-sm focus:border-brand-500"
               />
               @if (childForm.controls.familyCode.touched && childForm.controls.familyCode.invalid) {
-                <span id="family-code-error" class="mt-2 block text-sm text-red-700"
-                  >{{ 'auth.login.fallback.familyCodeError' | transloco }}</span
-                >
+                <span id="family-code-error" class="mt-2 block text-sm text-red-700">{{
+                  'auth.login.fallback.familyCodeError' | transloco
+                }}</span>
               }
             </label>
             <label class="block font-bold"
@@ -526,9 +558,9 @@
                 class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
               />
               @if (childForm.controls.userName.touched && childForm.controls.userName.invalid) {
-                <span id="child-username-error" class="mt-2 block text-sm text-red-700"
-                  >{{ 'auth.login.fallback.usernameError' | transloco }}</span
-                >
+                <span id="child-username-error" class="mt-2 block text-sm text-red-700">{{
+                  'auth.login.fallback.usernameError' | transloco
+                }}</span>
               }
             </label>
             <label class="block font-bold"
@@ -546,9 +578,9 @@
                 class="mt-2 min-h-14 w-full rounded-2xl border border-line bg-white px-4 text-base shadow-sm focus:border-brand-500"
               />
               @if (childForm.controls.password.touched && childForm.controls.password.invalid) {
-                <span id="child-password-error" class="mt-2 block text-sm text-red-700"
-                  >{{ 'auth.login.fallback.passwordError' | transloco }}</span
-                >
+                <span id="child-password-error" class="mt-2 block text-sm text-red-700">{{
+                  'auth.login.fallback.passwordError' | transloco
+                }}</span>
               }
             </label>
             <button

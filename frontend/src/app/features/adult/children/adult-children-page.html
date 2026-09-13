@@ -90,7 +90,17 @@
         (close)="closePairingCode()"
       >
         <div class="rounded-lg border border-adult-border bg-adult-bg p-5 text-center">
-          <p class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">
+          @if (pairingCodeQrDataUrl(); as qrDataUrl) {
+            <img
+              [src]="qrDataUrl"
+              [alt]="'adult.children.pairingSheet.qrAlt' | transloco"
+              class="mx-auto size-40 rounded-lg bg-white p-2"
+            />
+            <p class="mt-2 text-sm text-adult-text-secondary">
+              {{ 'adult.children.pairingSheet.qrHint' | transloco }}
+            </p>
+          }
+          <p class="mt-4 text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">
             {{ 'adult.children.pairingSheet.codeLabel' | transloco }}
           </p>
           <p class="mt-3 text-3xl font-semibold tracking-[0.2em] text-adult-text">
@@ -119,7 +129,9 @@
               aria-hidden="true"
               >1</span
             >
-            <p class="mt-2 text-sm text-adult-text">{{ 'adult.children.pairingSheet.step1' | transloco }}</p>
+            <p class="mt-2 text-sm text-adult-text">
+              {{ 'adult.children.pairingSheet.step1' | transloco }}
+            </p>
           </div>
           <div class="rounded-lg border border-adult-border bg-adult-surface p-3">
             <span
@@ -127,7 +139,9 @@
               aria-hidden="true"
               >2</span
             >
-            <p class="mt-2 text-sm text-adult-text">{{ 'adult.children.pairingSheet.step2' | transloco }}</p>
+            <p class="mt-2 text-sm text-adult-text">
+              {{ 'adult.children.pairingSheet.step2' | transloco }}
+            </p>
           </div>
           <div class="rounded-lg border border-adult-border bg-adult-surface p-3">
             <span
@@ -135,7 +149,9 @@
               aria-hidden="true"
               >3</span
             >
-            <p class="mt-2 text-sm text-adult-text">{{ 'adult.children.pairingSheet.step3' | transloco }}</p>
+            <p class="mt-2 text-sm text-adult-text">
+              {{ 'adult.children.pairingSheet.step3' | transloco }}
+            </p>
           </div>
         </div>
 
@@ -200,7 +216,9 @@
                 <line x1="11" y1="18" x2="13" y2="18" />
               </svg>
             </div>
-            <h3 class="mt-3 text-[15px] font-semibold text-adult-text">{{ 'adult.children.deviceSessions.emptyTitle' | transloco }}</h3>
+            <h3 class="mt-3 text-[15px] font-semibold text-adult-text">
+              {{ 'adult.children.deviceSessions.emptyTitle' | transloco }}
+            </h3>
             <p class="mt-1 text-sm text-adult-text-secondary">
               {{ 'adult.children.deviceSessions.emptySubtitle' | transloco }}
             </p>
@@ -239,7 +257,10 @@
                   <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                       <h3 class="text-[15px] font-semibold text-adult-text">
-                        {{ 'adult.children.deviceSessions.deviceTitle' | transloco: { index: index + 1 } }}
+                        {{
+                          'adult.children.deviceSessions.deviceTitle'
+                            | transloco: { index: index + 1 }
+                        }}
                       </h3>
                       @if (session.revokedAt) {
                         <span
@@ -260,25 +281,33 @@
                     </div>
                     <dl class="mt-2 grid gap-1.5 text-sm">
                       <div class="flex items-baseline justify-between gap-4">
-                        <dt class="text-adult-text-secondary">{{ 'adult.children.deviceSessions.lastUsed' | transloco }}</dt>
+                        <dt class="text-adult-text-secondary">
+                          {{ 'adult.children.deviceSessions.lastUsed' | transloco }}
+                        </dt>
                         <dd class="text-right font-medium text-adult-text">
                           {{ session.lastSeenAt | date: 'd MMM HH:mm' }}
                         </dd>
                       </div>
                       <div class="flex items-baseline justify-between gap-4">
-                        <dt class="text-adult-text-secondary">{{ 'adult.children.deviceSessions.connected' | transloco }}</dt>
+                        <dt class="text-adult-text-secondary">
+                          {{ 'adult.children.deviceSessions.connected' | transloco }}
+                        </dt>
                         <dd class="text-right font-medium text-adult-text">
                           {{ session.createdAt | date: 'd MMM HH:mm' }}
                         </dd>
                       </div>
                       <div class="flex items-baseline justify-between gap-4">
-                        <dt class="text-adult-text-secondary">{{ 'adult.children.deviceSessions.activeUntil' | transloco }}</dt>
+                        <dt class="text-adult-text-secondary">
+                          {{ 'adult.children.deviceSessions.activeUntil' | transloco }}
+                        </dt>
                         <dd class="text-right font-medium text-adult-text">
                           {{ session.expiresAt | date: 'd MMM HH:mm' }}
                         </dd>
                       </div>
                       <div class="flex items-baseline justify-between gap-4">
-                        <dt class="text-adult-text-secondary">{{ 'adult.children.deviceSessions.maxValidUntil' | transloco }}</dt>
+                        <dt class="text-adult-text-secondary">
+                          {{ 'adult.children.deviceSessions.maxValidUntil' | transloco }}
+                        </dt>
                         <dd class="text-right font-medium text-adult-text">
                           {{ session.absoluteExpiresAt | date: 'd MMM HH:mm' }}
                         </dd>
@@ -492,8 +521,10 @@
             </button>
             <button type="submit" adultPrimaryButton [disabled]="isUpdatingChild()">
               {{
-                (isUpdatingChild() ? 'adult.children.editSheet.saving' : 'adult.children.editSheet.save')
-                  | transloco
+                (isUpdatingChild()
+                  ? 'adult.children.editSheet.saving'
+                  : 'adult.children.editSheet.save'
+                ) | transloco
               }}
             </button>
           </div>
@@ -518,7 +549,10 @@
                 id="child-deactivation-question"
                 class="text-sm font-semibold text-adult-danger-text"
               >
-                {{ 'adult.children.editSheet.deactivateQuestion' | transloco: { name: selectedChild.name } }}
+                {{
+                  'adult.children.editSheet.deactivateQuestion'
+                    | transloco: { name: selectedChild.name }
+                }}
               </p>
               <div class="mt-3 flex gap-2">
                 <button
@@ -761,7 +795,9 @@
         </div>
       } @else if (children().length === 0) {
         <div class="mt-2 rounded-lg border border-adult-border bg-adult-surface p-6 text-center">
-          <h3 class="text-[15px] font-semibold text-adult-text">{{ 'adult.children.list.emptyTitle' | transloco }}</h3>
+          <h3 class="text-[15px] font-semibold text-adult-text">
+            {{ 'adult.children.list.emptyTitle' | transloco }}
+          </h3>
           <p class="mt-1 text-sm text-adult-text-secondary">
             {{ 'adult.children.list.emptySubtitle' | transloco }}
           </p>
@@ -790,7 +826,9 @@
                 (click)="openEditChild(child)"
                 [attr.aria-controls]="editingChild()?.id === child.id ? 'edit-child-panel' : null"
                 [attr.aria-expanded]="editingChild()?.id === child.id"
-                [attr.aria-label]="'adult.children.list.manageAria' | transloco: { name: child.name }"
+                [attr.aria-label]="
+                  'adult.children.list.manageAria' | transloco: { name: child.name }
+                "
                 class="grid min-h-11 min-w-11 shrink-0 -m-2 place-items-center rounded-lg text-adult-text-secondary transition hover:bg-adult-bg"
               >
                 <svg
@@ -807,7 +845,9 @@
                   <path d="M13 6l3 3" />
                 </svg>
               </button>
-              <p class="text-sm font-medium text-adult-text-secondary">{{ 'adult.children.list.activeAccount' | transloco }}</p>
+              <p class="text-sm font-medium text-adult-text-secondary">
+                {{ 'adult.children.list.activeAccount' | transloco }}
+              </p>
               <div class="mt-2 flex flex-wrap gap-2">
                 <button
                   type="button"
