@@ -19,7 +19,7 @@ public sealed class AdultChoreReviewAndPointsTests : IDisposable
     private readonly AuthApiFactory factory = new();
 
     [Fact]
-    public async Task Adult_selects_allowed_points_with_five_as_default()
+    public async Task Adult_sets_any_positive_point_value_with_five_as_default()
     {
         using var adultClient = CreateClient();
         await RegisterAndLoginAdult(
@@ -28,17 +28,15 @@ public sealed class AdultChoreReviewAndPointsTests : IDisposable
             "chore.points@example.test");
 
         var defaultChore = await CreateChore(adultClient, "Default points", null);
-        var five = await CreateChore(adultClient, "Five points", 5);
-        var ten = await CreateChore(adultClient, "Ten points", 10);
-        var fifteen = await CreateChore(adultClient, "Fifteen points", 15);
-        var twenty = await CreateChore(adultClient, "Twenty points", 20);
+        var six = await CreateChore(adultClient, "Six points", 6);
+        var seven = await CreateChore(adultClient, "Seven points", 7);
+        var fifty = await CreateChore(adultClient, "Fifty points", 50);
 
         Assert.Equal(5, defaultChore.Points);
-        Assert.Equal(5, five.Points);
-        Assert.Equal(10, ten.Points);
-        Assert.Equal(15, fifteen.Points);
-        Assert.Equal(20, twenty.Points);
-        foreach (var invalidPoints in new[] { -5, 0, 6, 25 })
+        Assert.Equal(6, six.Points);
+        Assert.Equal(7, seven.Points);
+        Assert.Equal(50, fifty.Points);
+        foreach (var invalidPoints in new[] { -5, 0 })
         {
             var response = await adultClient.PostAsJsonAsync(
                 "/api/chores",
@@ -48,7 +46,7 @@ public sealed class AdultChoreReviewAndPointsTests : IDisposable
 
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        Assert.Equal(5, await dbContext.Chores.CountAsync());
+        Assert.Equal(4, await dbContext.Chores.CountAsync());
     }
 
     [Fact]

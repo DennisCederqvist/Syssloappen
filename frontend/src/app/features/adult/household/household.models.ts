@@ -15,3 +15,14 @@ export interface ChangeAdultPasswordRequest {
   currentPassword: string;
   newPassword: string;
 }
+
+export interface FamilyCodeStatus {
+  isConfigured: boolean;
+  maskedCode: string | null;
+  updatedAt: string | null;
+}
+
+export interface RotatedFamilyCode {
+  familyCode: string;
+  updatedAt: string;
+}

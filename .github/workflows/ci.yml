@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - run: dotnet restore backend/Syssloappen.Api.Tests/Syssloappen.Api.Tests.csproj
+      - run: dotnet build backend/Syssloappen.Api.Tests/Syssloappen.Api.Tests.csproj --no-restore
+      - run: dotnet test backend/Syssloappen.Api.Tests/Syssloappen.Api.Tests.csproj --no-build
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx ng build
+      - run: npx ng test --watch=false

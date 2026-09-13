@@ -23,6 +23,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<ChoreCompletion> ChoreCompletions => Set<ChoreCompletion>();
 
+    public DbSet<ChoreRecurrence> ChoreRecurrences => Set<ChoreRecurrence>();
+
     public DbSet<HouseholdInvitation> HouseholdInvitations => Set<HouseholdInvitation>();
 
     public DbSet<Reward> Rewards => Set<Reward>();
@@ -120,6 +122,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasMaxLength(100)
                 .IsRequired();
 
+            entity.Property(child => child.PhotoUrl)
+                .HasMaxLength(2048);
+
             entity.Property(child => child.IsActive)
                 .HasDefaultValue(true);
 
@@ -212,7 +217,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.ToTable(table => table.HasCheckConstraint(
                 "CK_Chores_Points",
-                "\"Points\" IN (5, 10, 15, 20)"));
+                "\"Points\" > 0"));
 
             entity.HasIndex(chore => chore.HouseholdId);
 
@@ -318,7 +323,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.ToTable(table => table.HasCheckConstraint(
                 "CK_ChoreAssignments_Points",
-                "\"Points\" IN (5, 10, 15, 20)"));
+                "\"Points\" > 0"));
 
             entity.HasIndex(assignment => new
             {
@@ -358,6 +363,60 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
                 .WithMany()
                 .HasForeignKey(assignment => assignment.CancelledByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(assignment => assignment.GeneratedFromRecurrence)
+                .WithMany()
+                .HasForeignKey(assignment => assignment.GeneratedFromRecurrenceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // The actual duplicate-generation guard: the same recurrence can never produce two
+            // occurrences for the same day. Manual (non-recurring) assignments are unaffected
+            // since the filter only applies where this column is set.
+            entity.HasIndex(assignment => new { assignment.GeneratedFromRecurrenceId, assignment.DueDate })
+                .IsUnique()
+                .HasFilter("\"GeneratedFromRecurrenceId\" IS NOT NULL");
+        });
+
+        modelBuilder.Entity<ChoreRecurrence>(entity =>
+        {
+            entity.Property(recurrence => recurrence.CreatedByUserId)
+                .IsRequired();
+
+            entity.Property(recurrence => recurrence.Frequency)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            entity.Property(recurrence => recurrence.IsActive)
+                .HasDefaultValue(true);
+
+            entity.ToTable(table => table.HasCheckConstraint(
+                "CK_ChoreRecurrences_DaysOfWeekMask",
+                "\"DaysOfWeekMask\" IS NULL OR (\"DaysOfWeekMask\" BETWEEN 1 AND 127)"));
+            entity.ToTable(table => table.HasCheckConstraint(
+                "CK_ChoreRecurrences_DayOfMonth",
+                "\"DayOfMonth\" IS NULL OR (\"DayOfMonth\" BETWEEN 1 AND 31)"));
+
+            entity.HasIndex(recurrence => new { recurrence.HouseholdId, recurrence.IsActive });
+
+            entity.HasOne(recurrence => recurrence.Household)
+                .WithMany()
+                .HasForeignKey(recurrence => recurrence.HouseholdId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(recurrence => recurrence.Chore)
+                .WithMany()
+                .HasForeignKey(recurrence => recurrence.ChoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(recurrence => recurrence.Child)
+                .WithMany()
+                .HasForeignKey(recurrence => recurrence.ChildId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(recurrence => recurrence.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(recurrence => recurrence.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ChoreCompletion>(entity =>
@@ -367,7 +426,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.ToTable(table => table.HasCheckConstraint(
                 "CK_ChoreCompletions_PointsAwarded",
-                "\"PointsAwarded\" IN (5, 10, 15, 20)"));
+                "\"PointsAwarded\" > 0"));
 
             entity.HasIndex(completion => completion.AssignmentId)
                 .IsUnique();

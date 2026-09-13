@@ -28,14 +28,8 @@ const NAV_ITEMS: ChildNavItem[] = [
       class="fixed inset-x-0 bottom-0 z-50 border-t border-child-nav-bg bg-child-nav-bg px-3 pb-[max(.6rem,env(safe-area-inset-bottom))] pt-2 md:static md:flex md:h-dvh md:w-28 md:flex-col md:items-center md:border-t-0 md:px-3 md:py-6"
       [attr.aria-label]="navAriaLabel()"
     >
-      <div
-        class="mx-auto hidden size-12 shrink-0 place-items-center rounded-2xl bg-child-avatar-a-bg text-child-avatar-a-icon shadow-[4px_6px_0_rgba(0,0,0,0.05)] md:grid"
-        aria-hidden="true"
-      >
-        <svg viewBox="0 0 24 24" class="size-6" fill="currentColor">
-          <circle cx="12" cy="8" r="4" />
-          <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7v1H4z" />
-        </svg>
+      <div class="mx-auto hidden size-12 shrink-0 place-items-center md:grid" aria-hidden="true">
+        <img src="logo/mark.png" alt="" class="size-11 object-contain" />
       </div>
 
       <div
@@ -73,7 +67,7 @@ const NAV_ITEMS: ChildNavItem[] = [
                 }
                 @case ('heart') {
                   <path
-                    d="M12 20s-7-4.35-9.5-8.7C1 8.4 2.6 5 6 5c2 0 3.3 1.1 4 2.2C10.7 6.1 12 5 14 5c3.4 0 5 3.4 3.5 6.3C19 15.65 12 20 12 20z"
+                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                   />
                 }
                 @case ('gear') {

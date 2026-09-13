@@ -82,6 +82,9 @@ export class AdultChildrenPage implements OnInit {
   readonly isDeactivatingChild = signal(false);
   readonly deactivationError = signal('');
   readonly deactivationSuccess = signal('');
+  readonly uploadingPhoto = signal(false);
+  readonly removingPhoto = signal(false);
+  readonly photoError = signal('');
   private pairingReturnFocusId = '';
   private deviceSessionsReturnFocusId = '';
   private editChildReturnFocusId = '';
@@ -160,7 +163,7 @@ export class AdultChildrenPage implements OnInit {
       .subscribe({
         next: (child) => {
           this.children.update((children) =>
-            [...children, { id: child.id, name: child.name }].sort((a, b) =>
+            [...children, { id: child.id, name: child.name, photoUrl: null }].sort((a, b) =>
               a.name.localeCompare(b.name, 'sv'),
             ),
           );
@@ -183,7 +186,10 @@ export class AdultChildrenPage implements OnInit {
       });
   }
 
-  generatePairingCode(child: ChildSummary, returnFocusId = `pair-child-${child.id}`): void {
+  generatePairingCode(
+    child: Pick<ChildSummary, 'id' | 'name'>,
+    returnFocusId = `pair-child-${child.id}`,
+  ): void {
     this.pairingReturnFocusId = returnFocusId;
     this.generatingCodeFor.set(child.id);
     this.pairingError.set('');
@@ -325,6 +331,7 @@ export class AdultChildrenPage implements OnInit {
     this.editChildSuccess.set('');
     this.confirmingDeactivation.set(false);
     this.deactivationError.set('');
+    this.photoError.set('');
     focusAfterRender('edit-child-panel');
   }
 
@@ -335,7 +342,53 @@ export class AdultChildrenPage implements OnInit {
     this.editChildSuccess.set('');
     this.confirmingDeactivation.set(false);
     this.deactivationError.set('');
+    this.photoError.set('');
     if (this.editChildReturnFocusId) focusAfterRender(this.editChildReturnFocusId);
+  }
+
+  selectPhoto(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    const child = this.editingChild();
+    if (!file || !child || this.uploadingPhoto()) return;
+
+    this.uploadingPhoto.set(true);
+    this.photoError.set('');
+    this.childrenService
+      .uploadPhoto(child.id, file)
+      .pipe(finalize(() => this.uploadingPhoto.set(false)))
+      .subscribe({
+        next: (updatedChild) => this.applyUpdatedChild(updatedChild),
+        error: (error: HttpErrorResponse) =>
+          this.photoError.set(
+            this.transloco.translate(
+              error.status === 400
+                ? 'adult.children.photoError.validation'
+                : 'adult.children.photoError.generic',
+            ),
+          ),
+      });
+  }
+
+  removePhoto(): void {
+    const child = this.editingChild();
+    if (!child || this.removingPhoto()) return;
+
+    this.removingPhoto.set(true);
+    this.photoError.set('');
+    this.childrenService
+      .deletePhoto(child.id)
+      .pipe(finalize(() => this.removingPhoto.set(false)))
+      .subscribe({
+        next: (updatedChild) => this.applyUpdatedChild(updatedChild),
+        error: () => this.photoError.set(this.transloco.translate('adult.children.photoError.generic')),
+      });
+  }
+
+  private applyUpdatedChild(updatedChild: ChildSummary): void {
+    this.children.update((children) =>
+      children.map((current) => (current.id === updatedChild.id ? updatedChild : current)),
+    );
+    this.editingChild.set(updatedChild);
   }
 
   updateChild(): void {

@@ -6,6 +6,7 @@ using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.ChoreAssignments;
 using Syssloappen.Api.Models;
+using Syssloappen.Api.Services;
 
 namespace Syssloappen.Api.Controllers;
 
@@ -15,7 +16,8 @@ namespace Syssloappen.Api.Controllers;
 public sealed class ChoreAssignmentsController(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
-    TimeProvider timeProvider) : ControllerBase
+    TimeProvider timeProvider,
+    ChoreRecurrenceGenerator recurrenceGenerator) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType<ChoreAssignmentResponse>(StatusCodes.Status201Created)]
@@ -178,6 +180,7 @@ public sealed class ChoreAssignmentsController(
             return Unauthorized();
         }
 
+        await recurrenceGenerator.GenerateDueAssignmentsAsync(currentUser.HouseholdId);
         await MoveUnfinishedAssignmentsToToday(currentUser.HouseholdId);
 
         var assignments = await dbContext.ChoreAssignments

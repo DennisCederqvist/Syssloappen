@@ -32,7 +32,7 @@ class FakeChoresService {
     return of({
       id: choreId,
       ...request,
-      points: request.points as 5 | 10 | 15 | 20,
+      points: request.points,
       createdAt: '',
     });
   }
@@ -43,6 +43,9 @@ class FakeChoresService {
   cancelAssignment(assignmentId: number) {
     this.cancelAssignmentCalls.push(assignmentId);
     return of(undefined);
+  }
+  getRecurrences() {
+    return of([]);
   }
 }
 

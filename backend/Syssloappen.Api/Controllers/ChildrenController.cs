@@ -6,6 +6,7 @@ using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.Children;
 using Syssloappen.Api.Models;
+using Syssloappen.Api.Services;
 
 namespace Syssloappen.Api.Controllers;
 
@@ -15,9 +16,18 @@ namespace Syssloappen.Api.Controllers;
 public sealed class ChildrenController(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IRewardImageStorage imageStorage)
     : ControllerBase
 {
+    // Bounds the raw upload before it ever reaches the image decoder, so a huge file can't
+    // be used to exhaust memory during decoding.
+    private const long MaxUploadBytes = 10 * 1024 * 1024;
+    // ImageSharp has no HEIC/HEIF decoder. iOS/Android browsers convert camera captures to JPEG
+    // for a plain <input type="file"> form, so this covers the camera-capture path; a user who
+    // explicitly picks an unconverted HEIC file from their photo library will get a 415 here.
+    private static readonly string[] AllowedImageContentTypes = ["image/jpeg", "image/png", "image/webp"];
+
     [HttpPost]
     [ProducesResponseType<CreateChildResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -140,7 +150,7 @@ public sealed class ChildrenController(
             .Where(child =>
                 child.HouseholdId == currentUser.HouseholdId && child.IsActive)
             .OrderBy(child => child.Name)
-            .Select(child => new ChildResponse(child.Id, child.Name))
+            .Select(child => new ChildResponse(child.Id, child.Name, child.PhotoUrl))
             .ToListAsync();
 
         return Ok(children);
@@ -183,7 +193,7 @@ public sealed class ChildrenController(
         child.Name = name;
         await dbContext.SaveChangesAsync();
 
-        return Ok(new ChildResponse(child.Id, child.Name));
+        return Ok(new ChildResponse(child.Id, child.Name, child.PhotoUrl));
     }
 
     [HttpDelete("{id:int}")]
@@ -212,8 +222,11 @@ public sealed class ChildrenController(
             return NotFound();
         }
 
-        // Keep the row so future assignments and completions can retain their history.
+        // Keep the row so future assignments and completions can retain their history, but the
+        // photo itself no longer needs to exist anywhere.
+        var photoUrl = child.PhotoUrl;
         child.IsActive = false;
+        child.PhotoUrl = null;
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var activeSessions = await dbContext.ChildDeviceSessions
             .Where(session =>
@@ -229,7 +242,117 @@ public sealed class ChildrenController(
 
         await dbContext.SaveChangesAsync();
 
+        if (photoUrl is not null)
+        {
+            await imageStorage.DeleteAsync(photoUrl, HttpContext.RequestAborted);
+        }
+
         return NoContent();
+    }
+
+    [HttpPost("{id:int}/photo")]
+    [RequestSizeLimit(MaxUploadBytes)]
+    [ProducesResponseType<ChildResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ChildResponse>> UploadPhoto(int id, IFormFile file)
+    {
+        if (file is null || file.Length == 0)
+        {
+            ModelState.AddModelError(nameof(file), "An image file is required.");
+            return ValidationProblem(ModelState);
+        }
+
+        if (file.Length > MaxUploadBytes)
+        {
+            ModelState.AddModelError(nameof(file), "The image must be 10MB or smaller.");
+            return ValidationProblem(ModelState);
+        }
+
+        if (!AllowedImageContentTypes.Contains(file.ContentType))
+        {
+            ModelState.AddModelError(nameof(file), "The file must be a JPEG, PNG, or WebP image.");
+            return ValidationProblem(ModelState);
+        }
+
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        var child = await dbContext.ChildProfiles.SingleOrDefaultAsync(
+            child => child.Id == id
+                && child.HouseholdId == currentUser.HouseholdId
+                && child.IsActive);
+
+        if (child is null)
+        {
+            return NotFound();
+        }
+
+        byte[] webpContent;
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            webpContent = await RewardImageProcessor.ToCompressedWebpAsync(stream, HttpContext.RequestAborted);
+        }
+        catch (InvalidDataException)
+        {
+            ModelState.AddModelError(nameof(file), "The file could not be read as an image.");
+            return ValidationProblem(ModelState);
+        }
+
+        var previousPhotoUrl = child.PhotoUrl;
+        var fileName = $"{Guid.NewGuid()}.webp";
+        child.PhotoUrl = await imageStorage.SaveAsync(webpContent, fileName, HttpContext.RequestAborted);
+        await dbContext.SaveChangesAsync();
+
+        if (previousPhotoUrl is not null)
+        {
+            await imageStorage.DeleteAsync(previousPhotoUrl, HttpContext.RequestAborted);
+        }
+
+        return Ok(new ChildResponse(child.Id, child.Name, child.PhotoUrl));
+    }
+
+    [HttpDelete("{id:int}/photo")]
+    [ProducesResponseType<ChildResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ChildResponse>> DeletePhoto(int id)
+    {
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        var child = await dbContext.ChildProfiles.SingleOrDefaultAsync(
+            child => child.Id == id
+                && child.HouseholdId == currentUser.HouseholdId
+                && child.IsActive);
+
+        if (child is null)
+        {
+            return NotFound();
+        }
+
+        var photoUrl = child.PhotoUrl;
+        child.PhotoUrl = null;
+        await dbContext.SaveChangesAsync();
+
+        if (photoUrl is not null)
+        {
+            await imageStorage.DeleteAsync(photoUrl, HttpContext.RequestAborted);
+        }
+
+        return Ok(new ChildResponse(child.Id, child.Name, child.PhotoUrl));
     }
 
     private ConflictObjectResult ConflictProblem(string detail) => Conflict(

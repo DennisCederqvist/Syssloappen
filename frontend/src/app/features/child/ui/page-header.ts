@@ -10,15 +10,24 @@ import { TranslocoPipe } from '@jsverse/transloco';
   template: `
     <header class="flex items-start justify-between gap-3">
       <div class="flex min-w-0 items-center gap-3">
-        <div
-          class="grid size-14 shrink-0 place-items-center rounded-2xl bg-child-avatar-b-bg text-child-avatar-b-icon"
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 24 24" class="size-7" fill="currentColor">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7v1H4z" />
-          </svg>
-        </div>
+        @if (photoUrl(); as photo) {
+          <img
+            [src]="photo"
+            alt=""
+            class="size-14 shrink-0 rounded-2xl object-cover"
+            aria-hidden="true"
+          />
+        } @else {
+          <div
+            class="grid size-14 shrink-0 place-items-center rounded-2xl bg-child-avatar-b-bg text-child-avatar-b-icon"
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 24 24" class="size-7" fill="currentColor">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7v1H4z" />
+            </svg>
+          </div>
+        }
         <div class="min-w-0">
           <h1 class="font-display text-[26px] leading-tight font-bold text-child-text">
             {{ 'child.common.greeting' | transloco: { name: name() } }}
@@ -53,4 +62,5 @@ export class ChildPageHeader {
   readonly name = input.required<string>();
   readonly subtitle = input.required<string>();
   readonly points = input.required<number>();
+  readonly photoUrl = input<string | null>(null);
 }

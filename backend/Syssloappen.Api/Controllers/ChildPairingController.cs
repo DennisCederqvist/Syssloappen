@@ -82,7 +82,8 @@ public sealed class ChildPairingController(
             child.Name,
             childUser.ChildUserName!,
             RoleNames.Child,
-            child.HouseholdId));
+            child.HouseholdId,
+            child.PhotoUrl));
     }
 
     private UnauthorizedObjectResult InvalidPairingCode() => Unauthorized(

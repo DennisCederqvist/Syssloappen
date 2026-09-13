@@ -11,5 +11,6 @@ public sealed class CreateChoreRequest
     [StringLength(500)]
     public string? Description { get; init; }
 
+    [Range(1, int.MaxValue)]
     public int Points { get; init; } = 5;
 }

@@ -188,6 +188,7 @@ export class AdultRewardsPage implements OnInit {
       .subscribe({
         next: () => {
           this.rewards.update((items) => items.filter((item) => item.id !== reward.id));
+          if (this.editing()?.id === reward.id) this.closeForm();
           this.confirmingId.set(null);
           this.showSuccess(
             this.transloco.translate('adult.rewards.deactivateSuccess', { name: reward.name }),

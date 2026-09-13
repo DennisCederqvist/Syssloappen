@@ -31,6 +31,7 @@ export class ChildHomePage implements OnInit, OnDestroy {
     this.transloco.activeLang();
     return this.auth.user()?.name || this.transloco.translate('child.common.fallbackName');
   });
+  readonly childPhotoUrl = computed(() => this.auth.user()?.photoUrl ?? null);
   readonly wobblingAssignmentId = this.motion.wobblingId;
   readonly assignments = signal<ChildChoreAssignment[]>([]);
   readonly availablePoints = signal(0);

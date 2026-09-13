@@ -1,11 +1,13 @@
 <div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
   <app-adult-bottom-nav />
   <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
-    <app-adult-page-header [title]="'adult.rewards.pageTitle' | transloco">
-      <button headerAction type="button" adultPrimaryButton (click)="openCreate()">
+    <app-adult-page-header [title]="'adult.rewards.pageTitle' | transloco" />
+
+    <div class="mt-4 flex justify-end">
+      <button type="button" adultPrimaryButton (click)="openCreate()">
         {{ 'adult.rewards.newButton' | transloco }}
       </button>
-    </app-adult-page-header>
+    </div>
 
     @if (successMessage()) {
       <div

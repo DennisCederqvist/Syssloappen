@@ -83,7 +83,7 @@ public sealed class ChildrenEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Created, createSecondResponse.StatusCode);
 
         var createdFirstChild = (await createFirstResponse.Content.ReadFromJsonAsync<CreateChildResponse>())!;
-        var firstChild = new ChildResponse(createdFirstChild.Id, createdFirstChild.Name);
+        var firstChild = new ChildResponse(createdFirstChild.Id, createdFirstChild.Name, null);
         var firstHouseholdChildren = await firstClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
         var secondHouseholdChildren = await secondClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
 
@@ -178,12 +178,12 @@ public sealed class ChildrenEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
         var updatedChild = await updateResponse.Content.ReadFromJsonAsync<ChildResponse>();
-        Assert.Equal(new ChildResponse(child.Id, "Rätt namn"), updatedChild);
+        Assert.Equal(new ChildResponse(child.Id, "Rätt namn", null), updatedChild);
 
         var visibleChildren = await otherAdultClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
         Assert.Collection(
             visibleChildren!,
-            visibleChild => Assert.Equal(new ChildResponse(child.Id, "Rätt namn"), visibleChild));
+            visibleChild => Assert.Equal(new ChildResponse(child.Id, "Rätt namn", null), visibleChild));
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public sealed class ChildrenEndpointsTests : IDisposable
         var secondHouseholdChildren = await secondClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
         Assert.Collection(
             secondHouseholdChildren!,
-            child => Assert.Equal(new ChildResponse(secondHouseholdChild.Id, "Oförändrad"), child));
+            child => Assert.Equal(new ChildResponse(secondHouseholdChild.Id, "Oförändrad", null), child));
     }
 
     [Fact]
@@ -259,7 +259,7 @@ public sealed class ChildrenEndpointsTests : IDisposable
         var visibleChildren = await client.GetFromJsonAsync<List<ChildResponse>>("/api/children");
         Assert.Collection(
             visibleChildren!,
-            visibleChild => Assert.Equal(new ChildResponse(child.Id, "Oförändrad"), visibleChild));
+            visibleChild => Assert.Equal(new ChildResponse(child.Id, "Oförändrad", null), visibleChild));
     }
 
     [Fact]
@@ -279,7 +279,7 @@ public sealed class ChildrenEndpointsTests : IDisposable
         var visibleChildren = await client.GetFromJsonAsync<List<ChildResponse>>("/api/children");
         Assert.Collection(
             visibleChildren!,
-            visibleChild => Assert.Equal(new ChildResponse(child.Id, "Oförändrad"), visibleChild));
+            visibleChild => Assert.Equal(new ChildResponse(child.Id, "Oförändrad", null), visibleChild));
     }
 
     [Fact]
@@ -310,7 +310,7 @@ public sealed class ChildrenEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
 
         var visibleChildren = await adultClient.GetFromJsonAsync<List<ChildResponse>>("/api/children");
-        Assert.Contains(new ChildResponse(child.Id, "Anna"), visibleChildren!);
+        Assert.Contains(new ChildResponse(child.Id, "Anna", null), visibleChildren!);
     }
 
     [Fact]
@@ -437,7 +437,7 @@ public sealed class ChildrenEndpointsTests : IDisposable
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var created = (await response.Content.ReadFromJsonAsync<CreateChildResponse>())!;
-        return new ChildResponse(created.Id, created.Name);
+        return new ChildResponse(created.Id, created.Name, null);
     }
 
     private static async Task PairChild(HttpClient adultClient, HttpClient childClient, int childId)

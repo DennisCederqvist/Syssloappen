@@ -51,4 +51,11 @@ public sealed class ChoreAssignment
     // A reversible Household-wide Adult view preference for completed history.
     // It must never remove audit data, points or the child-visible assignment.
     public DateTime? AdultArchivedAt { get; set; }
+
+    // Set only on assignments created by ChoreRecurrenceGenerator. Paired with a partial unique
+    // index on (GeneratedFromRecurrenceId, DueDate) so the same recurrence can never generate
+    // two occurrences for the same day.
+    public int? GeneratedFromRecurrenceId { get; set; }
+
+    public ChoreRecurrence? GeneratedFromRecurrence { get; set; }
 }

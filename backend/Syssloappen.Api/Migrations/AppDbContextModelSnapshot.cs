@@ -397,6 +397,10 @@ namespace Syssloappen.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("PhotoUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
@@ -455,7 +459,7 @@ namespace Syssloappen.Api.Migrations
 
                     b.ToTable("Chores", t =>
                         {
-                            t.HasCheckConstraint("CK_Chores_Points", "\"Points\" IN (5, 10, 15, 20)");
+                            t.HasCheckConstraint("CK_Chores_Points", "\"Points\" > 0");
                         });
                 });
 
@@ -491,6 +495,9 @@ namespace Syssloappen.Api.Migrations
 
                     b.Property<DateOnly>("DueDate")
                         .HasColumnType("date");
+
+                    b.Property<int?>("GeneratedFromRecurrenceId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("HouseholdId")
                         .HasColumnType("integer");
@@ -533,13 +540,17 @@ namespace Syssloappen.Api.Migrations
 
                     b.HasIndex("ReviewedByUserId");
 
+                    b.HasIndex("GeneratedFromRecurrenceId", "DueDate")
+                        .IsUnique()
+                        .HasFilter("\"GeneratedFromRecurrenceId\" IS NOT NULL");
+
                     b.HasIndex("HouseholdId", "AdultArchivedAt");
 
                     b.HasIndex("HouseholdId", "ChildId", "DueDate");
 
                     b.ToTable("ChoreAssignments", t =>
                         {
-                            t.HasCheckConstraint("CK_ChoreAssignments_Points", "\"Points\" IN (5, 10, 15, 20)");
+                            t.HasCheckConstraint("CK_ChoreAssignments_Points", "\"Points\" > 0");
                         });
                 });
 
@@ -588,7 +599,68 @@ namespace Syssloappen.Api.Migrations
 
                     b.ToTable("ChoreCompletions", t =>
                         {
-                            t.HasCheckConstraint("CK_ChoreCompletions_PointsAwarded", "\"PointsAwarded\" IN (5, 10, 15, 20)");
+                            t.HasCheckConstraint("CK_ChoreCompletions_PointsAwarded", "\"PointsAwarded\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Syssloappen.Api.Models.ChoreRecurrence", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChildId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ChoreId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("DayOfMonth")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DaysOfWeekMask")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("HouseholdId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChildId");
+
+                    b.HasIndex("ChoreId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("HouseholdId", "IsActive");
+
+                    b.ToTable("ChoreRecurrences", t =>
+                        {
+                            t.HasCheckConstraint("CK_ChoreRecurrences_DayOfMonth", "\"DayOfMonth\" IS NULL OR (\"DayOfMonth\" BETWEEN 1 AND 31)");
+
+                            t.HasCheckConstraint("CK_ChoreRecurrences_DaysOfWeekMask", "\"DaysOfWeekMask\" IS NULL OR (\"DaysOfWeekMask\" BETWEEN 1 AND 127)");
                         });
                 });
 
@@ -1002,6 +1074,11 @@ namespace Syssloappen.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Syssloappen.Api.Models.ChoreRecurrence", "GeneratedFromRecurrence")
+                        .WithMany()
+                        .HasForeignKey("GeneratedFromRecurrenceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Syssloappen.Api.Models.Household", "Household")
                         .WithMany()
                         .HasForeignKey("HouseholdId")
@@ -1020,6 +1097,8 @@ namespace Syssloappen.Api.Migrations
                     b.Navigation("Child");
 
                     b.Navigation("Chore");
+
+                    b.Navigation("GeneratedFromRecurrence");
 
                     b.Navigation("Household");
 
@@ -1065,6 +1144,41 @@ namespace Syssloappen.Api.Migrations
                     b.Navigation("Child");
 
                     b.Navigation("Chore");
+
+                    b.Navigation("Household");
+                });
+
+            modelBuilder.Entity("Syssloappen.Api.Models.ChoreRecurrence", b =>
+                {
+                    b.HasOne("Syssloappen.Api.Models.ChildProfile", "Child")
+                        .WithMany()
+                        .HasForeignKey("ChildId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Syssloappen.Api.Models.Chore", "Chore")
+                        .WithMany()
+                        .HasForeignKey("ChoreId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Syssloappen.Api.Authentication.ApplicationUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Syssloappen.Api.Models.Household", "Household")
+                        .WithMany()
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Child");
+
+                    b.Navigation("Chore");
+
+                    b.Navigation("CreatedByUser");
 
                     b.Navigation("Household");
                 });

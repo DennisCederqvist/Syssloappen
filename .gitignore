@@ -438,3 +438,5 @@ FodyWeavers.xsd
 
 # Design reference mockups / ad-hoc screenshots — never pushed to the branch.
 *.png
+!frontend/public/logo/*.png
+!frontend/public/marketing/*.png

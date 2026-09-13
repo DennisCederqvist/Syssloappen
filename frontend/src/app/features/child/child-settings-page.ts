@@ -26,6 +26,7 @@ export class ChildSettingsPage implements OnInit {
     this.transloco.activeLang();
     return this.auth.user()?.name || this.transloco.translate('child.common.fallbackName');
   });
+  readonly childPhotoUrl = computed(() => this.auth.user()?.photoUrl ?? null);
   readonly assignments = signal<ChildChoreAssignment[]>([]);
   readonly availablePoints = signal(0);
   readonly isLoading = signal(true);

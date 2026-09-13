@@ -33,6 +33,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.EventsType = typeof(SessionCookieEvents);
 });
 builder.Services.AddScoped<SessionCookieEvents>();
+builder.Services.AddScoped<ChoreRecurrenceGenerator>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {

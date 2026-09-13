@@ -15,9 +15,7 @@
     "loading": "Laddar…",
     "settings": {
       "language": {
-        "label": "Språk",
-        "swedish": "Svenska",
-        "english": "Engelska"
+        "label": "Språk"
       }
     }
   },
@@ -27,10 +25,9 @@
   "auth": {
     "login": {
       "hero": {
-        "eyebrow": "Enklare familjevardag",
-        "title": "Små uppgifter.<br />Stora framsteg.",
-        "subtitle": "En lugn plats där familjen hjälps åt och varje insats räknas.",
-        "footer": "Tryggt separerat för varje familj."
+        "heading": "Gör sysslan <span class=\"text-coral\">rolig.</span>",
+        "subheading": "Små uppgifter. Stora framsteg.",
+        "body": "Förvandla disk och städning till poäng och belöningar<br />- ett lekfullt sätt för barnen att växa in i ansvar."
       },
       "modeGroupLabel": "Välj inloggning",
       "modeAdult": "Vuxen",
@@ -181,6 +178,24 @@
     "manageAdults": {
       "title": "Hantera vuxna",
       "subtitle": "Bjud in fler vuxna och se vem som just nu har tillgång till familjen.",
+      "familyCode": {
+        "title": "Familjekod",
+        "hint": "Barnens enheter kan använda den här koden för att logga in om de tappar sin vanliga inloggning.",
+        "currentLabel": "Nuvarande kod",
+        "notConfigured": "Ingen familjekod är skapad ännu.",
+        "generateButton": "Skapa familjekod",
+        "rotateButton": "Generera ny kod",
+        "rotateQuestion": "Generera en ny familjekod? Den gamla koden slutar fungera direkt, så barn som loggat in med den gamla koden behöver den nya.",
+        "rotateConfirm": "Generera ny kod",
+        "rotating": "Genererar…",
+        "rotateError": "Familjekoden kunde inte genereras. Försök igen.",
+        "loadError": "Familjekodens status kunde inte hämtas.",
+        "newCodeLabel": "Ny familjekod",
+        "newCodeHint": "Spara den här koden nu – den visas bara den här gången.",
+        "copy": "Kopiera kod",
+        "copied": "Kopierad",
+        "copyError": "Koden kunde inte kopieras automatiskt. Kopiera den manuellt."
+      },
       "invitation": {
         "oneTimeCodeLabel": "Engångskod",
         "validUntil": "Giltig till {{date}}",
@@ -247,6 +262,7 @@
       "updateSuccess": "{{title}} är uppdaterad.",
       "deactivateSuccess": "{{title}} är bortplockad från uppgiftsbanken.",
       "assignSuccess": "{{choreTitle}} är tilldelad till {{childName}}.",
+      "assignRecurringSuccess": "{{choreTitle}} kommer nu återkommande att tilldelas {{childName}}.",
       "cancelAssignmentSuccess": "{{choreTitle}} är borttagen från {{childName}}.",
       "createError": {
         "validation": "Kontrollera titel, beskrivning och poäng.",
@@ -281,7 +297,6 @@
         "cancelled": "Borttagen"
       },
       "newChoreButton": "+ Ny syssla",
-      "pointsOption": "{{points}} poäng",
       "createSheet": {
         "title": "Skapa syssla",
         "close": "Stäng formuläret",
@@ -310,7 +325,19 @@
         "dateHint": "Sysslan visas för barnet på det här datumet.",
         "noActiveChildren": "Lägg till ett aktivt barn innan du tilldelar en syssla.",
         "submit": "Tilldela sysslan",
-        "submitting": "Tilldelar…"
+        "submitting": "Tilldelar…",
+        "recurringToggle": "Gör återkommande",
+        "frequencyLabel": "Hur ofta",
+        "frequency": {
+          "daily": "Varje dag",
+          "weekly": "Varje vecka",
+          "monthly": "Varje månad",
+          "custom": "Anpassad"
+        },
+        "weekdayLabel": "Veckodag",
+        "customDaysLabel": "Välj dagar",
+        "customDaysRequired": "Välj minst en veckodag.",
+        "dayOfMonthLabel": "Dag i månaden"
       },
       "editSheet": {
         "title": "Redigera syssla",
@@ -322,6 +349,34 @@
         "deactivateConfirm": "Ja, plocka bort",
         "deactivating": "Plockar bort…",
         "deactivateButton": "Ta bort syssla"
+      },
+      "recurrence": {
+        "listTitle": "Återkommande tilldelningar",
+        "scheduleDaily": "Varje dag",
+        "scheduleWeekly": "Varje {{weekday}}",
+        "scheduleMonthly": "Den {{day}}:e varje månad",
+        "scheduleCustom": "Anpassad: {{days}}",
+        "stopButton": "Sluta upprepa",
+        "stopping": "Stoppar…",
+        "stopError": "Kunde inte stoppa upprepningen. Försök igen.",
+        "weekday": {
+          "0": "måndag",
+          "1": "tisdag",
+          "2": "onsdag",
+          "3": "torsdag",
+          "4": "fredag",
+          "5": "lördag",
+          "6": "söndag"
+        },
+        "weekdayShort": {
+          "0": "Mån",
+          "1": "Tis",
+          "2": "Ons",
+          "3": "Tor",
+          "4": "Fre",
+          "5": "Lör",
+          "6": "Sön"
+        }
       },
       "list": {
         "title": "Uppgiftsbank",
@@ -359,6 +414,10 @@
       "deactivateError": {
         "notFound": "Barnet är redan avaktiverat eller finns inte i din familj.",
         "generic": "Barnet kunde inte avaktiveras. Försök igen om en liten stund."
+      },
+      "photoError": {
+        "validation": "Filen måste vara en JPEG-, PNG- eller WebP-bild på högst 10 MB.",
+        "generic": "Bilden kunde inte sparas. Försök igen."
       },
       "deviceSessionsError": {
         "notFound": "Barnet finns inte längre i den aktiva familjevyn.",
@@ -416,6 +475,11 @@
         "title": "Hantera {{name}}",
         "close": "Stäng barnprofilen",
         "intro": "Ändra namnet som visas i familjen eller avaktivera profilen.",
+        "photoLabel": "Profilbild",
+        "choosePhoto": "Välj bild",
+        "uploadingPhoto": "Laddar upp…",
+        "removePhoto": "Ta bort bild",
+        "removingPhoto": "Tar bort…",
         "nameLabel": "Visningsnamn",
         "nameError": "Skriv ett namn med högst 100 tecken.",
         "save": "Spara nytt namn",
@@ -547,6 +611,17 @@
       "activeTitle": "Aktuella sysslor",
       "activeEmpty": "Inga aktuella sysslor.",
       "pointsMeta": "{{points}} poäng",
+      "removeSheet": {
+        "button": "Ta bort från barnet",
+        "question": "Ta bort den här sysslan från {{name}}? Detta tar bara bort tilldelningen, inte sysslan i sig.",
+        "confirm": "Ta bort",
+        "removing": "Tar bort…",
+        "error": {
+          "notFound": "Tilldelningen kunde inte hittas. Den kan redan vara borttagen.",
+          "conflict": "Tilldelningen kunde inte tas bort just nu. Ladda om sidan och försök igen.",
+          "generic": "Tilldelningen kunde inte tas bort. Försök igen."
+        }
+      },
       "rejectCommentLabel": "Kommentar (valfri)",
       "rewardMetaRequested": "Väntar på svar",
       "rewardMetaApproved": "Godkänd – lämna ut",

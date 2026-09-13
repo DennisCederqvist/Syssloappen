@@ -6,6 +6,7 @@ using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.ChoreAssignments;
 using Syssloappen.Api.Models;
+using Syssloappen.Api.Services;
 
 namespace Syssloappen.Api.Controllers;
 
@@ -15,7 +16,8 @@ namespace Syssloappen.Api.Controllers;
 public sealed class ChildChoreAssignmentsController(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
-    TimeProvider timeProvider) : ControllerBase
+    TimeProvider timeProvider,
+    ChoreRecurrenceGenerator recurrenceGenerator) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<ChildChoreAssignmentResponse>>(StatusCodes.Status200OK)]
@@ -44,6 +46,7 @@ public sealed class ChildChoreAssignmentsController(
             return Unauthorized();
         }
 
+        await recurrenceGenerator.GenerateDueAssignmentsAsync(currentUser.HouseholdId);
         await MoveUnfinishedAssignmentsToToday(child.Id, currentUser.HouseholdId);
 
         // Repeating every ownership condition in the SQL query protects the private
