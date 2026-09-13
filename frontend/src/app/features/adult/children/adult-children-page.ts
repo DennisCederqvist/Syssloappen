@@ -9,11 +9,16 @@ import {
   Validators,
 } from '@angular/forms';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { toDataURL } from 'qrcode';
 import { finalize } from 'rxjs';
 import { focusAfterRender } from '../../../shared/focus';
 import { AdultBadge } from '../ui/badge';
 import { AdultBottomNav } from '../ui/bottom-nav';
-import { AdultDangerOutlineButton, AdultPrimaryButton, AdultSecondaryTintButton } from '../ui/buttons';
+import {
+  AdultDangerOutlineButton,
+  AdultPrimaryButton,
+  AdultSecondaryTintButton,
+} from '../ui/buttons';
 import { AdultPageHeader } from '../ui/page-header';
 import { AdultSheet } from '../ui/sheet';
 import { AdultTile } from '../ui/tile';
@@ -66,6 +71,7 @@ export class AdultChildrenPage implements OnInit {
   readonly generatingCodeFor = signal<number | null>(null);
   readonly pairingError = signal('');
   readonly pairingCodeCopied = signal(false);
+  readonly pairingCodeQrDataUrl = signal<string | null>(null);
   readonly deviceSessionsChild = signal<ChildSummary | null>(null);
   readonly deviceSessions = signal<ChildDeviceSession[]>([]);
   readonly deviceSessionsLoading = signal(false);
@@ -201,6 +207,10 @@ export class AdultChildrenPage implements OnInit {
       .subscribe({
         next: (result) => {
           this.pairingCode.set({ ...result, childId: child.id, childName: child.name });
+          this.pairingCodeQrDataUrl.set(null);
+          toDataURL(result.code, { margin: 1, width: 220 })
+            .then((dataUrl) => this.pairingCodeQrDataUrl.set(dataUrl))
+            .catch(() => this.pairingCodeQrDataUrl.set(null));
           focusAfterRender('pairing-code-panel');
         },
         error: (error: HttpErrorResponse) =>
@@ -217,6 +227,7 @@ export class AdultChildrenPage implements OnInit {
   closePairingCode(): void {
     this.pairingCode.set(null);
     this.pairingCodeCopied.set(false);
+    this.pairingCodeQrDataUrl.set(null);
     if (this.pairingReturnFocusId) focusAfterRender(this.pairingReturnFocusId);
   }
 
@@ -380,7 +391,8 @@ export class AdultChildrenPage implements OnInit {
       .pipe(finalize(() => this.removingPhoto.set(false)))
       .subscribe({
         next: (updatedChild) => this.applyUpdatedChild(updatedChild),
-        error: () => this.photoError.set(this.transloco.translate('adult.children.photoError.generic')),
+        error: () =>
+          this.photoError.set(this.transloco.translate('adult.children.photoError.generic')),
       });
   }
 

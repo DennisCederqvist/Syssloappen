@@ -98,7 +98,12 @@
         "codeError": "The code must be 8 characters.",
         "submit": "Pair my device",
         "submitting": "Pairing…",
-        "hint": "Ask an adult to create a new code. It's valid for a short while and can only be used once."
+        "hint": "Ask an adult to create a new code. It's valid for a short while and can only be used once.",
+        "scanButton": "Scan QR code",
+        "scanStop": "Cancel scanning",
+        "scanHint": "Point the camera at the QR code on the adult's screen.",
+        "qrNoCamera": "No camera was found on this device. Type the code manually instead.",
+        "qrCameraError": "The camera could not be started. Type the code manually instead."
       },
       "fallback": {
         "familyCodeLabel": "Family code",
@@ -438,6 +443,8 @@
       "pairingSheet": {
         "title": "Pair {{name}}'s device",
         "close": "Close the one-time code",
+        "qrAlt": "QR code for device pairing",
+        "qrHint": "Scan with the child's device, or type the code below manually.",
         "codeLabel": "Code for the child's device",
         "validUntil": "Valid until {{time}}",
         "copy": "Copy code",

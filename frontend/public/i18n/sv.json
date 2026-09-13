@@ -98,7 +98,12 @@
         "codeError": "Koden ska innehålla 8 tecken.",
         "submit": "Koppla min enhet",
         "submitting": "Kopplar…",
-        "hint": "Be en vuxen skapa en ny kod. Den gäller en kort stund och kan bara användas en gång."
+        "hint": "Be en vuxen skapa en ny kod. Den gäller en kort stund och kan bara användas en gång.",
+        "scanButton": "Skanna QR-kod",
+        "scanStop": "Avbryt skanning",
+        "scanHint": "Rikta kameran mot QR-koden på den vuxnas skärm.",
+        "qrNoCamera": "Ingen kamera hittades på den här enheten. Skriv koden manuellt i stället.",
+        "qrCameraError": "Kameran kunde inte startas. Skriv koden manuellt i stället."
       },
       "fallback": {
         "familyCodeLabel": "Familjekod",
@@ -438,6 +443,8 @@
       "pairingSheet": {
         "title": "Koppla {{name}}s enhet",
         "close": "Stäng engångskoden",
+        "qrAlt": "QR-kod för enhetskoppling",
+        "qrHint": "Skanna med barnets enhet, eller skriv in koden nedan manuellt.",
         "codeLabel": "Kod för barnets enhet",
         "validUntil": "Gäller till {{time}}",
         "copy": "Kopiera koden",
