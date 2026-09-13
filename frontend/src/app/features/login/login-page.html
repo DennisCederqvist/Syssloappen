@@ -14,9 +14,10 @@
       <p class="mt-3 text-xl font-semibold text-child-avatar-a-bg">
         {{ 'auth.login.hero.subheading' | transloco }}
       </p>
-      <p class="mt-4 max-w-sm text-base leading-7 text-white/80">
-        {{ 'auth.login.hero.body' | transloco }}
-      </p>
+      <p
+        class="mt-4 max-w-sm text-base leading-7 text-white/80"
+        [innerHTML]="'auth.login.hero.body' | transloco"
+      ></p>
     </div>
 
     <img
