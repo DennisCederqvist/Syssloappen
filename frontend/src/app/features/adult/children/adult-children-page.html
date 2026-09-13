@@ -778,7 +778,11 @@
       } @else {
         <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
           @for (child of children(); track child.id) {
-            <app-adult-tile [title]="child.name" [avatarLabel]="child.name.slice(0, 1)">
+            <app-adult-tile
+              [title]="child.name"
+              [avatarLabel]="child.name.slice(0, 1)"
+              [avatarImageUrl]="child.photoUrl"
+            >
               <button
                 tileAction
                 [id]="'edit-child-' + child.id"
