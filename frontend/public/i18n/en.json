@@ -25,10 +25,17 @@
   "auth": {
     "login": {
       "hero": {
-        "eyebrow": "An easier family routine",
-        "title": "Small tasks.<br />Big progress.",
-        "subtitle": "A calm place where the family helps out and every effort counts.",
-        "footer": "Safely separated for every family."
+        "heading": "Make chores <span class=\"text-coral\">fun.</span>",
+        "subheading": "Small tasks. Big progress.",
+        "body": "Turn dishes and tidying into points and rewards — a playful way for kids to grow into responsibility.",
+        "mockup": {
+          "greeting": "Hi Benny!",
+          "subtitle": "Here are today's chores",
+          "chore1": "Make the bed",
+          "chore2": "Water the flowers",
+          "chore3": "Feed the dog",
+          "done": "I'm done!"
+        }
       },
       "modeGroupLabel": "Choose login",
       "modeAdult": "Adult",
