@@ -1,6 +1,6 @@
 # Syssloappen - Project Handoff
 
-Senast uppdaterad: 2026-09-11
+Senast uppdaterad: 2026-09-13
 
 Läs alltid `REQUIREMENTS.md` först. Den här filen kompletterar kraven med projektets aktuella tekniska status och fattade beslut.
 
@@ -315,6 +315,9 @@ Aktuella migrationer:
 - `AddRewardsCatalog` skapar `Rewards` med Household-, skaparkonto-, namn-, beskrivnings-, poängpris-, aktiv- och tidsfält, positiv-pris-constraint, index och restriktiv skapare-FK. Migrationen är applicerad i `syssloappen_dev`.
 - `AddRewardImage` lägger till nullable `Rewards.ImageUrl` (`character varying(2048)`). Migrationen är applicerad i `syssloappen_dev`.
 - `EnableRowLevelSecurity` aktiverar RLS (utan policies) på samtliga 19 tabeller i `public`-schemat, ett rent deny-all för Supabases PostgREST-API. Migrationen är applicerad i både `syssloappen_dev` och den produktionsdrivna Supabase-databasen.
+- `AddChoreRecurrence` skapar tabellen `ChoreRecurrences` samt `ChoreAssignments.GeneratedFromRecurrenceId` med ett partiellt unikt index på `(GeneratedFromRecurrenceId, DueDate)`. Migrationen är applicerad i `syssloappen_dev`, inte i produktion (branchen är inte mergad till `main`).
+- `AllowArbitraryChorePoints` ersätter `CHECK`-constraints `IN (5, 10, 15, 20)` med `> 0` på `Chores.Points`, `ChoreAssignments.Points` och `ChoreCompletions.PointsAwarded`. Migrationen är applicerad i `syssloappen_dev`, inte i produktion.
+- `AddChildPhoto` lägger till nullable `ChildProfiles.PhotoUrl` (`character varying(2048)`). Migrationen är applicerad i `syssloappen_dev`, inte i produktion.
 
 ### Bilduppladdning för belöningar
 
@@ -443,6 +446,48 @@ Ett manuellt US-023-test mot PostgreSQL verifierade lyckad namnändring i rätt 
 Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; PostgreSQL lade till den obligatoriska `IsActive`-kolumnen med standardvärdet `true` utan fel.
 
 ## Aktuell arbetsdel
+
+### Återkommande sysslor, CI och en rad mindre funktioner/designuppdateringar — branch `feature/recurring-chores-and-polish`, ej mergad
+
+En lång session med flera separata delleveranser, alla committade på samma branch. Branchen är **delvis pushad**: de fyra första commiten (återkommande sysslor, CI, de två buggfixarna, borttagning av tilldelning från barnprofil) pushades efter användarens uttryckliga godkännande; alla senare commit (branding, fria poäng, familjekod-UI, språkväxlare, barnfoto, header- och login-omdesign) finns ännu bara lokalt. Inget är mergat till `main`.
+
+**US-036, återkommande sysslor** (se `REQUIREMENTS.md`):
+
+- Ny `ChoreRecurrence`-modell, skopad till en specifik (Chore, Child)-kombination — inte sysslan som helhet, eftersom samma mall redan kan tilldelas olika barn oberoende av varandra.
+- Generering är medvetet lat/request-time, inte en bakgrundsjobbstjänst: `ChoreRecurrenceGenerator.GenerateDueAssignmentsAsync` körs vid varje hämtning av tilldelningar (Adult och Child), precis som den redan existerande `MoveUnfinishedAssignmentsToToday`. Ingen ny schemaläggarinfrastruktur introducerades.
+- Fyra frekvenslägen: varje dag, en vald veckodag, en vald dag i månaden (klipps till sista dagen i korta månader), eller en fri kombination av veckodagar — representerat som en bitmask (Mån=1 .. Sön=64) på backend.
+- Dubblettskydd är ett databaslager: ett partiellt unikt index `(GeneratedFromRecurrenceId, DueDate) WHERE GeneratedFromRecurrenceId IS NOT NULL`, inte en check-then-insert-race.
+- `POST /api/chore-recurrences` kör generatorn direkt efter skapande, så en upprepning vars schema matchar idag ger en synlig tilldelning i samma svar, utan att vänta på nästa sidladdning.
+- `DELETE /api/chore-recurrences/{id}` är soft (`IsActive = false`); redan skapade tilldelningar och deras historik/poäng är opåverkade.
+- Migrationen `AddChoreRecurrence` är applicerad i `syssloappen_dev`. 14 nya backendtester (daglig/veckovis/månadsvis/anpassad matchning, dubblettskydd, månadsklippning, stoppad upprepning, manipulerade ID:n).
+
+**CI**: `.github/workflows/ci.yml`, två jobb (backend: `dotnet build`/`test`; frontend: `ng build`/`ng test`) på varje push/PR mot `main`. Fångar byggfel och test-regressioner, men medvetet inte den typen av Docker-runtime-bugg som SkiaSharp/`libfontconfig1` var (skulle kräva en tyngre Postgres-service-container plus en riktig imagekörning).
+
+**Två UI-buggar** användaren hittade:
+
+- `AdultSheet` stängde inte vid klick utanför modalen — backdropen saknade helt en `(click)`-hanterare. Fixat med `(click)` på backdropen och `stopPropagation` på själva panelen.
+- Att ta bort en belöning lämnade redigeringsrutan öppen med inaktuell data (chansen att av misstag spara/ta bort igen). `adult-rewards-page.ts`s `deactivate()` saknade samma `closeForm()`-anrop som sysslornas motsvarande flöde redan hade.
+
+**Borttagning av tilldelning från barnprofilen**: `/vuxen/barn/:childId`s "Aktuella sysslor"-kort var tidigare statiska. Ett klick öppnar nu en sheet med bekräftad borttagning (`DELETE /api/chore-assignments/{id}`, samma befintliga endpoint som Sysslor-sidan redan hade — bara aldrig kopplad in i denna vy). Täcker användarens två exempel: fel syssla tilldelad, eller en syssla som visade sig vara för svår.
+
+**Sysslopoäng är inte längre begränsade till `5`/`10`/`15`/`20`**: dropdown ersatt med ett fritt sifferfält, samma mönster som belöningars poängpris redan använde. Databasens tre `CHECK`-constraints (`Chores.Points`, `ChoreAssignments.Points`, `ChoreCompletions.PointsAwarded`) är ändrade från `IN (5, 10, 15, 20)` till `> 0` via migrationen `AllowArbitraryChorePoints`. `REQUIREMENTS.md`s berörda kriterier under US-030/US-033/US-060 är uppdaterade till att beskriva "valfritt positivt heltal" i stället för de fyra fasta värdena.
+
+**Familjekod kan nu återfås från UI:t**: koden lagras (avsiktligt, se ovan i denna fil) bara hashad och kan aldrig visas i klartext igen — den enda vägen tillbaka är att rotera till en ny. Backend-endpointerna (`GET`/`POST /api/household/family-code/rotate`) fanns redan men hade ingen frontend-yta alls. Ny sektion i "Hantera vuxna" visar maskerad status och en "Generera ny kod"-knapp som avslöjar den nya klartextkoden en gång, med samma kopiera-mönster som registreringens engångsvisning.
+
+**Språkväxlare på login-sidan**: nya konton hade ingen möjlighet att byta till engelska innan de skapade ett konto, trots att registreringens "spara familjekoden"-vy redan var helt översatt. Återanvänder den befintliga `AdultLanguageToggle`.
+
+**Språkväxlaren är kompakt flagga+kod överallt** (login, Adult- och Child-inställningar, samma delade komponent): `Svenska`/`English`-texten är ersatt med `SV`/`ENG`. Första versionen använde flagg-emoji (🇸🇪/🇬🇧), som visade sig rendera som ren bokstavstext ("SE"/"GB") på Windows eftersom OS:et saknar flagg-glyfer — löst med två små inline-SVG:er (svensk blå/gul kors, brittisk-stiliserad marinblå/röd/vit kors) som alltid renderar som riktiga flaggor oavsett OS/typsnittsstöd.
+
+**Barnprofilfoto**: `ChildProfile.PhotoUrl` (migrationen `AddChildPhoto`), uppladdning via `POST /api/children/{id}/photo` och borttagning via `DELETE`, som återanvänder exakt samma bildpipeline som belöningsfoton (`IRewardImageStorage`, `RewardImageProcessor` — SkiaSharp, 800px, WebP). Laddas upp av en Adult från barnets redigeringsruta i "Barn och konton"; visas i stället för platshållarikonen bredvid "Hej {namn}!" på alla barnvyns sidor. Avaktivering av barnet eller borttagning av fotot städar bort filen ur lagringen. 6 nya backendtester.
+
+**Grön header med logo-splash på alla Adult-sidor**: den delade `AdultPageHeader`-komponenten har fått en `bg-adult-accent`-bakgrund, vit text och Sysslo-loggmärket (`logo/mark.png`) till höger — syns nu identiskt på Hem, Sysslor, Belöningar, Barn, barnprofil, Hantera vuxna, Inställningar och Historik. Efter användarfeedback flyttades varje sidas egen action-knapp (t.ex. "+ Ny syssla") ut ur headern igen till en egen rad direkt under, så headern förblir en ren branding-yta utan knappar.
+
+**Logga integrerad på flera ställen**: `logo/mark.png` (ikon utan text) som webbläsarfavicon och i barnvyns skrivbordssidopanel (ersätter en generisk platshållarikon), `logo/horizontal.png` (ikon + "Sysslo"-ordmärke) i login-sidans mobila header och i skrivbordsversionens hero-panel. Barnvyns "Önskningar"-hjärtikon i sidonavigationen bytt ut — den gamla var en felaktigt konstruerad SVG-path som renderade som en deformerad klick i stället för ett hjärta.
+
+**Login-sidans skrivbordspanel omdesignad**: den gamla platshållartexten/-ikonen, husikonen, "ENKLARE FAMILJEVARDAG"-eyebrowen och footern är borttagna. Ersatt med en marknadsförings-ton hero: rubrik "Gör sysslan **rolig.**" (accentordet i korall), en ljus mint-underrubrik, en brödtext, och en riktig skärmdump av barnvyns sysslolista (inte en handbyggd CSS-mockup) tiltad i hörnet — användaren bytte ut den första logotypfilen mot en beskuren version utan en vit linje-artefakt i "S"-ikonen, som sedan beskars programmatiskt (Node + `pngjs`, hittade den faktiska icke-transparenta bounding-boxen) för att ta bort överflödig transparent marginal runt grafiken.
+- En redan befintlig framtida idé i `REQUIREMENTS.md` (avsnitt 17, "Publik landningssida") beskriver en helt separat, ännu ospecad marknadsföringssida skild från `/login`. Den här omdesignen rör bara `/login` själv och har inte ändrat den framtida sektionen, men själva `/login`-sidan har nu redan fått en del av den lekfulla tonen (färgstark logga, rubrik med accentord, skärmdumps-mockup) som den framtida sidan var tänkt att ha — värt att ha i åtanke om/när den diskussionen tas upp igen.
+
+**Verifiering genomgående**: varje delleverans byggdes, testades (`dotnet test`, `ng build`, `ng test`) och liveverifierades separat via en körande instans (skärmdumpar, riktig inloggning/interaktion) innan nästa del påbörjades. Aktuellt läge: 175/175 backendtester i Release, 52/54 frontendtester (samma 2 sedan tidigare kända, ofärgade fel i `AdultChoresPage` som redan fanns före denna session — dödkodsrelaterad, oförändrad av arbetet här).
 
 ### Child-vyns grafiska genomgång — mergad till `main`
 
@@ -609,6 +654,8 @@ US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-0
 
 ## Kända kvarvarande saker
 
+- Branchen `feature/recurring-chores-and-polish` (återkommande sysslor, CI, buggfixar, gratis poängvärden, familjekod-UI, språkväxlare, barnfoto, grön header, login-omdesign) är inte mergad till `main` och till stor del inte pushad — se avsnittet under "Aktuell arbetsdel". Väntar på fortsatt användargranskning innan merge.
+- Namnbyte från "Syssloappen" till "Sysslo" i sidtitel och löptext är fortsatt medvetet uppskjutet av användaren — loggan (favicon, barnvyns sidopanel, Adult-header, login-sidan) är däremot redan integrerad enligt avsnittet ovan.
 - Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
 - Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Adult-vyn för sysslor och tilldelningar, barnets riktiga startsida och Adult-granskningen är färdiga och användartestade.
 - US-070–US-072 (belöningskatalog, poängreservation, förfrågningar och bilduppladdning) är nu implementerade i sin helhet, inklusive bilduppladdning med server-side komprimering och Supabase Storage.

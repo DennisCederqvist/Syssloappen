@@ -343,9 +343,9 @@ så att den senare kan tilldelas ett barn.
 
 - [x] Endast en Adult får skapa sysslor.
 - [x] Sysslan ska ha ett namn.
-- [x] En Adult ska kunna välja om sysslan är värd `5`, `10`, `15` eller `20` poäng.
+- [x] En Adult ska kunna välja valfritt positivt heltalspoäng för sysslan, inte bara ett fåtal fasta värden.
 - [x] Om inget poängvärde anges ska backend använda `5` poäng.
-- [x] Andra poängvärden ska nekas av backend.
+- [x] Noll och negativa poängvärden ska nekas av backend.
 - [x] Sysslan ska kopplas till den vuxnas Household.
 - [x] En syssla från ett Household får inte vara synlig i ett annat Household.
 - [x] Systemet ska spara vem som skapade sysslan.
@@ -406,7 +406,7 @@ så att uppgiftsbanken förblir aktuell och enkel att använda.
 - [x] Endast en autentiserad Adult får ändra eller avaktivera en syssla.
 - [x] En Adult får endast administrera sysslor i sitt eget Household.
 - [x] Titel, valfri beskrivning och poängvärde ska kunna ändras.
-- [x] Endast poängvärdena `5`, `10`, `15` och `20` får sparas.
+- [x] Endast positiva heltalspoäng får sparas.
 - [x] Ett ändrat poängvärde ska endast påverka framtida tilldelningar; redan skapade tilldelningar ska behålla sitt snapshot-värde.
 - [x] Varje kort i uppgiftsbanken ska ha ett litet kryss i övre hörnet för att plocka bort sysslan.
 - [x] Kryssknappen ska ha ett tydligt tillgängligt namn och avaktivering ska kräva bekräftelse för att undvika misstag.
@@ -596,7 +596,7 @@ så att jag kan se resultatet av mitt arbete.
 ### Acceptance Criteria
 
 - [x] Poängvärdet ska bestämmas av en Adult när sysslan skapas.
-- [x] Tillåtna poängvärden ska vara `5`, `10`, `15` och `20`.
+- [x] Poängvärdet ska kunna vara valfritt positivt heltal, inte begränsat till ett fåtal fasta värden.
 - [x] Standardvärdet ska vara `5` poäng.
 - [x] Barnet ska kunna se hur många poäng en tilldelning är värd.
 - [x] Inga poäng får delas ut när barnet endast rapporterar sysslan som utförd.
