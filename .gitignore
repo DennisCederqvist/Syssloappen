@@ -440,3 +440,4 @@ FodyWeavers.xsd
 *.png
 !frontend/public/logo/*.png
 !frontend/public/marketing/*.png
+!frontend/public/icons/*.png
