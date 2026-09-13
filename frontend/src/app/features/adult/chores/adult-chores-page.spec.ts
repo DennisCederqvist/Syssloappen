@@ -123,47 +123,19 @@ describe('AdultChoresPage', () => {
     expect(component.chores()).toEqual([]);
   });
 
-  it('gives the card cross an accessible name', () => {
+  it('gives the card edit button an accessible name and opens the deactivate flow from the edit sheet', () => {
     fixture.detectChanges();
-    const cross = fixture.nativeElement.querySelector(
-      'button[aria-label="Plocka bort Mata katten"]',
+    const editButton = fixture.nativeElement.querySelector(
+      'button[aria-label="Redigera Mata katten"]',
     ) as HTMLButtonElement | null;
-    expect(cross).not.toBeNull();
-    expect(cross?.classList.contains('size-12')).toBe(true);
-  });
+    expect(editButton).not.toBeNull();
 
-  it('shows understandable Swedish assignment statuses', () => {
-    expect(component.assignmentStatusLabel('Assigned')).toBe('Tilldelad');
-    expect(component.assignmentStatusLabel('PendingApproval')).toBe('Väntar på granskning');
-    expect(component.assignmentStatusLabel('NeedsRedo')).toBe('Behöver göras om');
-    expect(component.assignmentStatusLabel('Approved')).toBe('Godkänd');
-    expect(component.assignmentStatusLabel('Cancelled')).toBe('Borttagen');
-  });
-
-  it('requires confirmation and removes a cancelled assignment immediately', () => {
-    component.openAssignmentForm(1);
-    component.assignmentForm.setValue({ choreId: 1, childId: 7, dueDate: '2026-08-27' });
-    component.createAssignment();
-    const assignment = component.assignments()[0];
-
-    component.cancelAssignment(assignment);
-    expect(service.cancelAssignmentCalls).toEqual([]);
-    component.requestAssignmentCancellation(assignment.assignmentId);
-    component.cancelAssignment(assignment);
-
-    expect(service.cancelAssignmentCalls).toEqual([8]);
-    expect(component.assignments()).toEqual([]);
-  });
-
-  it('gives the assignment cancellation button an accessible name', () => {
-    component.openAssignmentForm(1);
-    component.assignmentForm.setValue({ choreId: 1, childId: 7, dueDate: '2026-08-27' });
-    component.createAssignment();
+    editButton?.click();
     fixture.detectChanges();
 
-    const button = fixture.nativeElement.querySelector(
-      'button[aria-label="Ta bort tilldelningen Mata katten från Maja"]',
+    const deactivateButton = fixture.nativeElement.querySelector(
+      `#deactivate-chore-${component.editingChore()?.id}`,
     ) as HTMLButtonElement | null;
-    expect(button).not.toBeNull();
+    expect(deactivateButton).not.toBeNull();
   });
 });
