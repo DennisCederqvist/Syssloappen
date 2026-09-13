@@ -20,7 +20,7 @@
     }
   },
   "session": {
-    "opening": "Öppnar Syssloappen…"
+    "opening": "Öppnar Sysslo…"
   },
   "auth": {
     "login": {
@@ -38,7 +38,7 @@
       "subtitleRegister": "Kom igång med ett vuxenkonto på någon minut.",
       "registrationSuccess": {
         "eyebrow": "Kontot är skapat",
-        "welcome": "Välkommen till Syssloappen!",
+        "welcome": "Välkommen till Sysslo!",
         "description": "Din familj och ditt vuxenkonto är klara. Spara familjekoden innan du fortsätter.",
         "familyCodeLabel": "Familjekod",
         "copy": "Kopiera koden",
@@ -120,7 +120,7 @@
       }
     },
     "acceptInvitation": {
-      "eyebrow": "Syssloappen",
+      "eyebrow": "Sysslo",
       "title": "Gå med i familjen",
       "successMessage": "Kontot är skapat. Du kan nu logga in som vuxen.",
       "goToLogin": "Gå till login",
@@ -442,7 +442,7 @@
         "validUntil": "Gäller till {{time}}",
         "copy": "Kopiera koden",
         "copied": "Kopierad ✓",
-        "step1": "Öppna Syssloappen på barnets enhet.",
+        "step1": "Öppna Sysslo på barnets enhet.",
         "step2": "Välj Barn och sedan Engångskod.",
         "step3": "Skriv koden innan den går ut.",
         "secureNoteLabel": "Säker kod:",
