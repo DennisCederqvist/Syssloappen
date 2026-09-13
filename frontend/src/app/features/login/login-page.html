@@ -449,10 +449,13 @@
         </div>
         @if (childLoginMode() === 'pairing') {
           <div class="space-y-5">
+            <div
+              [hidden]="!isScanningQr()"
+              class="overflow-hidden rounded-2xl border border-line bg-black"
+            >
+              <video #qrVideo class="aspect-square w-full object-cover"></video>
+            </div>
             @if (isScanningQr()) {
-              <div class="overflow-hidden rounded-2xl border border-line bg-black">
-                <video #qrVideo class="aspect-square w-full object-cover"></video>
-              </div>
               <p class="text-center text-sm leading-6 text-muted">
                 {{ 'auth.login.pairing.scanHint' | transloco }}
               </p>
