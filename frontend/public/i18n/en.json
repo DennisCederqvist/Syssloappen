@@ -20,7 +20,7 @@
     }
   },
   "session": {
-    "opening": "Opening Syssloappen…"
+    "opening": "Opening Sysslo…"
   },
   "auth": {
     "login": {
@@ -38,7 +38,7 @@
       "subtitleRegister": "Get started with an adult account in a couple of minutes.",
       "registrationSuccess": {
         "eyebrow": "Account created",
-        "welcome": "Welcome to Syssloappen!",
+        "welcome": "Welcome to Sysslo!",
         "description": "Your family and adult account are ready. Save the family code before continuing.",
         "familyCodeLabel": "Family code",
         "copy": "Copy code",
@@ -120,7 +120,7 @@
       }
     },
     "acceptInvitation": {
-      "eyebrow": "Syssloappen",
+      "eyebrow": "Sysslo",
       "title": "Join the family",
       "successMessage": "The account has been created. You can now log in as an adult.",
       "goToLogin": "Go to login",
@@ -442,7 +442,7 @@
         "validUntil": "Valid until {{time}}",
         "copy": "Copy code",
         "copied": "Copied ✓",
-        "step1": "Open Syssloappen on the child's device.",
+        "step1": "Open Sysslo on the child's device.",
         "step2": "Choose Child, then One-time code.",
         "step3": "Enter the code before it expires.",
         "secureNoteLabel": "Secure code:",

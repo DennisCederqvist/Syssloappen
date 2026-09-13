@@ -1,14 +1,14 @@
-# Syssloappen
+# Sysslo
 
 > En familjeapp för att tilldela, hantera och följa upp sysslor i hemmet.
 
-**Syssloappen** är en webbapplikation där vuxna kan skapa och tilldela sysslor till barn, medan barnen enkelt kan se vad de ska göra och markera sina sysslor som utförda.
+**Sysslo** är en webbapplikation där vuxna kan skapa och tilldela sysslor till barn, medan barnen enkelt kan se vad de ska göra och markera sina sysslor som utförda.
 
 Projektet är byggt med fokus på enkel användning i hemmet, tydlig separation mellan familjer och en struktur som senare kan byggas ut med fler funktioner.
 
 ---
 
-## Vad är Syssloappen?
+## Vad är Sysslo?
 
 Tanken är enkel:
 
@@ -35,7 +35,7 @@ Att hålla reda på vem som ska göra vad hemma blir snabbt rörigt.
 
 Lapplistor försvinner, muntliga överenskommelser glöms bort och vanliga todo-appar är sällan byggda kring hur ett hushåll faktiskt fungerar.
 
-Syssloappen försöker lösa det genom att göra ansvarsfördelningen tydlig:
+Sysslo försöker lösa det genom att göra ansvarsfördelningen tydlig:
 
 **Vuxna administrerar. Barn utför. Alla ser rätt information.**
 
@@ -132,7 +132,7 @@ Töm diskmaskinen
 
 och tilldelar den till Alice.
 
-Alice öppnar Syssloappen på sin surfplatta och ser:
+Alice öppnar Sysslo på sin surfplatta och ser:
 
 ```text
 Mina sysslor
@@ -148,7 +148,7 @@ Anna och Erik kan därefter se ändringen från sina respektive användare.
 
 # Teknik
 
-Syssloappen byggs som en modern fullstackapplikation med frontend och backend separerade från varandra.
+Sysslo byggs som en modern fullstackapplikation med frontend och backend separerade från varandra.
 
 ### Frontend
 
@@ -297,7 +297,7 @@ README-filen beskriver projektet på en övergripande nivå medan `REQUIREMENTS.
 
 # Projektstatus
 
-🚧 **Syssloappen är under aktiv utveckling.**
+🚧 **Sysslo är under aktiv utveckling.**
 
 Projektet befinner sig fortfarande i ett tidigt utvecklingsstadium.
 
@@ -322,7 +322,7 @@ Planerad utveckling omfattar bland annat:
 
 # Utvecklingsmål
 
-Syssloappen är både ett faktiskt applikationsprojekt och ett lärprojekt.
+Sysslo är både ett faktiskt applikationsprojekt och ett lärprojekt.
 
 Projektet används för att få praktisk erfarenhet av bland annat:
 
@@ -395,7 +395,7 @@ Dessa funktioner är möjliga framtida tillägg och ska inte betraktas som färd
 
 # Plattform
 
-Målet är att Syssloappen ska fungera som en responsiv webbapplikation.
+Målet är att Sysslo ska fungera som en responsiv webbapplikation.
 
 Det gör att samma system kan användas från exempelvis:
 
@@ -409,7 +409,7 @@ En PWA-lösning är också möjlig, vilket skulle göra att webbapplikationen ka
 
 # Repository
 
-Det här repositoryt innehåller källkoden och dokumentationen för Syssloappen.
+Det här repositoryt innehåller källkoden och dokumentationen för Sysslo.
 
 Projektet utvecklas stegvis med Git och GitHub som versionshantering.
 
@@ -417,7 +417,7 @@ Projektet utvecklas stegvis med Git och GitHub som versionshantering.
 
 # Sammanfattning
 
-Syssloappen handlar i grunden om en mycket enkel fråga:
+Sysslo handlar i grunden om en mycket enkel fråga:
 
 > **Vem ska göra vad hemma — och är det gjort?**
 
