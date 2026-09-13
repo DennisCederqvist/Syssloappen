@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize, forkJoin } from 'rxjs';
@@ -8,7 +8,11 @@ import { ChildSummary } from '../children/children.models';
 import { ChildrenService } from '../children/children.service';
 import { AdultBadge } from '../ui/badge';
 import { AdultBottomNav } from '../ui/bottom-nav';
-import { AdultDangerOutlineButton, AdultPrimaryButton, AdultSecondaryTintButton } from '../ui/buttons';
+import {
+  AdultDangerOutlineButton,
+  AdultPrimaryButton,
+  AdultSecondaryTintButton,
+} from '../ui/buttons';
 import { AdultPageHeader } from '../ui/page-header';
 import { AdultSheet } from '../ui/sheet';
 import { AdultTile } from '../ui/tile';
@@ -43,8 +47,6 @@ const WEEKDAY_BITS = [1, 2, 4, 8, 16, 32, 64];
 export class AdultChoresPage implements OnInit {
   private readonly choresService = inject(ChoresService);
   private readonly transloco = inject(TranslocoService);
-  private archiveUndoTimer: number | null = null;
-  private archiveUndoClearTimer: number | null = null;
   private successTimer: number | null = null;
   private successClearTimer: number | null = null;
   private readonly childrenService = inject(ChildrenService);
@@ -70,44 +72,15 @@ export class AdultChoresPage implements OnInit {
   readonly isUpdatingChore = signal(false);
   readonly deactivatingChoreId = signal<number | null>(null);
   readonly confirmingDeactivationId = signal<number | null>(null);
-  readonly openChoreMenuId = signal<number | null>(null);
   readonly isAssigning = signal(false);
-  readonly confirmingAssignmentCancellationId = signal<number | null>(null);
-  readonly openAssignmentMenuId = signal<number | null>(null);
-  readonly cancellingAssignmentId = signal<number | null>(null);
   readonly choreError = signal('');
   readonly editChoreError = signal('');
   readonly deactivationError = signal('');
   readonly assignmentError = signal('');
-  readonly assignmentCancellationError = signal('');
   readonly successMessage = signal('');
   readonly successFading = signal(false);
-  readonly historyBusyId = signal<number | null>(null);
-  readonly historyError = signal('');
-  readonly lastArchivedId = signal<number | null>(null);
-  readonly archiveUndoFading = signal(false);
-  readonly showHiddenHistory = signal(false);
-  readonly activeAssignments = computed(() => this.assignments().filter((assignment) =>
-    assignment.status === 'Assigned' || assignment.status === 'PendingApproval' || assignment.status === 'NeedsRedo',
-  ));
-  readonly completedAssignments = computed(() => this.assignments()
-    .filter((assignment) => assignment.status === 'Approved' && !assignment.adultArchivedAt)
-    .slice(0, 10));
-  readonly completedHistoryAssignments = computed(() => this.assignments()
-    .filter((assignment) => assignment.status === 'Approved' && (!assignment.adultArchivedAt || assignment.assignmentId === this.lastArchivedId()))
-    .slice(0, 10));
-  readonly hiddenCompletedAssignments = computed(() => this.assignments()
-    .filter((assignment) => assignment.status === 'Approved' && assignment.adultArchivedAt));
   private assignmentReturnFocusId = 'open-assignment-trigger';
   private editChoreReturnFocusId = '';
-
-  toggleChoreMenu(choreId: number): void {
-    this.openChoreMenuId.update((current) => current === choreId ? null : choreId);
-  }
-
-  toggleAssignmentMenu(assignmentId: number): void {
-    this.openAssignmentMenuId.update((current) => current === assignmentId ? null : assignmentId);
-  }
 
   readonly choreForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(100)]],
@@ -468,7 +441,9 @@ export class AdultChoresPage implements OnInit {
           this.recurrences.update((items) => [...items, recurrence]);
           // The recurrence may have just generated today's occurrence server-side;
           // refetch rather than guess at the shape of what was (or wasn't) created.
-          this.choresService.getAssignments().subscribe((assignments) => this.assignments.set(assignments));
+          this.choresService
+            .getAssignments()
+            .subscribe((assignments) => this.assignments.set(assignments));
           this.closeAssignmentForm();
           this.showSuccess(
             this.transloco.translate('adult.chores.assignRecurringSuccess', {
@@ -529,105 +504,10 @@ export class AdultChoresPage implements OnInit {
         next: () =>
           this.recurrences.update((items) => items.filter((item) => item.id !== recurrence.id)),
         error: () =>
-          this.recurrenceStopError.set(this.transloco.translate('adult.chores.recurrence.stopError')),
-      });
-  }
-
-  requestAssignmentCancellation(assignmentId: number): void {
-    this.confirmingAssignmentCancellationId.set(assignmentId);
-    this.assignmentCancellationError.set('');
-    this.successMessage.set('');
-    focusAfterRender(`cancel-assignment-cancellation-${assignmentId}`);
-  }
-
-  cancelAssignmentCancellation(): void {
-    const assignmentId = this.confirmingAssignmentCancellationId();
-    this.confirmingAssignmentCancellationId.set(null);
-    this.assignmentCancellationError.set('');
-    if (assignmentId) focusAfterRender(`request-assignment-cancellation-${assignmentId}`);
-  }
-
-  cancelAssignment(assignment: AdultAssignment): void {
-    if (
-      this.confirmingAssignmentCancellationId() !== assignment.assignmentId ||
-      this.cancellingAssignmentId() !== null
-    ) {
-      return;
-    }
-
-    this.cancellingAssignmentId.set(assignment.assignmentId);
-    this.assignmentCancellationError.set('');
-    this.choresService
-      .cancelAssignment(assignment.assignmentId)
-      .pipe(finalize(() => this.cancellingAssignmentId.set(null)))
-      .subscribe({
-        next: () => {
-          this.assignments.update((assignments) =>
-            assignments.filter((item) => item.assignmentId !== assignment.assignmentId),
-          );
-          this.confirmingAssignmentCancellationId.set(null);
-          this.showSuccess(
-            this.transloco.translate('adult.chores.cancelAssignmentSuccess', {
-              choreTitle: assignment.choreTitle,
-              childName: assignment.childName,
-            }),
-          );
-          focusAfterRender('adult-chores-success');
-        },
-        error: (error: HttpErrorResponse) =>
-          this.assignmentCancellationError.set(
-            this.transloco.translate(
-              error.status === 404
-                ? 'adult.chores.cancelAssignmentError.notFound'
-                : error.status === 409
-                  ? 'adult.chores.cancelAssignmentError.conflict'
-                  : 'adult.chores.cancelAssignmentError.generic',
-            ),
+          this.recurrenceStopError.set(
+            this.transloco.translate('adult.chores.recurrence.stopError'),
           ),
       });
-  }
-
-  archiveAssignment(assignment: AdultAssignment): void {
-    if (this.historyBusyId() !== null) return;
-    this.historyBusyId.set(assignment.assignmentId);
-    this.historyError.set('');
-    this.choresService.archiveAssignment(assignment.assignmentId)
-      .pipe(finalize(() => this.historyBusyId.set(null)))
-      .subscribe({
-        next: () => {
-          this.assignments.update((items) => items.map((item) => item.assignmentId === assignment.assignmentId
-            ? { ...item, adultArchivedAt: new Date().toISOString() } : item));
-          this.showArchiveUndo(assignment.assignmentId);
-        },
-        error: () => this.historyError.set(this.transloco.translate('adult.chores.archiveError')),
-      });
-  }
-
-  restoreAssignment(assignment: AdultAssignment): void {
-    if (this.historyBusyId() !== null) return;
-    this.historyBusyId.set(assignment.assignmentId);
-    this.historyError.set('');
-    this.choresService.restoreAssignment(assignment.assignmentId)
-      .pipe(finalize(() => this.historyBusyId.set(null)))
-      .subscribe({
-        next: () => {
-          this.assignments.update((items) => items.map((item) => item.assignmentId === assignment.assignmentId
-            ? { ...item, adultArchivedAt: null } : item));
-          this.clearArchiveUndo();
-        },
-        error: () => this.historyError.set(this.transloco.translate('adult.chores.restoreError')),
-      });
-  }
-
-  assignmentStatusLabel(status: AdultAssignment['status']): string {
-    const key = {
-      Assigned: 'assigned',
-      PendingApproval: 'pendingApproval',
-      NeedsRedo: 'needsRedo',
-      Approved: 'approved',
-      Cancelled: 'cancelled',
-    }[status];
-    return this.transloco.translate(`adult.chores.status.${key}`);
   }
 
   private showSuccess(message: string): void {
@@ -648,21 +528,5 @@ export class AdultChoresPage implements OnInit {
     const now = new Date();
     const offset = now.getTimezoneOffset() * 60_000;
     return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-  }
-
-  private showArchiveUndo(assignmentId: number): void {
-    this.clearArchiveUndo();
-    this.lastArchivedId.set(assignmentId);
-    this.archiveUndoTimer = window.setTimeout(() => this.archiveUndoFading.set(true), 3000);
-    this.archiveUndoClearTimer = window.setTimeout(() => this.clearArchiveUndo(), 5000);
-  }
-
-  private clearArchiveUndo(): void {
-    if (this.archiveUndoTimer !== null) window.clearTimeout(this.archiveUndoTimer);
-    if (this.archiveUndoClearTimer !== null) window.clearTimeout(this.archiveUndoClearTimer);
-    this.archiveUndoTimer = null;
-    this.archiveUndoClearTimer = null;
-    this.archiveUndoFading.set(false);
-    this.lastArchivedId.set(null);
   }
 }
