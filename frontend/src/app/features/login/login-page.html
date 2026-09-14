@@ -261,6 +261,12 @@
                   >
                 }
               </label>
+              <a
+                routerLink="/glomt-losenord"
+                class="-mt-2 block text-right text-sm font-medium text-adult-accent"
+              >
+                {{ 'auth.login.form.forgotPassword' | transloco }}
+              </a>
               <button type="submit" adultPrimaryButton class="w-full" [disabled]="isSubmitting()">
                 {{
                   (isSubmitting() ? 'auth.login.form.submitting' : 'auth.login.form.submit')

@@ -229,6 +229,40 @@ public sealed class AuthController(
         return Ok();
     }
 
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    [EnableRateLimiting("password-reset")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
+    {
+        var user = await userManager.FindByEmailAsync(request.Email.Trim());
+
+        // Always the same response whether or not the account exists, or is a Child (which has
+        // no email) — an email address must not be usable to probe which accounts exist.
+        if (user is not null && await userManager.IsInRoleAsync(user, RoleNames.Adult))
+        {
+            await SendPasswordResetEmailAsync(user);
+        }
+
+        return Ok();
+    }
+
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+    {
+        var user = await userManager.FindByIdAsync(request.UserId);
+        if (user is null)
+        {
+            return ValidationProblem(InvalidResetLinkProblem());
+        }
+
+        var result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+        return result.Succeeded ? Ok() : ValidationProblem(ToValidationProblem(result));
+    }
+
     [Authorize]
     [HttpGet("me")]
     [ProducesResponseType<CurrentUserResponse>(StatusCodes.Status200OK)]
@@ -281,6 +315,12 @@ public sealed class AuthController(
 
     private static ValidationProblemDetails ToValidationProblem(IdentityResult result) =>
         new(ToErrorDictionary(result))
+        {
+            Status = StatusCodes.Status400BadRequest
+        };
+
+    private static ValidationProblemDetails InvalidResetLinkProblem() =>
+        new(new Dictionary<string, string[]> { ["InvalidToken"] = ["Invalid token."] })
         {
             Status = StatusCodes.Status400BadRequest
         };
@@ -353,18 +393,19 @@ public sealed class AuthController(
             Status = StatusCodes.Status400BadRequest
         });
 
+    // PublicBaseUrl must always be explicitly configured (appsettings.json for production,
+    // appsettings.Development.json for local dev where the Angular dev server runs on a
+    // separate port). Never fall back to Request.Host: AllowedHosts is "*", so a caller can
+    // set an arbitrary Host header, and these URLs are emailed to someone else entirely via
+    // /api/auth/resend-confirmation or /api/auth/forgot-password — a spoofed Host would ship a
+    // real token to an attacker-controlled domain.
+    private string PublicBaseUrl => configuration["PublicBaseUrl"]
+        ?? throw new InvalidOperationException("PublicBaseUrl is not configured.");
+
     private async Task SendConfirmationEmailAsync(ApplicationUser user)
     {
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        // PublicBaseUrl must always be explicitly configured (appsettings.json for production,
-        // appsettings.Development.json for local dev where the Angular dev server runs on a
-        // separate port). Never fall back to Request.Host: AllowedHosts is "*", so a caller can
-        // set an arbitrary Host header, and this URL is emailed to someone else entirely via
-        // /api/auth/resend-confirmation — a spoofed Host would ship a real confirmation token to
-        // an attacker-controlled domain.
-        var baseUrl = configuration["PublicBaseUrl"]
-            ?? throw new InvalidOperationException("PublicBaseUrl is not configured.");
-        var confirmUrl = $"{baseUrl}/bekrafta-epost"
+        var confirmUrl = $"{PublicBaseUrl}/bekrafta-epost"
             + $"?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
 
         var name = user.Nickname ?? user.FirstName;
@@ -376,5 +417,23 @@ public sealed class AuthController(
             """;
 
         await emailSender.SendAsync(user.Email!, name, "Bekräfta din e-post för Sysslo", html);
+    }
+
+    private async Task SendPasswordResetEmailAsync(ApplicationUser user)
+    {
+        var token = await userManager.GeneratePasswordResetTokenAsync(user);
+        var resetUrl = $"{PublicBaseUrl}/aterstall-losenord"
+            + $"?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
+
+        var name = user.Nickname ?? user.FirstName;
+        var greeting = string.IsNullOrEmpty(name) ? "Hej!" : $"Hej {WebUtility.HtmlEncode(name)}!";
+        var html = $"""
+            <p>{greeting}</p>
+            <p>Vi har fått en begäran om att återställa lösenordet för ditt Sysslo-konto. Om det var du, välj ett nytt lösenord här:</p>
+            <p><a href="{resetUrl}">{resetUrl}</a></p>
+            <p>Var det inte du som bad om detta kan du bortse från mejlet — ditt lösenord ändras inte förrän någon öppnar länken och väljer ett nytt.</p>
+            """;
+
+        await emailSender.SendAsync(user.Email!, name, "Återställ ditt lösenord för Sysslo", html);
     }
 }

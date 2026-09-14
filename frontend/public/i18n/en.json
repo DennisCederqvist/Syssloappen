@@ -61,7 +61,8 @@
         "passwordError": "Enter your password.",
         "submit": "Log in as adult",
         "submitting": "Logging in…",
-        "haveInvitation": "I have an invitation"
+        "haveInvitation": "I have an invitation",
+        "forgotPassword": "Forgot your password?"
       },
       "registration": {
         "householdName": "Family name",
@@ -136,6 +137,35 @@
       "errorInvalid": "The link is invalid or has expired. Request a new confirmation email from the login page.",
       "errorGeneric": "Something went wrong. Please try again shortly.",
       "errorMissingLink": "The link is missing information. Open the link from the email again."
+    },
+    "forgotPassword": {
+      "eyebrow": "Sysslo",
+      "title": "Forgot your password?",
+      "description": "Enter your email address and we'll send you a link to choose a new password.",
+      "emailLabel": "Email",
+      "emailError": "Enter a valid email address.",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "successMessage": "If an account exists with that email address, we've sent an email with instructions to reset the password.",
+      "goToLogin": "Go to login",
+      "backToLogin": "Back to login"
+    },
+    "resetPassword": {
+      "eyebrow": "Sysslo",
+      "title": "Choose a new password",
+      "passwordLabel": "New password",
+      "passwordHint": "At least 8 characters, with an uppercase letter, a lowercase letter, and a digit.",
+      "passwordError": "The password doesn't meet the requirements.",
+      "confirmPasswordLabel": "Repeat the password",
+      "confirmPasswordError": "The passwords don't match.",
+      "submit": "Save new password",
+      "submitting": "Saving…",
+      "success": "Your password has been changed. You can now log in with the new password.",
+      "goToLogin": "Go to login",
+      "errorInvalid": "The link is invalid or has expired, or the password doesn't meet the requirements.",
+      "errorGeneric": "Something went wrong. Please try again shortly.",
+      "errorMissingLink": "The link is missing information. Open the link from the email again.",
+      "requestNewLink": "Request a new link"
     },
     "acceptInvitation": {
       "eyebrow": "Sysslo",
