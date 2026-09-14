@@ -22,19 +22,15 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
       [style.animation-iteration-count]="1"
     >
       @if (imageUrl(); as url) {
-        <img
-          [src]="url"
-          alt=""
-          class="aspect-[16/10] w-full rounded-[15px] object-cover"
-        />
+        <img [src]="url" alt="" class="aspect-[16/8] w-full rounded-[15px] object-cover" />
       } @else {
         <div
-          class="flex aspect-[16/10] items-center justify-center rounded-[15px] border-2 border-dashed border-white/70 bg-white/40"
+          class="flex aspect-[16/8] items-center justify-center rounded-[15px] border-2 border-dashed border-white/70 bg-white/40"
           aria-hidden="true"
         >
           <svg
             viewBox="0 0 24 24"
-            class="size-7 text-child-text-secondary/50"
+            class="size-8 text-child-text-secondary/50"
             fill="none"
             stroke="currentColor"
             stroke-width="1.6"
@@ -52,16 +48,16 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
       }
 
       <div class="mt-3 flex items-start justify-between gap-2">
-        <h3 class="font-display text-[15px] leading-snug font-semibold text-child-text">
+        <h3 class="font-display text-[17px] leading-snug font-semibold text-child-text">
           {{ name() }}
         </h3>
         <span
-          class="flex shrink-0 items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-xs font-bold text-child-text"
+          class="flex shrink-0 items-center gap-1 rounded-full bg-white/70 px-2.5 py-0.5 text-sm font-bold text-child-text"
           [attr.aria-label]="'child.common.pointsAria' | transloco: { points: pointsCost() }"
         >
           <svg
             viewBox="0 0 20 20"
-            class="size-3 shrink-0"
+            class="size-3.5 shrink-0"
             fill="var(--color-child-star-fill)"
             stroke="var(--color-child-star-stroke)"
             stroke-width="1"
@@ -77,7 +73,9 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
       </div>
 
       @if (description()) {
-        <p class="mt-1.5 text-[13px] leading-5 text-child-text-secondary">{{ description() }}</p>
+        <p class="mt-2 line-clamp-2 text-sm leading-5 text-child-text-secondary">
+          {{ description() }}
+        </p>
       }
 
       <button

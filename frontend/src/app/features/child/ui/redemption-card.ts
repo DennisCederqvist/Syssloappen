@@ -30,7 +30,7 @@ const STATUS_BANNER_CLASSES: Record<ChildRedemptionCardStatus, string> = {
     <article
       [id]="cardId()"
       tabindex="-1"
-      class="flex flex-col rounded-[30px] p-5 outline-none sm:p-6 {{ paletteClasses() }}"
+      class="flex flex-col rounded-[22px] p-3.5 outline-none sm:p-4 {{ paletteClasses() }}"
       [style.rotate.deg]="tiltDeg()"
       [style.--tilt.deg]="tiltDeg()"
       [style.animation-name]="wobbling() ? 'child-card-wobble' : 'none'"
@@ -39,19 +39,15 @@ const STATUS_BANNER_CLASSES: Record<ChildRedemptionCardStatus, string> = {
       [style.animation-iteration-count]="1"
     >
       @if (imageUrl(); as url) {
-        <img
-          [src]="url"
-          alt=""
-          class="aspect-[16/10] w-full rounded-[20px] object-cover"
-        />
+        <img [src]="url" alt="" class="aspect-[16/8] w-full rounded-[15px] object-cover" />
       } @else {
         <div
-          class="flex aspect-[16/10] items-center justify-center rounded-[20px] border-2 border-dashed border-white/70 bg-white/40"
+          class="flex aspect-[16/8] items-center justify-center rounded-[15px] border-2 border-dashed border-white/70 bg-white/40"
           aria-hidden="true"
         >
           <svg
             viewBox="0 0 24 24"
-            class="size-10 text-child-text-secondary/50"
+            class="size-8 text-child-text-secondary/50"
             fill="none"
             stroke="currentColor"
             stroke-width="1.6"
@@ -68,12 +64,12 @@ const STATUS_BANNER_CLASSES: Record<ChildRedemptionCardStatus, string> = {
         </div>
       }
 
-      <div class="mt-4 flex items-start justify-between gap-3">
-        <h3 class="font-display text-[19px] leading-snug font-semibold text-child-text">
+      <div class="mt-3 flex items-start justify-between gap-2">
+        <h3 class="font-display text-[17px] leading-snug font-semibold text-child-text">
           {{ name() }}
         </h3>
         <span
-          class="flex shrink-0 items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-sm font-bold text-child-text"
+          class="flex shrink-0 items-center gap-1 rounded-full bg-white/70 px-2.5 py-0.5 text-sm font-bold text-child-text"
           [attr.aria-label]="'child.common.pointsAria' | transloco: { points: pointsCost() }"
         >
           <svg
@@ -93,10 +89,10 @@ const STATUS_BANNER_CLASSES: Record<ChildRedemptionCardStatus, string> = {
         </span>
       </div>
 
-      <div class="mt-4 rounded-2xl p-4 {{ bannerClasses() }}">
+      <div class="mt-3 rounded-2xl p-3 {{ bannerClasses() }}">
         <p class="text-sm font-bold">{{ statusLabel() }}</p>
         @if (comment()) {
-          <p class="mt-1 text-[15px] leading-6">{{ comment() }}</p>
+          <p class="mt-1 text-sm leading-5">{{ comment() }}</p>
         }
       </div>
     </article>

@@ -1,7 +1,7 @@
 <div class="page-enter min-h-dvh bg-child-bg pb-28 md:flex md:pb-0">
   <app-child-side-nav />
 
-  <main class="mx-auto w-full max-w-5xl flex-1 px-5 py-6 sm:px-8 md:py-8">
+  <main class="mx-auto w-full max-w-5xl flex-1 px-6 py-6 sm:px-8 md:py-8">
     <app-child-page-header
       [name]="childName()"
       [photoUrl]="childPhotoUrl()"
@@ -17,7 +17,9 @@
           class="flex min-h-40 items-center justify-center rounded-[30px] bg-white p-6 text-center shadow-[4px_6px_0_rgba(0,0,0,0.04)]"
           role="status"
         >
-          <p class="font-semibold text-child-text-secondary">{{ 'child.rewards.loadingText' | transloco }}</p>
+          <p class="font-semibold text-child-text-secondary">
+            {{ 'child.rewards.loadingText' | transloco }}
+          </p>
         </div>
       } @else if (error()) {
         <div
