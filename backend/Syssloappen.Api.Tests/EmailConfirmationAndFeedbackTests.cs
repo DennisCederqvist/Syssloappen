@@ -39,6 +39,26 @@ public sealed class EmailConfirmationAndFeedbackTests : IDisposable
     }
 
     [Fact]
+    public async Task A_spoofed_host_header_does_not_change_the_emailed_confirmation_link()
+    {
+        using var client = CreateClient();
+        var email = "spoofed-host@example.test";
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/register")
+        {
+            Content = JsonContent.Create(
+                new RegisterAdultRequest { HouseholdName = "Familjen Spoof", Email = email, Password = Password }),
+        };
+        request.Headers.Host = "attacker-controlled.example";
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var sent = Assert.Single(factory.EmailSender.SentMessages);
+        Assert.DoesNotContain("attacker-controlled.example", sent.HtmlBody);
+    }
+
+    [Fact]
     public async Task Wrong_password_on_an_unconfirmed_account_still_gives_the_neutral_credentials_error()
     {
         using var client = CreateClient();
