@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -32,6 +32,12 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
     : { passwordMismatch: true };
 }
 
+const DELETE_CONFIRMATION_WORD = 'radera';
+
+function confirmationWordMatches(control: AbstractControl): ValidationErrors | null {
+  return control.value === DELETE_CONFIRMATION_WORD ? null : { confirmWordMismatch: true };
+}
+
 @Component({
   selector: 'app-adult-manage-adults-page',
   imports: [
@@ -59,6 +65,9 @@ export class AdultManageAdultsPage implements OnInit {
   readonly isLoading = signal(true);
   readonly loadError = signal('');
   readonly ownUserId = this.auth.user()?.userId ?? null;
+  readonly isOwnerViewer = computed(
+    () => this.adults().find((adult) => adult.id === this.ownUserId)?.isOwner ?? false,
+  );
 
   readonly invitation = signal<HouseholdInvitation | null>(null);
   readonly isCreatingInvitation = signal(false);
@@ -85,6 +94,18 @@ export class AdultManageAdultsPage implements OnInit {
   readonly passwordError = signal('');
   readonly passwordSuccess = signal('');
 
+  readonly deletionScheduledAt = signal<string | null>(null);
+  readonly confirmingDeleteAccount = signal(false);
+  readonly isSchedulingDeletion = signal(false);
+  readonly deleteAccountError = signal('');
+  readonly isCancellingDeletion = signal(false);
+  readonly cancelDeletionError = signal('');
+
+  readonly deleteAccountForm = this.formBuilder.nonNullable.group({
+    password: ['', Validators.required],
+    confirmWord: ['', [Validators.required, confirmationWordMatches]],
+  });
+
   readonly profileForm = this.formBuilder.nonNullable.group({
     firstName: ['', Validators.maxLength(100)],
     lastName: ['', Validators.maxLength(100)],
@@ -106,6 +127,14 @@ export class AdultManageAdultsPage implements OnInit {
   ngOnInit(): void {
     this.load();
     this.loadFamilyCodeStatus();
+    this.loadDeletionStatus();
+  }
+
+  loadDeletionStatus(): void {
+    this.householdAdults.getDeletionStatus().subscribe({
+      next: (status) => this.deletionScheduledAt.set(status.deletionScheduledAt),
+      error: () => undefined,
+    });
   }
 
   load(): void {
@@ -116,7 +145,8 @@ export class AdultManageAdultsPage implements OnInit {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (adults) => this.adults.set(adults),
-        error: () => this.loadError.set(this.transloco.translate('adult.manageAdults.list.loadError')),
+        error: () =>
+          this.loadError.set(this.transloco.translate('adult.manageAdults.list.loadError')),
       });
   }
 
@@ -124,7 +154,9 @@ export class AdultManageAdultsPage implements OnInit {
     this.familyCodeService.getStatus().subscribe({
       next: (status) => this.familyCodeStatus.set(status),
       error: () =>
-        this.familyCodeError.set(this.transloco.translate('adult.manageAdults.familyCode.loadError')),
+        this.familyCodeError.set(
+          this.transloco.translate('adult.manageAdults.familyCode.loadError'),
+        ),
     });
   }
 
@@ -151,7 +183,9 @@ export class AdultManageAdultsPage implements OnInit {
           this.loadFamilyCodeStatus();
         },
         error: () =>
-          this.familyCodeError.set(this.transloco.translate('adult.manageAdults.familyCode.rotateError')),
+          this.familyCodeError.set(
+            this.transloco.translate('adult.manageAdults.familyCode.rotateError'),
+          ),
       });
   }
 
@@ -189,9 +223,7 @@ export class AdultManageAdultsPage implements OnInit {
       await navigator.clipboard.writeText(code);
       this.invitationCopied.set(true);
     } catch {
-      this.invitationError.set(
-        this.transloco.translate('adult.manageAdults.invitation.copyError'),
-      );
+      this.invitationError.set(this.transloco.translate('adult.manageAdults.invitation.copyError'));
     }
   }
 
@@ -204,6 +236,9 @@ export class AdultManageAdultsPage implements OnInit {
     this.passwordError.set('');
     this.passwordSuccess.set('');
     this.passwordForm.reset();
+    this.confirmingDeleteAccount.set(false);
+    this.deleteAccountError.set('');
+    this.deleteAccountForm.reset();
 
     if (adult.id === this.ownUserId) {
       const user = this.auth.user();
@@ -247,10 +282,14 @@ export class AdultManageAdultsPage implements OnInit {
             adults.map((current) => (current.id === updated.id ? updated : current)),
           );
           this.selectedAdult.set(updated);
-          this.profileSuccess.set(this.transloco.translate('adult.manageAdults.detail.profile.success'));
+          this.profileSuccess.set(
+            this.transloco.translate('adult.manageAdults.detail.profile.success'),
+          );
         },
         error: () =>
-          this.profileError.set(this.transloco.translate('adult.manageAdults.detail.profile.error')),
+          this.profileError.set(
+            this.transloco.translate('adult.manageAdults.detail.profile.error'),
+          ),
       });
   }
 
@@ -326,6 +365,60 @@ export class AdultManageAdultsPage implements OnInit {
                   ? 'adult.manageAdults.detail.disconnect.errorConflict'
                   : 'adult.manageAdults.detail.disconnect.errorGeneric',
             ),
+          ),
+      });
+  }
+
+  requestDeleteAccount(): void {
+    this.confirmingDeleteAccount.set(true);
+    this.deleteAccountError.set('');
+  }
+
+  cancelDeleteAccountRequest(): void {
+    this.confirmingDeleteAccount.set(false);
+    this.deleteAccountForm.reset();
+  }
+
+  scheduleAccountDeletion(): void {
+    if (this.deleteAccountForm.invalid) {
+      this.deleteAccountForm.markAllAsTouched();
+      return;
+    }
+
+    const { password } = this.deleteAccountForm.getRawValue();
+    this.isSchedulingDeletion.set(true);
+    this.deleteAccountError.set('');
+    this.householdAdults
+      .scheduleAccountDeletion({ password })
+      .pipe(finalize(() => this.isSchedulingDeletion.set(false)))
+      .subscribe({
+        next: (status) => {
+          this.deletionScheduledAt.set(status.deletionScheduledAt);
+          this.confirmingDeleteAccount.set(false);
+          this.deleteAccountForm.reset();
+        },
+        error: (error: HttpErrorResponse) =>
+          this.deleteAccountError.set(
+            this.transloco.translate(
+              error.status === 400
+                ? 'adult.manageAdults.detail.deleteAccount.errorWrongPassword'
+                : 'adult.manageAdults.detail.deleteAccount.errorGeneric',
+            ),
+          ),
+      });
+  }
+
+  cancelScheduledDeletion(): void {
+    this.isCancellingDeletion.set(true);
+    this.cancelDeletionError.set('');
+    this.householdAdults
+      .cancelAccountDeletion()
+      .pipe(finalize(() => this.isCancellingDeletion.set(false)))
+      .subscribe({
+        next: () => this.deletionScheduledAt.set(null),
+        error: () =>
+          this.cancelDeletionError.set(
+            this.transloco.translate('adult.manageAdults.deletionBanner.cancelError'),
           ),
       });
   }

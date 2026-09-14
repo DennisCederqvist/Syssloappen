@@ -317,7 +317,25 @@
           "errorNotFound": "Den vuxna finns inte längre i familjen. Uppdatera listan och försök igen.",
           "errorConflict": "Den här personen kan inte kopplas bort just nu.",
           "errorGeneric": "Kunde inte koppla bort. Försök igen om en liten stund."
+        },
+        "deleteAccount": {
+          "title": "Radera konto",
+          "button": "Radera konto",
+          "confirmQuestion": "Kontot och hela familjens data raderas permanent 30 dagar efter att du bekräftar. Fram till dess fungerar allt som vanligt och du kan avbryta när som helst.",
+          "passwordLabel": "Ditt lösenord",
+          "confirmWordLabel": "Skriv \"{{word}}\" för att bekräfta",
+          "confirmWordMismatch": "Skriv ordet exakt som det står för att kunna radera.",
+          "confirmYes": "Radera kontot",
+          "deleting": "Schemalägger…",
+          "errorWrongPassword": "Fel lösenord.",
+          "errorGeneric": "Raderingen kunde inte schemaläggas. Försök igen."
         }
+      },
+      "deletionBanner": {
+        "message": "Familjen och all dess data raderas permanent den {{date}}.",
+        "cancelButton": "Avbryt radering",
+        "cancelling": "Avbryter…",
+        "cancelError": "Kunde inte avbryta raderingen. Försök igen."
       }
     },
     "chores": {

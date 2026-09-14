@@ -2,8 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
+  AccountDeletionStatus,
   ChangeAdultPasswordRequest,
   HouseholdAdult,
+  ScheduleAccountDeletionRequest,
   UpdateAdultProfileRequest,
 } from './household.models';
 
@@ -25,5 +27,19 @@ export class HouseholdAdultsService {
 
   changeOwnPassword(request: ChangeAdultPasswordRequest): Observable<void> {
     return this.http.post<void>('/api/household/adults/me/change-password', request);
+  }
+
+  getDeletionStatus(): Observable<AccountDeletionStatus> {
+    return this.http.get<AccountDeletionStatus>('/api/household/deletion-status');
+  }
+
+  scheduleAccountDeletion(
+    request: ScheduleAccountDeletionRequest,
+  ): Observable<AccountDeletionStatus> {
+    return this.http.post<AccountDeletionStatus>('/api/household/delete-account', request);
+  }
+
+  cancelAccountDeletion(): Observable<void> {
+    return this.http.post<void>('/api/household/cancel-account-deletion', {});
   }
 }

@@ -6,6 +6,39 @@
       [subtitle]="'adult.manageAdults.subtitle' | transloco"
     />
 
+    @if (deletionScheduledAt(); as scheduledAt) {
+      <div
+        class="mt-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg p-4"
+        role="alert"
+      >
+        <p class="text-sm font-medium text-adult-danger-text">
+          {{
+            'adult.manageAdults.deletionBanner.message'
+              | transloco: { date: (scheduledAt | date: 'longDate') }
+          }}
+        </p>
+        @if (cancelDeletionError()) {
+          <p class="mt-2 text-sm font-medium text-adult-danger-text">{{ cancelDeletionError() }}</p>
+        }
+        @if (isOwnerViewer()) {
+          <button
+            type="button"
+            adultSecondaryTintButton
+            class="mt-3"
+            [disabled]="isCancellingDeletion()"
+            (click)="cancelScheduledDeletion()"
+          >
+            {{
+              (isCancellingDeletion()
+                ? 'adult.manageAdults.deletionBanner.cancelling'
+                : 'adult.manageAdults.deletionBanner.cancelButton'
+              ) | transloco
+            }}
+          </button>
+        }
+      </div>
+    }
+
     <div class="mt-4 rounded-lg border border-adult-border bg-adult-surface p-5">
       <h2 class="text-sm font-semibold text-adult-text">
         {{ 'adult.manageAdults.familyCode.title' | transloco }}
@@ -68,7 +101,10 @@
             role="group"
             aria-labelledby="family-code-rotate-question"
           >
-            <p id="family-code-rotate-question" class="text-sm font-semibold text-adult-danger-text">
+            <p
+              id="family-code-rotate-question"
+              class="text-sm font-semibold text-adult-danger-text"
+            >
               {{ 'adult.manageAdults.familyCode.rotateQuestion' | transloco }}
             </p>
             <div class="mt-3 flex gap-2">
@@ -402,6 +438,102 @@
               </button>
             </form>
           </div>
+
+          @if (adult.isOwner && !deletionScheduledAt()) {
+            <div class="mt-6 border-t border-adult-border pt-4">
+              <h3 class="text-sm font-semibold text-adult-text">
+                {{ 'adult.manageAdults.detail.deleteAccount.title' | transloco }}
+              </h3>
+              @if (deleteAccountError()) {
+                <div
+                  class="mt-3 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+                  role="alert"
+                >
+                  {{ deleteAccountError() }}
+                </div>
+              }
+              @if (confirmingDeleteAccount()) {
+                <form
+                  [formGroup]="deleteAccountForm"
+                  (ngSubmit)="scheduleAccountDeletion()"
+                  class="mt-3 rounded-lg border border-adult-danger-border bg-adult-danger-bg p-3"
+                  novalidate
+                >
+                  <p class="text-sm font-semibold text-adult-danger-text">
+                    {{ 'adult.manageAdults.detail.deleteAccount.confirmQuestion' | transloco }}
+                  </p>
+                  <label class="mt-3 block text-sm font-semibold text-adult-danger-text">
+                    {{ 'adult.manageAdults.detail.deleteAccount.passwordLabel' | transloco }}
+                    <input
+                      formControlName="password"
+                      type="password"
+                      autocomplete="current-password"
+                      class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-danger-border bg-adult-surface px-3 font-normal text-adult-text"
+                    />
+                  </label>
+                  <label class="mt-3 block text-sm font-semibold text-adult-danger-text">
+                    {{
+                      'adult.manageAdults.detail.deleteAccount.confirmWordLabel'
+                        | transloco: { word: 'radera' }
+                    }}
+                    <input
+                      formControlName="confirmWord"
+                      type="text"
+                      autocomplete="off"
+                      [attr.aria-invalid]="
+                        deleteAccountForm.controls.confirmWord.touched &&
+                        deleteAccountForm.controls.confirmWord.hasError('confirmWordMismatch')
+                      "
+                      aria-describedby="confirm-word-error"
+                      class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-danger-border bg-adult-surface px-3 font-normal text-adult-text"
+                    />
+                    @if (
+                      deleteAccountForm.controls.confirmWord.touched &&
+                      deleteAccountForm.controls.confirmWord.hasError('confirmWordMismatch')
+                    ) {
+                      <span id="confirm-word-error" class="mt-1.5 block text-sm font-normal">
+                        {{
+                          'adult.manageAdults.detail.deleteAccount.confirmWordMismatch' | transloco
+                        }}
+                      </span>
+                    }
+                  </label>
+                  <div class="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      (click)="cancelDeleteAccountRequest()"
+                      [disabled]="isSchedulingDeletion()"
+                      class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
+                    >
+                      {{ 'common.actions.cancel' | transloco }}
+                    </button>
+                    <button
+                      type="submit"
+                      adultDangerOutlineButton
+                      class="flex-1"
+                      [disabled]="isSchedulingDeletion()"
+                    >
+                      {{
+                        (isSchedulingDeletion()
+                          ? 'adult.manageAdults.detail.deleteAccount.deleting'
+                          : 'adult.manageAdults.detail.deleteAccount.confirmYes'
+                        ) | transloco
+                      }}
+                    </button>
+                  </div>
+                </form>
+              } @else {
+                <button
+                  type="button"
+                  adultDangerOutlineButton
+                  class="mt-3 w-full"
+                  (click)="requestDeleteAccount()"
+                >
+                  {{ 'adult.manageAdults.detail.deleteAccount.button' | transloco }}
+                </button>
+              }
+            </div>
+          }
 
           @if (!adult.isOwner) {
             <div class="mt-6 border-t border-adult-border pt-4">
