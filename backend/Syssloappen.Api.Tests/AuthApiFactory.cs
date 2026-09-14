@@ -16,6 +16,7 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     public readonly FakeRewardImageStorage RewardImageStorage = new();
+    public readonly FakeEmailSender EmailSender = new();
 
     public AuthApiFactory()
     {
@@ -42,6 +43,9 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
 
             services.RemoveAll<IRewardImageStorage>();
             services.AddSingleton<IRewardImageStorage>(RewardImageStorage);
+
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<IEmailSender>(EmailSender);
 
             // The open in-memory connection keeps this temporary SQL database alive for one test.
             var options = new DbContextOptionsBuilder<AppDbContext>()

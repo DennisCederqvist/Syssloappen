@@ -88,6 +88,27 @@
           role="alert"
         >
           {{ errorMessage() }}
+          @if (emailNotConfirmed()) {
+            @if (confirmationResent()) {
+              <p class="mt-2 font-normal">
+                {{ 'auth.login.error.confirmationResent' | transloco }}
+              </p>
+            } @else {
+              <button
+                type="button"
+                class="mt-2 block font-semibold underline"
+                [disabled]="isResendingConfirmation()"
+                (click)="resendConfirmation()"
+              >
+                {{
+                  (isResendingConfirmation()
+                    ? 'auth.login.error.resendingConfirmation'
+                    : 'auth.login.error.resendConfirmation'
+                  ) | transloco
+                }}
+              </button>
+            }
+          }
         </div>
       }
       @if (mode() === 'adult') {
@@ -120,6 +141,14 @@
             </h2>
             <p class="mt-2 text-sm leading-6 text-adult-text-secondary">
               {{ 'auth.login.registrationSuccess.description' | transloco }}
+            </p>
+            <p
+              class="mt-4 rounded-lg border border-adult-border bg-adult-accent-soft px-4 py-3 text-sm leading-6 text-adult-accent-dark"
+            >
+              {{
+                'auth.login.registrationSuccess.confirmEmailNotice'
+                  | transloco: { email: result.email }
+              }}
             </p>
             <div class="mt-4 rounded-lg border border-adult-border bg-adult-bg p-4 text-center">
               <p class="text-xs font-semibold tracking-wide text-adult-text-secondary uppercase">

@@ -1,0 +1,45 @@
+<main class="page-enter mx-auto flex min-h-dvh w-full max-w-md items-center px-5 py-8 sm:px-8">
+  <section class="w-full rounded-3xl bg-white p-6 shadow-lg ring-1 ring-line sm:p-8 text-center">
+    @switch (state()) {
+      @case ('loading') {
+        <p class="text-lg font-bold" role="status">
+          {{ 'auth.confirmEmail.loading' | transloco }}
+        </p>
+      }
+      @case ('success') {
+        <div class="rounded-2xl bg-green-50 p-4 font-bold text-green-900" role="status">
+          {{ 'auth.confirmEmail.success' | transloco }}
+        </div>
+        <button
+          type="button"
+          (click)="goToLogin()"
+          class="mt-6 min-h-14 w-full rounded-2xl bg-brand-500 px-5 font-extrabold text-white"
+        >
+          {{ 'auth.confirmEmail.goToLogin' | transloco }}
+        </button>
+      }
+      @case ('missingLink') {
+        <p class="rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-800" role="alert">
+          {{ 'auth.confirmEmail.errorMissingLink' | transloco }}
+        </p>
+        <a
+          routerLink="/login"
+          class="mt-6 inline-block min-h-14 w-full content-center rounded-2xl bg-brand-500 px-5 font-extrabold text-white no-underline"
+        >
+          {{ 'auth.confirmEmail.goToLogin' | transloco }}
+        </a>
+      }
+      @case ('error') {
+        <p class="rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-800" role="alert">
+          {{ errorMessage() }}
+        </p>
+        <a
+          routerLink="/login"
+          class="mt-6 inline-block min-h-14 w-full content-center rounded-2xl bg-brand-500 px-5 font-extrabold text-white no-underline"
+        >
+          {{ 'auth.confirmEmail.goToLogin' | transloco }}
+        </a>
+      }
+    }
+  </section>
+</main>

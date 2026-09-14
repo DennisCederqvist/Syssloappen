@@ -142,11 +142,12 @@ public sealed class ChildPhotoTests : IDisposable
         return (await response.Content.ReadFromJsonAsync<CreateChildResponse>())!;
     }
 
-    private static async Task<RegisterAdultResponse> RegisterAndLoginAdult(HttpClient client, string householdName, string email)
+    private async Task<RegisterAdultResponse> RegisterAndLoginAdult(HttpClient client, string householdName, string email)
     {
         var response = await client.PostAsJsonAsync("/api/auth/register", new RegisterAdultRequest
         { HouseholdName = householdName, Email = email, Password = Password });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         var registration = (await response.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
         await Login(client, email);
         return registration;

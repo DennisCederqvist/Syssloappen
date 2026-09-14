@@ -40,6 +40,7 @@
         "eyebrow": "Account created",
         "welcome": "Welcome to Sysslo!",
         "description": "Your family and adult account are ready. Save the family code before continuing.",
+        "confirmEmailNotice": "We've sent a confirmation email to {{email}}. You need to confirm your email before you can log in.",
         "familyCodeLabel": "Family code",
         "copy": "Copy code",
         "copied": "Copied ✓",
@@ -121,8 +122,20 @@
       },
       "error": {
         "rateLimited": "Too many attempts. Wait a moment and try again.",
-        "generic": "Login failed. Check the details and try again."
+        "generic": "Login failed. Check the details and try again.",
+        "emailNotConfirmed": "Confirm your email before logging in.",
+        "resendConfirmation": "Resend the confirmation email",
+        "resendingConfirmation": "Sending…",
+        "confirmationResent": "A new confirmation email has been sent."
       }
+    },
+    "confirmEmail": {
+      "loading": "Confirming your email…",
+      "success": "Your email is confirmed. You can now log in.",
+      "goToLogin": "Go to login",
+      "errorInvalid": "The link is invalid or has expired. Request a new confirmation email from the login page.",
+      "errorGeneric": "Something went wrong. Please try again shortly.",
+      "errorMissingLink": "The link is missing information. Open the link from the email again."
     },
     "acceptInvitation": {
       "eyebrow": "Sysslo",
@@ -160,6 +173,18 @@
       "help": { "title": "Help", "subtitle": "Frequently asked questions and guides" },
       "feedback": { "title": "Send feedback", "subtitle": "Report a problem or share an idea" },
       "logout": "Log out"
+    },
+    "feedback": {
+      "pageTitle": "Send feedback",
+      "pageSubtitle": "Report a problem or share an idea with us",
+      "messageLabel": "Your message",
+      "messagePlaceholder": "Tell us what happened or what you think...",
+      "messageError": "Write a message before sending.",
+      "submit": "Send",
+      "sending": "Sending…",
+      "success": "Thanks! Your message has been sent.",
+      "errorValidation": "Write a message before sending.",
+      "errorGeneric": "The message couldn't be sent. Please try again shortly."
     },
     "home": {
       "welcome": "Welcome, {{name}}!",

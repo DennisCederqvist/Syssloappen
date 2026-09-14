@@ -40,6 +40,7 @@
         "eyebrow": "Kontot är skapat",
         "welcome": "Välkommen till Sysslo!",
         "description": "Din familj och ditt vuxenkonto är klara. Spara familjekoden innan du fortsätter.",
+        "confirmEmailNotice": "Vi har skickat ett bekräftelsemejl till {{email}}. Du behöver bekräfta din e-post innan du kan logga in.",
         "familyCodeLabel": "Familjekod",
         "copy": "Kopiera koden",
         "copied": "Kopierad ✓",
@@ -121,8 +122,20 @@
       },
       "error": {
         "rateLimited": "För många försök. Vänta en liten stund och försök igen.",
-        "generic": "Inloggningen lyckades inte. Kontrollera uppgifterna och försök igen."
+        "generic": "Inloggningen lyckades inte. Kontrollera uppgifterna och försök igen.",
+        "emailNotConfirmed": "Bekräfta din e-post innan du loggar in.",
+        "resendConfirmation": "Skicka bekräftelsemejlet igen",
+        "resendingConfirmation": "Skickar…",
+        "confirmationResent": "Ett nytt bekräftelsemejl är skickat."
       }
+    },
+    "confirmEmail": {
+      "loading": "Bekräftar din e-post…",
+      "success": "Din e-post är bekräftad. Du kan nu logga in.",
+      "goToLogin": "Gå till login",
+      "errorInvalid": "Länken är felaktig eller har gått ut. Be om ett nytt bekräftelsemejl på inloggningssidan.",
+      "errorGeneric": "Något gick fel. Försök igen om en liten stund.",
+      "errorMissingLink": "Länken saknar information. Öppna länken från mejlet igen."
     },
     "acceptInvitation": {
       "eyebrow": "Sysslo",
@@ -163,6 +176,18 @@
         "subtitle": "Rapportera ett problem eller dela en idé"
       },
       "logout": "Logga ut"
+    },
+    "feedback": {
+      "pageTitle": "Skicka feedback",
+      "pageSubtitle": "Rapportera ett problem eller dela en idé med oss",
+      "messageLabel": "Ditt meddelande",
+      "messagePlaceholder": "Berätta vad som hänt eller vad du tycker...",
+      "messageError": "Skriv ett meddelande innan du skickar.",
+      "submit": "Skicka",
+      "sending": "Skickar…",
+      "success": "Tack! Ditt meddelande är skickat.",
+      "errorValidation": "Skriv ett meddelande innan du skickar.",
+      "errorGeneric": "Meddelandet kunde inte skickas. Försök igen om en liten stund."
     },
     "home": {
       "welcome": "Välkommen, {{name}}!",

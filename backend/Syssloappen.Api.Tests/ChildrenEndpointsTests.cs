@@ -414,6 +414,7 @@ public sealed class ChildrenEndpointsTests : IDisposable
         {
             UserName = email,
             Email = email,
+            EmailConfirmed = true,
             HouseholdId = householdId
         };
 
@@ -486,7 +487,7 @@ public sealed class ChildrenEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
-    private static async Task<RegisterAdultResponse> RegisterAdult(
+    private async Task<RegisterAdultResponse> RegisterAdult(
         HttpClient client,
         string householdName,
         string email)
@@ -501,6 +502,7 @@ public sealed class ChildrenEndpointsTests : IDisposable
             });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         return (await response.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
     }
 

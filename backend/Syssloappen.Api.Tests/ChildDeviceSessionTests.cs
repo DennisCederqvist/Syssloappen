@@ -373,7 +373,7 @@ public sealed class ChildDeviceSessionTests : IDisposable
         return (await response.Content.ReadFromJsonAsync<CreateChildResponse>())!;
     }
 
-    private static async Task<RegisterAdultResponse> RegisterAndLoginAdult(
+    private async Task<RegisterAdultResponse> RegisterAndLoginAdult(
         HttpClient client,
         string householdName,
         string email)
@@ -387,6 +387,7 @@ public sealed class ChildDeviceSessionTests : IDisposable
                 Password = Password
             });
         Assert.Equal(HttpStatusCode.Created, registrationResponse.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         var registration = (await registrationResponse.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
 
         var loginResponse = await client.PostAsJsonAsync(
