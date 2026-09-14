@@ -20,6 +20,19 @@ public static class PushMessageFormatter
         _ => ("Sysslo", "You have a new update."),
     };
 
+    // Where clicking the notification should take the person — child-facing events open
+    // the child app, adult-facing events open the adult home page.
+    public static string DestinationPath(NotificationEventType type) => type switch
+    {
+        NotificationEventType.ChoreAssigned => "/barn",
+        NotificationEventType.ChoreApproved => "/barn",
+        NotificationEventType.ChoreNeedsRedo => "/barn",
+        NotificationEventType.RewardApproved => "/barn/beloningar",
+        NotificationEventType.ChoreSubmittedForReview => "/vuxen",
+        NotificationEventType.RewardRequested => "/vuxen",
+        _ => "/",
+    };
+
     private static (string, string) FormatChoreAssigned(ChoreAssignedData data) =>
         ("New chore!", $"{data.ChoreTitle} — {data.Points} points");
 
