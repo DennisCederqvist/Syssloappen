@@ -13,9 +13,7 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
     <article
       [id]="cardId()"
       tabindex="-1"
-      class="flex flex-col rounded-[18px] p-2.5 outline-none sm:rounded-[22px] sm:p-4 {{
-        paletteClasses()
-      }}"
+      class="flex flex-col rounded-[24px] p-4 outline-none sm:p-5 {{ paletteClasses() }}"
       [style.rotate.deg]="tiltDeg()"
       [style.--tilt.deg]="tiltDeg()"
       [style.animation-name]="wobbling() ? 'child-card-wobble' : 'none'"
@@ -24,19 +22,15 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
       [style.animation-iteration-count]="1"
     >
       @if (imageUrl(); as url) {
-        <img
-          [src]="url"
-          alt=""
-          class="aspect-square w-full rounded-[12px] object-cover sm:aspect-[16/10] sm:rounded-[15px]"
-        />
+        <img [src]="url" alt="" class="aspect-[16/9] w-full rounded-[17px] object-cover" />
       } @else {
         <div
-          class="flex aspect-square items-center justify-center rounded-[12px] border-2 border-dashed border-white/70 bg-white/40 sm:aspect-[16/10] sm:rounded-[15px]"
+          class="flex aspect-[16/9] items-center justify-center rounded-[17px] border-2 border-dashed border-white/70 bg-white/40"
           aria-hidden="true"
         >
           <svg
             viewBox="0 0 24 24"
-            class="size-6 text-child-text-secondary/50 sm:size-7"
+            class="size-8 text-child-text-secondary/50"
             fill="none"
             stroke="currentColor"
             stroke-width="1.6"
@@ -53,19 +47,17 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
         </div>
       }
 
-      <div class="mt-2 flex items-start justify-between gap-1.5 sm:mt-3 sm:gap-2">
-        <h3
-          class="font-display text-[13px] leading-snug font-semibold text-child-text sm:text-[15px]"
-        >
+      <div class="mt-3 flex items-start justify-between gap-2">
+        <h3 class="font-display text-[17px] leading-snug font-semibold text-child-text">
           {{ name() }}
         </h3>
         <span
-          class="flex shrink-0 items-center gap-1 rounded-full bg-white/70 px-1.5 py-0.5 text-[11px] font-bold text-child-text sm:px-2 sm:text-xs"
+          class="flex shrink-0 items-center gap-1 rounded-full bg-white/70 px-2.5 py-0.5 text-sm font-bold text-child-text"
           [attr.aria-label]="'child.common.pointsAria' | transloco: { points: pointsCost() }"
         >
           <svg
             viewBox="0 0 20 20"
-            class="size-3 shrink-0"
+            class="size-3.5 shrink-0"
             fill="var(--color-child-star-fill)"
             stroke="var(--color-child-star-stroke)"
             stroke-width="1"
@@ -81,9 +73,7 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
       </div>
 
       @if (description()) {
-        <p
-          class="mt-1 line-clamp-2 text-[12px] leading-4 text-child-text-secondary sm:mt-1.5 sm:text-[13px] sm:leading-5"
-        >
+        <p class="mt-2 line-clamp-2 text-sm leading-5 text-child-text-secondary">
           {{ description() }}
         </p>
       }
@@ -93,7 +83,7 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
         (click)="requested.emit()"
         [disabled]="disabled() || busy()"
         [attr.aria-label]="'child.rewardCard.requestAria' | transloco: { name: name() }"
-        class="mt-2.5 min-h-9 w-full rounded-full bg-[linear-gradient(180deg,var(--color-child-cta-from),var(--color-child-cta-to))] text-[13px] font-bold text-child-text shadow-[3px_4px_0_var(--color-child-cta-shadow)] transition active:translate-x-[2px] active:translate-y-[3px] active:shadow-[1px_2px_0_var(--color-child-cta-shadow)] disabled:pointer-events-none disabled:opacity-50 sm:mt-3.5 sm:min-h-11 sm:text-sm"
+        class="mt-4 min-h-12 w-full rounded-full bg-[linear-gradient(180deg,var(--color-child-cta-from),var(--color-child-cta-to))] text-sm font-bold text-child-text shadow-[3px_4px_0_var(--color-child-cta-shadow)] transition active:translate-x-[2px] active:translate-y-[3px] active:shadow-[1px_2px_0_var(--color-child-cta-shadow)] disabled:pointer-events-none disabled:opacity-50"
       >
         {{ (busy() ? 'child.rewardCard.requesting' : 'child.rewardCard.request') | transloco }}
       </button>
