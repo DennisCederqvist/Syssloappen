@@ -17,7 +17,9 @@ public sealed class ChoreAssignmentsController(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
     TimeProvider timeProvider,
-    ChoreRecurrenceGenerator recurrenceGenerator) : ControllerBase
+    ChoreRecurrenceGenerator recurrenceGenerator,
+    INotificationDispatcher notificationDispatcher,
+    ILogger<ChoreAssignmentsController> logger) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType<ChoreAssignmentResponse>(StatusCodes.Status201Created)]
@@ -85,6 +87,12 @@ public sealed class ChoreAssignmentsController(
 
         dbContext.ChoreAssignments.Add(assignment);
         await dbContext.SaveChangesAsync();
+
+        await TryNotifyAsync(() => notificationDispatcher.NotifyChildAsync(
+            assignment.ChildId,
+            new NotificationEvent(
+                NotificationEventType.ChoreAssigned,
+                new ChoreAssignedData(assignment.Id, chore.Title, assignment.Points))));
 
         var response = new ChoreAssignmentResponse(
             assignment.Id,
@@ -312,11 +320,13 @@ public sealed class ChoreAssignmentsController(
             return Unauthorized();
         }
 
-        var assignment = await dbContext.ChoreAssignments.SingleOrDefaultAsync(item =>
-            item.Id == assignmentId
-            && item.HouseholdId == currentUser.HouseholdId
-            && item.Child.HouseholdId == currentUser.HouseholdId
-            && item.Chore.HouseholdId == currentUser.HouseholdId);
+        var assignment = await dbContext.ChoreAssignments
+            .Include(item => item.Chore)
+            .SingleOrDefaultAsync(item =>
+                item.Id == assignmentId
+                && item.HouseholdId == currentUser.HouseholdId
+                && item.Child.HouseholdId == currentUser.HouseholdId
+                && item.Chore.HouseholdId == currentUser.HouseholdId);
 
         if (assignment is null)
         {
@@ -372,11 +382,35 @@ public sealed class ChoreAssignmentsController(
             });
         }
 
+        await TryNotifyAsync(() => notificationDispatcher.NotifyChildAsync(
+            assignment.ChildId,
+            approve
+                ? new NotificationEvent(
+                    NotificationEventType.ChoreApproved,
+                    new ChoreApprovedData(assignment.Id, assignment.Chore.Title, assignment.Points))
+                : new NotificationEvent(
+                    NotificationEventType.ChoreNeedsRedo,
+                    new ChoreNeedsRedoData(assignment.Id, assignment.Chore.Title))));
+
         return Ok(new ReviewChoreAssignmentResponse(
             assignment.Id,
             assignment.Status.ToString(),
             reviewedAt,
             comment,
             approve ? assignment.Points : null));
+    }
+
+    // A notification failure must never fail the primary request — the underlying data
+    // change is already committed by the time this runs.
+    private async Task TryNotifyAsync(Func<Task> notify)
+    {
+        try
+        {
+            await notify();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to dispatch a real-time notification.");
+        }
     }
 }

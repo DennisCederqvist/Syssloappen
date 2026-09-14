@@ -1,8 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { RealtimeService } from '../../core/realtime/realtime.service';
 import { focusAfterRender } from '../../shared/focus';
 import { vibrateOnTap } from '../../shared/haptics';
 import { ChildCardMotion } from './ui/card-motion';
@@ -23,6 +25,8 @@ export class ChildHomePage implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly childChoresService = inject(ChildChoresService);
   private readonly transloco = inject(TranslocoService);
+  private readonly realtime = inject(RealtimeService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly motion = new ChildCardMotion(() =>
     this.actionableAssignments().map((assignment) => assignment.assignmentId),
   );
@@ -57,6 +61,15 @@ export class ChildHomePage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadPage();
     this.motion.start();
+    this.realtime.events$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evt) => {
+      if (
+        evt.type === 'ChoreAssigned' ||
+        evt.type === 'ChoreApproved' ||
+        evt.type === 'ChoreNeedsRedo'
+      ) {
+        this.loadPage();
+      }
+    });
   }
 
   ngOnDestroy(): void {

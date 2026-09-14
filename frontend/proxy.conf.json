@@ -8,5 +8,11 @@
     "target": "http://localhost:5047",
     "secure": false,
     "changeOrigin": true
+  },
+  "/hubs": {
+    "target": "http://localhost:5047",
+    "secure": false,
+    "changeOrigin": true,
+    "ws": true
   }
 }

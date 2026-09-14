@@ -6,13 +6,19 @@ using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.Rewards;
 using Syssloappen.Api.Models;
+using Syssloappen.Api.Services;
 
 namespace Syssloappen.Api.Controllers;
 
 [ApiController]
 [Route("api/child")]
 [Authorize(Roles = RoleNames.Child)]
-public sealed class ChildRewardsController(AppDbContext db, UserManager<ApplicationUser> users, TimeProvider clock) : ControllerBase
+public sealed class ChildRewardsController(
+    AppDbContext db,
+    UserManager<ApplicationUser> users,
+    TimeProvider clock,
+    INotificationDispatcher notificationDispatcher,
+    ILogger<ChildRewardsController> logger) : ControllerBase
 {
     [HttpGet("rewards")]
     public async Task<ActionResult<ChildRewardsResponse>> GetRewards()
@@ -58,6 +64,20 @@ public sealed class ChildRewardsController(AppDbContext db, UserManager<Applicat
         db.RewardRedemptions.Add(redemption);
         try { await db.SaveChangesAsync(); await transaction.CommitAsync(); }
         catch (DbUpdateException) { await transaction.RollbackAsync(); var replay = await db.RewardRedemptions.Include(r => r.Reward).SingleOrDefaultAsync(r => r.ChildId == child.Id && r.IdempotencyKey == keyText); if (replay is not null) return Ok(ToResponse(replay, await AvailablePoints(child))); return Conflict(new ProblemDetails { Title = "Redemption could not be reserved safely", Status = StatusCodes.Status409Conflict }); }
+
+        try
+        {
+            await notificationDispatcher.NotifyHouseholdAdultsAsync(
+                child.HouseholdId,
+                new NotificationEvent(
+                    NotificationEventType.RewardRequested,
+                    new RewardRequestedData(redemption.Id, reward.Name, child.Name)));
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to dispatch a real-time notification.");
+        }
+
         return CreatedAtAction(nameof(GetRewards), ToResponse(redemption, earned - reservation.ReservedPoints));
     }
 

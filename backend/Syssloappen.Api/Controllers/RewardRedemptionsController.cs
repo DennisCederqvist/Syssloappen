@@ -6,6 +6,7 @@ using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.Rewards;
 using Syssloappen.Api.Models;
+using Syssloappen.Api.Services;
 
 namespace Syssloappen.Api.Controllers;
 
@@ -15,7 +16,9 @@ namespace Syssloappen.Api.Controllers;
 public sealed class RewardRedemptionsController(
     AppDbContext db,
     UserManager<ApplicationUser> users,
-    TimeProvider clock) : ControllerBase
+    TimeProvider clock,
+    INotificationDispatcher notificationDispatcher,
+    ILogger<RewardRedemptionsController> logger) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<AdultRewardRedemptionResponse>>> GetRedemptions()
@@ -164,6 +167,22 @@ public sealed class RewardRedemptionsController(
                 Title = "Reward redemption was already handled",
                 Status = StatusCodes.Status409Conflict
             });
+        }
+
+        if (targetStatus == RewardRedemptionStatus.Approved)
+        {
+            try
+            {
+                await notificationDispatcher.NotifyChildAsync(
+                    redemption.ChildId,
+                    new NotificationEvent(
+                        NotificationEventType.RewardApproved,
+                        new RewardApprovedData(redemption.Id, redemption.Reward.Name)));
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to dispatch a real-time notification.");
+            }
         }
 
         return Ok(ToAdultResponse(redemption));

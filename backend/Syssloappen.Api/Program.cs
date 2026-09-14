@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
+using Syssloappen.Api.Hubs;
 using Syssloappen.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +37,10 @@ builder.Services.AddScoped<SessionCookieEvents>();
 builder.Services.AddScoped<ChoreRecurrenceGenerator>();
 builder.Services.AddScoped<IHouseholdPurgeService, HouseholdPurgeService>();
 builder.Services.AddHostedService<HouseholdDeletionSweepHostedService>();
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+        options.PayloadSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+builder.Services.AddScoped<INotificationDispatcher, SignalRNotificationDispatcher>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
@@ -160,6 +165,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationsHub>("/hubs/notifications");
 if (!app.Environment.IsDevelopment())
 {
     app.MapFallbackToFile("index.html");

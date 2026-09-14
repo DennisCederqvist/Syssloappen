@@ -17,7 +17,9 @@ public sealed class ChildChoreAssignmentsController(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
     TimeProvider timeProvider,
-    ChoreRecurrenceGenerator recurrenceGenerator) : ControllerBase
+    ChoreRecurrenceGenerator recurrenceGenerator,
+    INotificationDispatcher notificationDispatcher,
+    ILogger<ChildChoreAssignmentsController> logger) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<ChildChoreAssignmentResponse>>(StatusCodes.Status200OK)]
@@ -140,6 +142,7 @@ public sealed class ChildChoreAssignmentsController(
         // All ownership links are repeated in the update lookup. A sibling's,
         // another household's or an inconsistent assignment looks like not found.
         var assignment = await dbContext.ChoreAssignments
+            .Include(item => item.Chore)
             .SingleOrDefaultAsync(item =>
                 item.Id == assignmentId
                 && item.ChildId == child.Id
@@ -184,6 +187,19 @@ public sealed class ChildChoreAssignmentsController(
                 Title = "Assignment cannot be submitted",
                 Detail = "The assignment was already changed by another request."
             });
+        }
+
+        try
+        {
+            await notificationDispatcher.NotifyHouseholdAdultsAsync(
+                currentUser.HouseholdId,
+                new NotificationEvent(
+                    NotificationEventType.ChoreSubmittedForReview,
+                    new ChoreSubmittedForReviewData(assignment.Id, assignment.Chore.Title, child.Name)));
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to dispatch a real-time notification.");
         }
 
         return Ok(new SubmitChoreAssignmentResponse(
