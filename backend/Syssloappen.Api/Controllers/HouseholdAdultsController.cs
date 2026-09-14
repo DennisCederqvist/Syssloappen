@@ -338,31 +338,31 @@ public sealed class HouseholdAdultsController(
     private async Task SendDeletionScheduledEmailAsync(ApplicationUser owner, DateTime scheduledFor)
     {
         var name = owner.Nickname ?? owner.FirstName;
-        var greeting = string.IsNullOrEmpty(name) ? "Hej!" : $"Hej {WebUtility.HtmlEncode(name)}!";
+        var greeting = string.IsNullOrEmpty(name) ? "Hi!" : $"Hi {WebUtility.HtmlEncode(name)}!";
         var settingsUrl = $"{PublicBaseUrl}/vuxen/installningar/vuxna";
         var html = $"""
             <p>{greeting}</p>
-            <p>Ditt Sysslo-konto och hela familjens data är nu schemalagda för permanent radering
-            den {scheduledFor:yyyy-MM-dd}. Fram till dess fungerar allt som vanligt.</p>
-            <p>Ångrar du dig kan du avbryta raderingen när som helst innan dess, under
-            Inställningar → Vuxna: <a href="{settingsUrl}">{settingsUrl}</a></p>
-            <p>Var det inte du som bad om detta bör du byta lösenord omgående.</p>
+            <p>Your Sysslo account and the entire family's data are now scheduled for permanent
+            deletion on {scheduledFor:yyyy-MM-dd}. Until then, everything keeps working as usual.</p>
+            <p>If you change your mind, you can cancel the deletion at any time before then, under
+            Settings → Adults: <a href="{settingsUrl}">{settingsUrl}</a></p>
+            <p>If this wasn't you, you should change your password right away.</p>
             """;
 
-        await emailSender.SendAsync(owner.Email!, name, "Ditt Sysslo-konto raderas snart", html);
+        await emailSender.SendAsync(owner.Email!, name, "Your Sysslo account is scheduled for deletion", html);
     }
 
     private async Task SendDeletionCancelledEmailAsync(ApplicationUser owner)
     {
         var name = owner.Nickname ?? owner.FirstName;
-        var greeting = string.IsNullOrEmpty(name) ? "Hej!" : $"Hej {WebUtility.HtmlEncode(name)}!";
+        var greeting = string.IsNullOrEmpty(name) ? "Hi!" : $"Hi {WebUtility.HtmlEncode(name)}!";
         var html = $"""
             <p>{greeting}</p>
-            <p>Raderingen av ditt Sysslo-konto har avbrutits. Familjens data finns kvar och allt
-            fungerar som vanligt.</p>
-            <p>Var det inte du som bad om detta bör du byta lösenord omgående.</p>
+            <p>The deletion of your Sysslo account has been cancelled. The family's data is intact
+            and everything keeps working as usual.</p>
+            <p>If this wasn't you, you should change your password right away.</p>
             """;
 
-        await emailSender.SendAsync(owner.Email!, name, "Radering av ditt Sysslo-konto avbruten", html);
+        await emailSender.SendAsync(owner.Email!, name, "Deletion of your Sysslo account cancelled", html);
     }
 }

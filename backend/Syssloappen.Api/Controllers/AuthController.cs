@@ -409,14 +409,14 @@ public sealed class AuthController(
             + $"?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
 
         var name = user.Nickname ?? user.FirstName;
-        var greeting = string.IsNullOrEmpty(name) ? "Hej!" : $"Hej {WebUtility.HtmlEncode(name)}!";
+        var greeting = string.IsNullOrEmpty(name) ? "Hi!" : $"Hi {WebUtility.HtmlEncode(name)}!";
         var html = $"""
             <p>{greeting}</p>
-            <p>Bekräfta din e-postadress för att kunna logga in på Sysslo:</p>
+            <p>Confirm your email address to log in to Sysslo:</p>
             <p><a href="{confirmUrl}">{confirmUrl}</a></p>
             """;
 
-        await emailSender.SendAsync(user.Email!, name, "Bekräfta din e-post för Sysslo", html);
+        await emailSender.SendAsync(user.Email!, name, "Confirm your email for Sysslo", html);
     }
 
     private async Task SendPasswordResetEmailAsync(ApplicationUser user)
@@ -426,14 +426,14 @@ public sealed class AuthController(
             + $"?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
 
         var name = user.Nickname ?? user.FirstName;
-        var greeting = string.IsNullOrEmpty(name) ? "Hej!" : $"Hej {WebUtility.HtmlEncode(name)}!";
+        var greeting = string.IsNullOrEmpty(name) ? "Hi!" : $"Hi {WebUtility.HtmlEncode(name)}!";
         var html = $"""
             <p>{greeting}</p>
-            <p>Vi har fått en begäran om att återställa lösenordet för ditt Sysslo-konto. Om det var du, välj ett nytt lösenord här:</p>
+            <p>We received a request to reset the password for your Sysslo account. If that was you, choose a new password here:</p>
             <p><a href="{resetUrl}">{resetUrl}</a></p>
-            <p>Var det inte du som bad om detta kan du bortse från mejlet — ditt lösenord ändras inte förrän någon öppnar länken och väljer ett nytt.</p>
+            <p>If it wasn't you, you can ignore this email — your password won't change until someone opens the link and chooses a new one.</p>
             """;
 
-        await emailSender.SendAsync(user.Email!, name, "Återställ ditt lösenord för Sysslo", html);
+        await emailSender.SendAsync(user.Email!, name, "Reset your Sysslo password", html);
     }
 }
