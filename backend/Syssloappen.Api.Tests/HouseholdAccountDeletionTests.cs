@@ -33,7 +33,7 @@ public sealed class HouseholdAccountDeletionTests : IDisposable
         Assert.Equal(body.DeletionScheduledAt, status!.DeletionScheduledAt);
 
         Assert.Contains(factory.EmailSender.SentMessages, sent =>
-            sent.ToEmail == "owner.delete@example.test" && sent.Subject.Contains("raderas"));
+            sent.ToEmail == "owner.delete@example.test" && sent.Subject.Contains("deletion"));
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public sealed class HouseholdAccountDeletionTests : IDisposable
         Assert.Null(status!.DeletionScheduledAt);
 
         Assert.Contains(factory.EmailSender.SentMessages, sent =>
-            sent.ToEmail == "owner.cancel@example.test" && sent.Subject.Contains("avbruten"));
+            sent.ToEmail == "owner.cancel@example.test" && sent.Subject.Contains("cancelled"));
     }
 
     [Fact]
