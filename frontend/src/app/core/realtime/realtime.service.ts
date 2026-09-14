@@ -44,7 +44,9 @@ export class RealtimeService {
     this.connection = connection;
     // Best-effort — a page that can't connect (e.g. offline) simply falls back to
     // requiring a manual reload to see changes, same as before this feature existed.
-    connection.start().catch(() => undefined);
+    connection
+      .start()
+      .catch((error) => console.error('Realtime connection failed to start.', error));
   }
 
   private stop(): void {
