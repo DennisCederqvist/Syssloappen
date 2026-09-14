@@ -17,6 +17,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <PackageReference Include="SkiaSharp" Version="4.152.0" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="4.152.0" />
+    <PackageReference Include="WebPush" Version="1.0.13" />
   </ItemGroup>
 
 </Project>

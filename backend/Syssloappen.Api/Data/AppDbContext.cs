@@ -30,6 +30,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Reward> Rewards => Set<Reward>();
     public DbSet<RewardRedemption> RewardRedemptions => Set<RewardRedemption>();
     public DbSet<ChildPointReservation> ChildPointReservations => Set<ChildPointReservation>();
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -460,6 +461,29 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.HasOne(completion => completion.ApprovedByUser)
                 .WithMany()
                 .HasForeignKey(completion => completion.ApprovedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PushSubscription>(entity =>
+        {
+            entity.Property(subscription => subscription.Endpoint)
+                .HasMaxLength(1000)
+                .IsRequired();
+
+            entity.Property(subscription => subscription.P256dh)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.Property(subscription => subscription.Auth)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.HasIndex(subscription => subscription.Endpoint)
+                .IsUnique();
+
+            entity.HasOne(subscription => subscription.User)
+                .WithMany()
+                .HasForeignKey(subscription => subscription.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

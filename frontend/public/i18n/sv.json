@@ -205,6 +205,12 @@
         "title": "Skicka feedback",
         "subtitle": "Rapportera ett problem eller dela en idé"
       },
+      "notifications": {
+        "label": "Aviseringar",
+        "on": "På",
+        "off": "Av",
+        "error": "Aviseringar kunde inte ändras. Försök igen."
+      },
       "logout": "Logga ut"
     },
     "feedback": {
@@ -790,7 +796,11 @@
       "loadingText": "Hämtar din historik…",
       "loadError": "Din historik kunde inte hämtas. Försök igen.",
       "emptyText": "Inga godkända sysslor än — de dyker upp här när en vuxen har sagt bra jobbat!",
-      "approvedBody": "Godkänt! {{points}} poäng är tillagda i ditt saldo."
+      "approvedBody": "Godkänt! {{points}} poäng är tillagda i ditt saldo.",
+      "notificationsTitle": "Aviseringar",
+      "notificationsOn": "På",
+      "notificationsOff": "Av",
+      "notificationsError": "Kunde inte ändra aviseringarna. Försök igen."
     }
   },
   "help": {

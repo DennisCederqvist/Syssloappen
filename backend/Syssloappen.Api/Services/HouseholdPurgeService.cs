@@ -83,12 +83,14 @@ public sealed class HouseholdPurgeService(
             .Select(user => user.Id)
             .ToListAsync(cancellationToken);
 
-        // Identity's own per-user tables have no HouseholdId to filter by, so they're
-        // scoped through the household's user IDs instead.
+        // Identity's own per-user tables (and PushSubscriptions, also FK-Restrict to
+        // ApplicationUser) have no HouseholdId to filter by, so they're scoped through
+        // the household's user IDs instead.
         await dbContext.UserRoles.Where(x => userIds.Contains(x.UserId)).ExecuteDeleteAsync(cancellationToken);
         await dbContext.UserClaims.Where(x => userIds.Contains(x.UserId)).ExecuteDeleteAsync(cancellationToken);
         await dbContext.UserLogins.Where(x => userIds.Contains(x.UserId)).ExecuteDeleteAsync(cancellationToken);
         await dbContext.UserTokens.Where(x => userIds.Contains(x.UserId)).ExecuteDeleteAsync(cancellationToken);
+        await dbContext.PushSubscriptions.Where(x => userIds.Contains(x.UserId)).ExecuteDeleteAsync(cancellationToken);
         await dbContext.Users.Where(x => userIds.Contains(x.Id)).ExecuteDeleteAsync(cancellationToken);
 
         await dbContext.Households.Where(x => x.Id == householdId).ExecuteDeleteAsync(cancellationToken);
