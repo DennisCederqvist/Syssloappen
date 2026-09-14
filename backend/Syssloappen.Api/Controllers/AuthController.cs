@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.Auth;
 using Syssloappen.Api.Models;
+using Syssloappen.Api.Services;
 
 namespace Syssloappen.Api.Controllers;
 
@@ -16,7 +18,9 @@ public sealed class AuthController(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IEmailSender emailSender,
+    IConfiguration configuration)
     : ControllerBase
 {
     [AllowAnonymous]
@@ -78,6 +82,8 @@ public sealed class AuthController(
 
         await transaction.CommitAsync();
 
+        await SendConfirmationEmailAsync(user);
+
         // The clear family code is returned once. Only its hash remains in the database.
         var response = new RegisterAdultResponse(
             household.Id,
@@ -135,6 +141,8 @@ public sealed class AuthController(
         await dbContext.SaveChangesAsync();
         await transaction.CommitAsync();
 
+        await SendConfirmationEmailAsync(user);
+
         return StatusCode(
             StatusCodes.Status201Created,
             new RegisterInvitedAdultResponse(email, RoleNames.Adult, invitation.HouseholdId));
@@ -144,6 +152,7 @@ public sealed class AuthController(
     [HttpPost("login")]
     [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
         var email = request.Email.Trim();
@@ -154,16 +163,23 @@ public sealed class AuthController(
             return InvalidCredentials();
         }
 
-        var signInResult = await signInManager.PasswordSignInAsync(
-            user,
-            request.Password,
-            isPersistent: true,
-            lockoutOnFailure: false);
-
-        if (!signInResult.Succeeded)
+        // The password is checked separately from RequireConfirmedEmail so an unconfirmed
+        // account is only revealed to someone who has already proven they know the password —
+        // this endpoint does not set the Identity-wide RequireConfirmedEmail option (that would
+        // also block Child fallback login, which has no email at all) and instead gates only
+        // here.
+        var passwordCorrect = await userManager.CheckPasswordAsync(user, request.Password);
+        if (!passwordCorrect)
         {
             return InvalidCredentials();
         }
+
+        if (!user.EmailConfirmed)
+        {
+            return EmailNotConfirmed();
+        }
+
+        await signInManager.SignInAsync(user, isPersistent: true);
 
         var response = await BuildCurrentUserResponseAsync(user);
         return Ok(new LoginResponse(
@@ -175,6 +191,41 @@ public sealed class AuthController(
             response.LastName,
             response.Nickname,
             response.DisplayName));
+    }
+
+    [AllowAnonymous]
+    [HttpPost("confirm-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ConfirmEmail(ConfirmEmailRequest request)
+    {
+        var user = await userManager.FindByIdAsync(request.UserId);
+        if (user is null)
+        {
+            return InvalidConfirmation();
+        }
+
+        var result = await userManager.ConfirmEmailAsync(user, request.Token);
+        return result.Succeeded ? Ok() : InvalidConfirmation();
+    }
+
+    [AllowAnonymous]
+    [HttpPost("resend-confirmation")]
+    [EnableRateLimiting("email-confirmation")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ResendConfirmation(ResendConfirmationRequest request)
+    {
+        var user = await userManager.FindByEmailAsync(request.Email.Trim());
+
+        // Always the same response whether or not the account exists, is already confirmed, or
+        // is a Child (which has no email) — an email address must not be usable to probe which
+        // accounts exist.
+        if (user is not null && !user.EmailConfirmed && await userManager.IsInRoleAsync(user, RoleNames.Adult))
+        {
+            await SendConfirmationEmailAsync(user);
+        }
+
+        return Ok();
     }
 
     [Authorize]
@@ -282,4 +333,44 @@ public sealed class AuthController(
             Detail = "The invitation code is invalid or expired.",
             Status = StatusCodes.Status401Unauthorized
         });
+
+    private ObjectResult EmailNotConfirmed() => StatusCode(
+        StatusCodes.Status403Forbidden,
+        new ProblemDetails
+        {
+            Type = "email-not-confirmed",
+            Title = "Email not confirmed",
+            Detail = "Confirm your email address before logging in.",
+            Status = StatusCodes.Status403Forbidden
+        });
+
+    private BadRequestObjectResult InvalidConfirmation() => BadRequest(
+        new ProblemDetails
+        {
+            Title = "Invalid confirmation",
+            Detail = "The confirmation link is invalid or has expired.",
+            Status = StatusCodes.Status400BadRequest
+        });
+
+    private async Task SendConfirmationEmailAsync(ApplicationUser user)
+    {
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        // Frontend and backend share one origin in production (see Dockerfile), so
+        // Request.Scheme/Host is correct there. Local development runs them on separate ports
+        // (Angular dev server proxies /api to the backend, not the other way around), so
+        // PublicBaseUrl overrides it — see appsettings.Development.json.
+        var baseUrl = configuration["PublicBaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
+        var confirmUrl = $"{baseUrl}/bekrafta-epost"
+            + $"?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
+
+        var name = user.Nickname ?? user.FirstName;
+        var greeting = string.IsNullOrEmpty(name) ? "Hej!" : $"Hej {name}!";
+        var html = $"""
+            <p>{greeting}</p>
+            <p>Bekräfta din e-postadress för att kunna logga in på Sysslo:</p>
+            <p><a href="{confirmUrl}">{confirmUrl}</a></p>
+            """;
+
+        await emailSender.SendAsync(user.Email!, name, "Bekräfta din e-post för Sysslo", html);
+    }
 }

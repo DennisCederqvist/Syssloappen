@@ -200,7 +200,7 @@ public sealed class ChildDevicePairingTests : IDisposable
         return (await response.Content.ReadFromJsonAsync<CreateChildResponse>())!;
     }
 
-    private static async Task<RegisterAdultResponse> RegisterAdult(
+    private async Task<RegisterAdultResponse> RegisterAdult(
         HttpClient client,
         string householdName,
         string email)
@@ -209,6 +209,7 @@ public sealed class ChildDevicePairingTests : IDisposable
             "/api/auth/register",
             new RegisterAdultRequest { HouseholdName = householdName, Email = email, Password = Password });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         return (await response.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
     }
 

@@ -116,7 +116,7 @@ public sealed class HouseholdInvitationTests : IDisposable
         HandleCookies = true
     });
 
-    private static async Task<RegisterAdultResponse> Register(HttpClient client, string householdName, string email)
+    private async Task<RegisterAdultResponse> Register(HttpClient client, string householdName, string email)
     {
         var response = await client.PostAsJsonAsync("/api/auth/register", new RegisterAdultRequest
         {
@@ -125,6 +125,7 @@ public sealed class HouseholdInvitationTests : IDisposable
             Password = Password
         });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         return (await response.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
     }
 

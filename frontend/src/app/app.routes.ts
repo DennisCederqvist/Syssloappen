@@ -19,6 +19,16 @@ export const routes: Routes = [
       import('./features/login/accept-invitation-page').then((c) => c.AcceptInvitationPage),
   },
   {
+    path: 'bekrafta-epost',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/login/confirm-email-page').then((c) => c.ConfirmEmailPage),
+  },
+  {
+    path: 'hjalp',
+    loadComponent: () => import('./features/help/help-page').then((c) => c.HelpPage),
+  },
+  {
     path: 'vuxen',
     canActivate: [adultGuard],
     loadComponent: () => import('./features/adult/adult-home-page').then((c) => c.AdultHomePage),
@@ -70,6 +80,12 @@ export const routes: Routes = [
     canActivate: [adultGuard],
     loadComponent: () =>
       import('./features/adult/rewards/adult-rewards-page').then((c) => c.AdultRewardsPage),
+  },
+  {
+    path: 'vuxen/feedback',
+    canActivate: [adultGuard],
+    loadComponent: () =>
+      import('./features/adult/feedback/adult-feedback-page').then((c) => c.AdultFeedbackPage),
   },
   {
     path: 'barn',

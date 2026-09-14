@@ -268,7 +268,7 @@ public sealed class RewardsEndpointsTests : IDisposable
     {
         using var scope = factory.Services.CreateScope();
         var manager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var user = new ApplicationUser { UserName = email, Email = email, HouseholdId = householdId };
+        var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true, HouseholdId = householdId };
         Assert.True((await manager.CreateAsync(user, Password)).Succeeded);
         Assert.True((await manager.AddToRoleAsync(user, RoleNames.Adult)).Succeeded);
     }
@@ -290,11 +290,12 @@ public sealed class RewardsEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.OK, paired.StatusCode);
     }
 
-    private static async Task<RegisterAdultResponse> RegisterAndLoginAdult(HttpClient client, string householdName, string email)
+    private async Task<RegisterAdultResponse> RegisterAndLoginAdult(HttpClient client, string householdName, string email)
     {
         var response = await client.PostAsJsonAsync("/api/auth/register", new RegisterAdultRequest
         { HouseholdName = householdName, Email = email, Password = Password });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         var registration = (await response.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
         await Login(client, email);
         return registration;

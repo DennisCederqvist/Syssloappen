@@ -120,7 +120,7 @@ public sealed class AuthEndpointsTests : IDisposable
             HandleCookies = true
         });
 
-    private static async Task<RegisterAdultResponse> RegisterAdult(
+    private async Task<RegisterAdultResponse> RegisterAdult(
         HttpClient client,
         string householdName,
         string email)
@@ -135,6 +135,12 @@ public sealed class AuthEndpointsTests : IDisposable
             });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        // Registration sends a confirmation email rather than confirming immediately; most
+        // existing tests exercise a normal login flow, so confirm here the same way a real user
+        // would (by following the link), keeping test setup realistic.
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
+
         return (await response.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
     }
 

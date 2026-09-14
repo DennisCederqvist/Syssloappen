@@ -355,6 +355,7 @@ public sealed class ChoresEndpointsTests : IDisposable
         {
             UserName = email,
             Email = email,
+            EmailConfirmed = true,
             HouseholdId = householdId
         };
         Assert.True((await userManager.CreateAsync(user, Password)).Succeeded);
@@ -415,7 +416,7 @@ public sealed class ChoresEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.OK, pairResponse.StatusCode);
     }
 
-    private static async Task<RegisterAdultResponse> RegisterAndLoginAdult(
+    private async Task<RegisterAdultResponse> RegisterAndLoginAdult(
         HttpClient client,
         string householdName,
         string email)
@@ -429,6 +430,7 @@ public sealed class ChoresEndpointsTests : IDisposable
                 Password = Password
             });
         Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         var registration = (await registerResponse.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
         await Login(client, email);
         return registration;

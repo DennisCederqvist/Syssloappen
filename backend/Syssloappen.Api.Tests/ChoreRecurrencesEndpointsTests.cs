@@ -283,11 +283,12 @@ public sealed class ChoreRecurrencesEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.OK, pairResponse.StatusCode);
     }
 
-    private static async Task<RegisterAdultResponse> RegisterAndLoginAdult(HttpClient client, string householdName, string email)
+    private async Task<RegisterAdultResponse> RegisterAndLoginAdult(HttpClient client, string householdName, string email)
     {
         var registerResponse = await client.PostAsJsonAsync("/api/auth/register", new RegisterAdultRequest
         { HouseholdName = householdName, Email = email, Password = Password });
         Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         var registration = (await registerResponse.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
 
         var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest { Email = email, Password = Password });

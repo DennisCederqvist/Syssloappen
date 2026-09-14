@@ -392,7 +392,7 @@ public sealed class ChildFallbackLoginTests : IDisposable
         return (await response.Content.ReadFromJsonAsync<CreateChildResponse>())!;
     }
 
-    private static async Task<RegisterAdultResponse> RegisterAndLoginAdult(
+    private async Task<RegisterAdultResponse> RegisterAndLoginAdult(
         HttpClient client,
         string householdName,
         string email)
@@ -405,7 +405,7 @@ public sealed class ChildFallbackLoginTests : IDisposable
         return registration;
     }
 
-    private static async Task<RegisterAdultResponse> RegisterAdult(
+    private async Task<RegisterAdultResponse> RegisterAdult(
         HttpClient client,
         string householdName,
         string email)
@@ -419,6 +419,7 @@ public sealed class ChildFallbackLoginTests : IDisposable
                 Password = Password
             });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         return (await response.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
     }
 }

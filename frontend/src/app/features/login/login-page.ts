@@ -56,6 +56,9 @@ export class LoginPage implements OnDestroy {
   readonly familyCodeCopied = signal(false);
   readonly isScanningQr = signal(false);
   readonly qrScanError = signal('');
+  readonly emailNotConfirmed = signal(false);
+  readonly isResendingConfirmation = signal(false);
+  readonly confirmationResent = signal(false);
 
   readonly adultForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -92,6 +95,8 @@ export class LoginPage implements OnDestroy {
   selectMode(mode: LoginMode): void {
     this.mode.set(mode);
     this.errorMessage.set('');
+    this.emailNotConfirmed.set(false);
+    this.confirmationResent.set(false);
     this.stopQrScan();
   }
   selectAdultView(view: AdultView): void {
@@ -99,6 +104,8 @@ export class LoginPage implements OnDestroy {
     this.registrationResult.set(null);
     this.familyCodeCopied.set(false);
     this.errorMessage.set('');
+    this.emailNotConfirmed.set(false);
+    this.confirmationResent.set(false);
   }
   selectChildLoginMode(mode: ChildLoginMode): void {
     this.childLoginMode.set(mode);
@@ -153,7 +160,22 @@ export class LoginPage implements OnDestroy {
       focusAfterRender(this.adultForm.controls.email.invalid ? 'adult-email' : 'adult-password');
       return;
     }
+    this.emailNotConfirmed.set(false);
+    this.confirmationResent.set(false);
     this.signIn(this.auth.loginAdult(this.adultForm.getRawValue()));
+  }
+
+  resendConfirmation(): void {
+    const email = this.adultForm.controls.email.value;
+    if (!email || this.isResendingConfirmation()) return;
+    this.isResendingConfirmation.set(true);
+    this.auth
+      .resendConfirmationEmail({ email })
+      .pipe(finalize(() => this.isResendingConfirmation.set(false)))
+      .subscribe({
+        next: () => this.confirmationResent.set(true),
+        error: () => this.errorMessage.set(this.transloco.translate('common.errors.generic')),
+      });
   }
   submitRegistration(): void {
     if (this.registrationForm.invalid) {
@@ -243,12 +265,18 @@ export class LoginPage implements OnDestroy {
     this.errorMessage.set('');
     request.pipe(finalize(() => this.isSubmitting.set(false))).subscribe({
       next: (user) => this.router.navigateByUrl(this.auth.homeFor(user.role)),
-      error: (error: HttpErrorResponse) =>
+      error: (error: HttpErrorResponse) => {
+        if (error.status === 403) {
+          this.emailNotConfirmed.set(true);
+          this.errorMessage.set(this.transloco.translate('auth.login.error.emailNotConfirmed'));
+          return;
+        }
         this.errorMessage.set(
           this.transloco.translate(
             error.status === 429 ? 'auth.login.error.rateLimited' : 'auth.login.error.generic',
           ),
-        ),
+        );
+      },
     });
   }
 }

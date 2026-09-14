@@ -31,6 +31,7 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
                 Password = Password
             });
         Assert.Equal(HttpStatusCode.Created, acceptResponse.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(invited, factory.EmailSender, "invited.list@example.test");
         await Login(invited, "invited.list@example.test");
 
         var ownerListResponse = await owner.GetAsync("/api/household/adults");
@@ -263,6 +264,7 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
             Nickname = "annaa"
         });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, "named.owner@example.test");
 
         await Login(client, "named.owner@example.test");
         var me = await client.GetFromJsonAsync<CurrentUserResponse>("/api/auth/me");
@@ -286,6 +288,7 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
             Nickname = "zappelicus"
         });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, "nickname.owner@example.test");
 
         await Login(client, "nickname.owner@example.test");
         var me = await client.GetFromJsonAsync<CurrentUserResponse>("/api/auth/me");
@@ -306,6 +309,7 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
             FirstName = "Kim"
         });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, "firstname.owner@example.test");
 
         await Login(client, "firstname.owner@example.test");
         var me = await client.GetFromJsonAsync<CurrentUserResponse>("/api/auth/me");
@@ -434,7 +438,7 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
         HandleCookies = true
     });
 
-    private static async Task<RegisterAdultResponse> Register(HttpClient client, string householdName, string email)
+    private async Task<RegisterAdultResponse> Register(HttpClient client, string householdName, string email)
     {
         var response = await client.PostAsJsonAsync("/api/auth/register", new RegisterAdultRequest
         {
@@ -443,6 +447,7 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
             Password = Password
         });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         return (await response.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
     }
 
@@ -463,7 +468,7 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
         return (await response.Content.ReadFromJsonAsync<CreateHouseholdInvitationResponse>())!;
     }
 
-    private static async Task Accept(HttpClient client, string code, string email)
+    private async Task Accept(HttpClient client, string code, string email)
     {
         var response = await client.PostAsJsonAsync("/api/auth/register/invited", new RegisterInvitedAdultRequest
         {
@@ -472,6 +477,7 @@ public sealed class HouseholdAdultsEndpointTests : IDisposable
             Password = Password
         });
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
     }
 
     private static async Task<string> GetOwnUserId(HttpClient client)

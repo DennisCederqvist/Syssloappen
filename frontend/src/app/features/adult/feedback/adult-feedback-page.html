@@ -1,0 +1,54 @@
+<div class="page-enter min-h-dvh bg-adult-bg pb-24 md:flex md:pb-0">
+  <app-adult-bottom-nav />
+  <main class="mx-auto w-full max-w-2xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+    <app-adult-page-header
+      [title]="'adult.feedback.pageTitle' | transloco"
+      [subtitle]="'adult.feedback.pageSubtitle' | transloco"
+    />
+
+    @if (successMessage()) {
+      <div
+        id="adult-feedback-success"
+        tabindex="-1"
+        role="status"
+        class="mt-4 rounded-lg border border-adult-border bg-adult-accent-soft px-4 py-3 text-sm font-medium text-adult-accent-dark"
+      >
+        {{ successMessage() }}
+      </div>
+    }
+    @if (errorMessage()) {
+      <div
+        class="mt-4 rounded-lg border border-adult-danger-border bg-adult-danger-bg px-4 py-3 text-sm font-medium text-adult-danger-text"
+        role="alert"
+      >
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="mt-4" novalidate>
+      <label class="block">
+        <span class="text-sm font-semibold text-adult-text">{{
+          'adult.feedback.messageLabel' | transloco
+        }}</span>
+        <textarea
+          id="feedback-message"
+          formControlName="message"
+          rows="8"
+          maxlength="2000"
+          [placeholder]="'adult.feedback.messagePlaceholder' | transloco"
+          [attr.aria-invalid]="form.controls.message.touched && form.controls.message.invalid"
+          aria-describedby="feedback-message-error"
+          class="mt-2 w-full rounded-lg border border-adult-border bg-adult-surface p-3 text-adult-text"
+        ></textarea>
+        @if (form.controls.message.touched && form.controls.message.invalid) {
+          <span id="feedback-message-error" class="mt-1 block text-sm text-adult-danger-text">
+            {{ 'adult.feedback.messageError' | transloco }}
+          </span>
+        }
+      </label>
+      <button type="submit" adultPrimaryButton class="mt-4 w-full" [disabled]="isSubmitting()">
+        {{ (isSubmitting() ? 'adult.feedback.sending' : 'adult.feedback.submit') | transloco }}
+      </button>
+    </form>
+  </main>
+</div>

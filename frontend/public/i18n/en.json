@@ -40,6 +40,7 @@
         "eyebrow": "Account created",
         "welcome": "Welcome to Sysslo!",
         "description": "Your family and adult account are ready. Save the family code before continuing.",
+        "confirmEmailNotice": "We've sent a confirmation email to {{email}}. You need to confirm your email before you can log in.",
         "familyCodeLabel": "Family code",
         "copy": "Copy code",
         "copied": "Copied ✓",
@@ -121,8 +122,20 @@
       },
       "error": {
         "rateLimited": "Too many attempts. Wait a moment and try again.",
-        "generic": "Login failed. Check the details and try again."
+        "generic": "Login failed. Check the details and try again.",
+        "emailNotConfirmed": "Confirm your email before logging in.",
+        "resendConfirmation": "Resend the confirmation email",
+        "resendingConfirmation": "Sending…",
+        "confirmationResent": "A new confirmation email has been sent."
       }
+    },
+    "confirmEmail": {
+      "loading": "Confirming your email…",
+      "success": "Your email is confirmed. You can now log in.",
+      "goToLogin": "Go to login",
+      "errorInvalid": "The link is invalid or has expired. Request a new confirmation email from the login page.",
+      "errorGeneric": "Something went wrong. Please try again shortly.",
+      "errorMissingLink": "The link is missing information. Open the link from the email again."
     },
     "acceptInvitation": {
       "eyebrow": "Sysslo",
@@ -157,7 +170,21 @@
       "children": { "title": "Children and accounts", "subtitle": "Profiles and devices" },
       "adults": { "title": "Manage adults", "subtitle": "Invite and see who has access" },
       "history": { "title": "History", "subtitle": "The family's finished activity" },
+      "help": { "title": "Help", "subtitle": "Frequently asked questions and guides" },
+      "feedback": { "title": "Send feedback", "subtitle": "Report a problem or share an idea" },
       "logout": "Log out"
+    },
+    "feedback": {
+      "pageTitle": "Send feedback",
+      "pageSubtitle": "Report a problem or share an idea with us",
+      "messageLabel": "Your message",
+      "messagePlaceholder": "Tell us what happened or what you think...",
+      "messageError": "Write a message before sending.",
+      "submit": "Send",
+      "sending": "Sending…",
+      "success": "Thanks! Your message has been sent.",
+      "errorValidation": "Write a message before sending.",
+      "errorGeneric": "The message couldn't be sent. Please try again shortly."
     },
     "home": {
       "welcome": "Welcome, {{name}}!",
@@ -713,6 +740,51 @@
       "loadError": "Your history couldn't be loaded. Try again.",
       "emptyText": "No approved chores yet — they'll show up here once an adult says great job!",
       "approvedBody": "Approved! {{points}} points have been added to your balance."
+    }
+  },
+  "help": {
+    "backLink": "Back",
+    "pageTitle": "Help",
+    "intro": "Here are answers to the most common questions about how Sysslo works. Can't find what you're looking for? Email us at the bottom of the page.",
+    "linkFromLogin": "Need help? Read our guide",
+    "stillStuck": "Couldn't find the answer you were looking for? Email us at ",
+    "faq": {
+      "addAdult": {
+        "question": "How do I add another adult to the family?",
+        "answer": "Go to Settings → Manage adults and tap \"+ Invite adult\" to create a one-time code. Share the code with the person (for example by text message), and they can go to \"I have an invite\" to enter the code and choose their own email and password."
+      },
+      "addChild": {
+        "question": "How do I add a child?",
+        "answer": "Go to Settings → Children and accounts and tap Add child. You'll choose a name, a kid-friendly username, and a password for the child."
+      },
+      "pairDevice": {
+        "question": "How do I pair my child's tablet or phone?",
+        "answer": "Open the child's profile and create a one-time code. The child's device can either scan the QR code with its camera or type in the eight-character code manually. The code is only valid for a short time and can only be used once."
+      },
+      "createChore": {
+        "question": "How do I create a chore?",
+        "answer": "Go to Chores and tap Add. Give the chore a title, an optional description, and a point value."
+      },
+      "assignChore": {
+        "question": "How do I assign a chore to a child?",
+        "answer": "Pick a chore from the list and tap Assign. You can assign it once or make it recur on chosen days."
+      },
+      "reviewChore": {
+        "question": "How do I approve a chore a child has reported?",
+        "answer": "Go to Review to see chores waiting for approval. Approve to award the points, or ask the child to redo it with a comment."
+      },
+      "createReward": {
+        "question": "How do I add a reward?",
+        "answer": "Go to Rewards and tap Add. Give the reward a name, a point price, and optionally a picture."
+      },
+      "redeemReward": {
+        "question": "How does a child redeem a reward?",
+        "answer": "The child picks a reward in their app and sends a request. You approve or decline the request under Rewards, and mark it delivered once the child has received it."
+      },
+      "points": {
+        "question": "How do points work?",
+        "answer": "The child earns points when an adult approves a reported chore. The points can then be used to request rewards from the family's reward list."
+      }
     }
   }
 }

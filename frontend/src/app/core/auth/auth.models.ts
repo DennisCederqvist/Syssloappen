@@ -58,3 +58,10 @@ export interface ChildLoginRequest {
 export interface ChildPairingRequest {
   code: string;
 }
+export interface ConfirmEmailRequest {
+  userId: string;
+  token: string;
+}
+export interface ResendConfirmationRequest {
+  email: string;
+}

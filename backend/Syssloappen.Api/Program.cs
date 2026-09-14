@@ -48,7 +48,8 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
-    .AddSignInManager();
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -62,6 +63,15 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             }));
     options.AddPolicy("child-fallback-login", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+    options.AddPolicy("email-confirmation", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
             httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             _ => new FixedWindowRateLimiterOptions
@@ -98,6 +108,18 @@ if (builder.Configuration["Storage:Provider"] == "Supabase")
 else
 {
     builder.Services.AddScoped<IRewardImageStorage, LocalDiskRewardImageStorage>();
+}
+
+// "Resend" sends real email via Resend's HTTP API; anything else (local dev by default) logs the
+// message instead. See docs/HANDOFF.md for the Email:* configuration keys.
+builder.Services.Configure<ResendOptions>(builder.Configuration.GetSection(ResendOptions.SectionName));
+if (builder.Configuration["Email:Provider"] == "Resend")
+{
+    builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>();
+}
+else
+{
+    builder.Services.AddScoped<IEmailSender, LoggingEmailSender>();
 }
 
 var app = builder.Build();

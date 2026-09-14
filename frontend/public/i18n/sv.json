@@ -40,6 +40,7 @@
         "eyebrow": "Kontot är skapat",
         "welcome": "Välkommen till Sysslo!",
         "description": "Din familj och ditt vuxenkonto är klara. Spara familjekoden innan du fortsätter.",
+        "confirmEmailNotice": "Vi har skickat ett bekräftelsemejl till {{email}}. Du behöver bekräfta din e-post innan du kan logga in.",
         "familyCodeLabel": "Familjekod",
         "copy": "Kopiera koden",
         "copied": "Kopierad ✓",
@@ -121,8 +122,20 @@
       },
       "error": {
         "rateLimited": "För många försök. Vänta en liten stund och försök igen.",
-        "generic": "Inloggningen lyckades inte. Kontrollera uppgifterna och försök igen."
+        "generic": "Inloggningen lyckades inte. Kontrollera uppgifterna och försök igen.",
+        "emailNotConfirmed": "Bekräfta din e-post innan du loggar in.",
+        "resendConfirmation": "Skicka bekräftelsemejlet igen",
+        "resendingConfirmation": "Skickar…",
+        "confirmationResent": "Ett nytt bekräftelsemejl är skickat."
       }
+    },
+    "confirmEmail": {
+      "loading": "Bekräftar din e-post…",
+      "success": "Din e-post är bekräftad. Du kan nu logga in.",
+      "goToLogin": "Gå till login",
+      "errorInvalid": "Länken är felaktig eller har gått ut. Be om ett nytt bekräftelsemejl på inloggningssidan.",
+      "errorGeneric": "Något gick fel. Försök igen om en liten stund.",
+      "errorMissingLink": "Länken saknar information. Öppna länken från mejlet igen."
     },
     "acceptInvitation": {
       "eyebrow": "Sysslo",
@@ -157,7 +170,24 @@
       "children": { "title": "Barn och konton", "subtitle": "Profiler och enheter" },
       "adults": { "title": "Hantera vuxna", "subtitle": "Bjud in och se vem som har tillgång" },
       "history": { "title": "Historik", "subtitle": "Familjens avslutade aktiviteter" },
+      "help": { "title": "Hjälp", "subtitle": "Vanliga frågor och guider" },
+      "feedback": {
+        "title": "Skicka feedback",
+        "subtitle": "Rapportera ett problem eller dela en idé"
+      },
       "logout": "Logga ut"
+    },
+    "feedback": {
+      "pageTitle": "Skicka feedback",
+      "pageSubtitle": "Rapportera ett problem eller dela en idé med oss",
+      "messageLabel": "Ditt meddelande",
+      "messagePlaceholder": "Berätta vad som hänt eller vad du tycker...",
+      "messageError": "Skriv ett meddelande innan du skickar.",
+      "submit": "Skicka",
+      "sending": "Skickar…",
+      "success": "Tack! Ditt meddelande är skickat.",
+      "errorValidation": "Skriv ett meddelande innan du skickar.",
+      "errorGeneric": "Meddelandet kunde inte skickas. Försök igen om en liten stund."
     },
     "home": {
       "welcome": "Välkommen, {{name}}!",
@@ -713,6 +743,51 @@
       "loadError": "Din historik kunde inte hämtas. Försök igen.",
       "emptyText": "Inga godkända sysslor än — de dyker upp här när en vuxen har sagt bra jobbat!",
       "approvedBody": "Godkänt! {{points}} poäng är tillagda i ditt saldo."
+    }
+  },
+  "help": {
+    "backLink": "Tillbaka",
+    "pageTitle": "Hjälp",
+    "intro": "Här är svar på de vanligaste frågorna om hur Sysslo fungerar. Hittar du inte svaret du letar efter kan du mejla oss längst ner på sidan.",
+    "linkFromLogin": "Behöver du hjälp? Läs vår guide",
+    "stillStuck": "Hittade du inte svaret du sökte? Mejla oss på ",
+    "faq": {
+      "addAdult": {
+        "question": "Hur lägger jag till en till vuxen i familjen?",
+        "answer": "Gå till Inställningar → Hantera vuxna och tryck på \"+ Bjud in vuxen\" för att skapa en engångskod. Dela koden med personen (till exempel via sms), så kan de gå till \"Jag har en inbjudan\" och skriva in koden samt välja sin egen e-post och lösenord."
+      },
+      "addChild": {
+        "question": "Hur lägger jag till ett barn?",
+        "answer": "Gå till Inställningar → Barn och konton och tryck på Lägg till barn. Du väljer ett namn, ett barnvänligt användarnamn och ett lösenord åt barnet."
+      },
+      "pairDevice": {
+        "question": "Hur kopplar jag barnets surfplatta eller telefon?",
+        "answer": "Öppna barnets profil och skapa en engångskod. Barnets enhet kan antingen skanna QR-koden med kameran eller skriva in den åttasiffriga koden manuellt. Koden gäller bara en kort stund och kan bara användas en gång."
+      },
+      "createChore": {
+        "question": "Hur skapar jag en syssla?",
+        "answer": "Gå till Sysslor och tryck på Lägg till. Ge sysslan en titel, en valfri beskrivning och ett poängvärde."
+      },
+      "assignChore": {
+        "question": "Hur tilldelar jag en syssla till ett barn?",
+        "answer": "Välj en syssla i listan och tryck på Tilldela. Du kan tilldela den en gång eller göra den återkommande på valda dagar."
+      },
+      "reviewChore": {
+        "question": "Hur godkänner jag en syssla som ett barn har rapporterat?",
+        "answer": "Gå till Granska för att se sysslor som väntar på godkännande. Godkänn för att dela ut poängen, eller be barnet göra om den med en kommentar."
+      },
+      "createReward": {
+        "question": "Hur lägger jag till en belöning?",
+        "answer": "Gå till Belöningar och tryck på Lägg till. Ge belöningen ett namn, ett poängpris och gärna en bild."
+      },
+      "redeemReward": {
+        "question": "Hur löser ett barn in en belöning?",
+        "answer": "Barnet väljer en belöning i sin app och skickar en förfrågan. Du godkänner eller avslår förfrågan under Belöningar, och markerar den som utlämnad när barnet har fått den."
+      },
+      "points": {
+        "question": "Hur fungerar poäng?",
+        "answer": "Barnet tjänar poäng när en vuxen godkänner en rapporterad syssla. Poängen kan sedan användas för att begära belöningar ur familjens belöningslista."
+      }
     }
   }
 }

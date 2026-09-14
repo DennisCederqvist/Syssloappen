@@ -5,12 +5,14 @@ import {
   AdultLoginRequest,
   ChildLoginRequest,
   ChildPairingRequest,
+  ConfirmEmailRequest,
   CurrentUser,
   HouseholdInvitation,
   RegisterAdultRequest,
   RegisterInvitedAdultRequest,
   RegisterInvitedAdultResponse,
   RegisterAdultResponse,
+  ResendConfirmationRequest,
   UserRole,
 } from './auth.models';
 
@@ -73,6 +75,14 @@ export class AuthService {
     return this.http
       .post<CurrentUser>('/api/auth/child/pair', request)
       .pipe(tap((user) => this.rememberUser(user)));
+  }
+
+  confirmEmail(request: ConfirmEmailRequest): Observable<void> {
+    return this.http.post<void>('/api/auth/confirm-email', request);
+  }
+
+  resendConfirmationEmail(request: ResendConfirmationRequest): Observable<void> {
+    return this.http.post<void>('/api/auth/resend-confirmation', request);
   }
 
   logout(): Observable<void> {

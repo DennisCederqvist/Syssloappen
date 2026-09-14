@@ -360,7 +360,7 @@ public sealed class ChoreAssignmentCancellationTests : IDisposable
         Assert.Equal(HttpStatusCode.OK, pairResponse.StatusCode);
     }
 
-    private static async Task<RegisterAdultResponse> RegisterAndLoginAdult(
+    private async Task<RegisterAdultResponse> RegisterAndLoginAdult(
         HttpClient client,
         string householdName,
         string email)
@@ -374,6 +374,7 @@ public sealed class ChoreAssignmentCancellationTests : IDisposable
                 Password = Password
             });
         Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
+        await TestEmailConfirmation.ConfirmLatestAsync(client, factory.EmailSender, email);
         var registration = (await registerResponse.Content.ReadFromJsonAsync<RegisterAdultResponse>())!;
         var loginResponse = await client.PostAsJsonAsync(
             "/api/auth/login",
