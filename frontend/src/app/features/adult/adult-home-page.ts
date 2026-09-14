@@ -1,7 +1,9 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { RealtimeService } from '../../core/realtime/realtime.service';
 import { AdultApprovalCard } from './ui/approval-card';
 import { AdultBadge } from './ui/badge';
 import { AdultBottomNav } from './ui/bottom-nav';
@@ -36,12 +38,14 @@ interface ChildOverview extends ChildSummary {
   ],
   templateUrl: './adult-home-page.html',
 })
-export class AdultHomePage {
+export class AdultHomePage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly childrenService = inject(ChildrenService);
   private readonly choresService = inject(ChoresService);
   private readonly rewardRedemptionsService = inject(RewardRedemptionsService);
   private readonly transloco = inject(TranslocoService);
+  private readonly realtime = inject(RealtimeService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly displayName = computed(
     () => this.auth.user()?.displayName || this.auth.user()?.email?.split('@')[0] || 'familj',
   );
@@ -63,7 +67,16 @@ export class AdultHomePage {
     ),
   );
 
-  constructor() {
+  ngOnInit(): void {
+    this.load();
+    this.realtime.events$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evt) => {
+      if (evt.type === 'ChoreSubmittedForReview' || evt.type === 'RewardRequested') {
+        this.load();
+      }
+    });
+  }
+
+  private load(): void {
     forkJoin({
       children: this.childrenService.getActiveChildren(),
       assignments: this.choresService.getAssignments(),
