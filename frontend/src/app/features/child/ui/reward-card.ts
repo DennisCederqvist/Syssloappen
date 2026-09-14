@@ -13,7 +13,7 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
     <article
       [id]="cardId()"
       tabindex="-1"
-      class="flex flex-col rounded-[30px] p-5 outline-none sm:p-6 {{ paletteClasses() }}"
+      class="flex flex-col rounded-[22px] p-3.5 outline-none sm:p-4 {{ paletteClasses() }}"
       [style.rotate.deg]="tiltDeg()"
       [style.--tilt.deg]="tiltDeg()"
       [style.animation-name]="wobbling() ? 'child-card-wobble' : 'none'"
@@ -25,16 +25,16 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
         <img
           [src]="url"
           alt=""
-          class="aspect-[16/10] w-full rounded-[20px] object-cover"
+          class="aspect-[16/10] w-full rounded-[15px] object-cover"
         />
       } @else {
         <div
-          class="flex aspect-[16/10] items-center justify-center rounded-[20px] border-2 border-dashed border-white/70 bg-white/40"
+          class="flex aspect-[16/10] items-center justify-center rounded-[15px] border-2 border-dashed border-white/70 bg-white/40"
           aria-hidden="true"
         >
           <svg
             viewBox="0 0 24 24"
-            class="size-10 text-child-text-secondary/50"
+            class="size-7 text-child-text-secondary/50"
             fill="none"
             stroke="currentColor"
             stroke-width="1.6"
@@ -51,17 +51,17 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
         </div>
       }
 
-      <div class="mt-4 flex items-start justify-between gap-3">
-        <h3 class="font-display text-[19px] leading-snug font-semibold text-child-text">
+      <div class="mt-3 flex items-start justify-between gap-2">
+        <h3 class="font-display text-[15px] leading-snug font-semibold text-child-text">
           {{ name() }}
         </h3>
         <span
-          class="flex shrink-0 items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-sm font-bold text-child-text"
+          class="flex shrink-0 items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-xs font-bold text-child-text"
           [attr.aria-label]="'child.common.pointsAria' | transloco: { points: pointsCost() }"
         >
           <svg
             viewBox="0 0 20 20"
-            class="size-3.5 shrink-0"
+            class="size-3 shrink-0"
             fill="var(--color-child-star-fill)"
             stroke="var(--color-child-star-stroke)"
             stroke-width="1"
@@ -77,7 +77,7 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
       </div>
 
       @if (description()) {
-        <p class="mt-2 text-[15px] leading-6 text-child-text-secondary">{{ description() }}</p>
+        <p class="mt-1.5 text-[13px] leading-5 text-child-text-secondary">{{ description() }}</p>
       }
 
       <button
@@ -85,7 +85,7 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
         (click)="requested.emit()"
         [disabled]="disabled() || busy()"
         [attr.aria-label]="'child.rewardCard.requestAria' | transloco: { name: name() }"
-        class="mt-5 min-h-14 w-full rounded-full bg-[linear-gradient(180deg,var(--color-child-cta-from),var(--color-child-cta-to))] text-base font-bold text-child-text shadow-[4px_6px_0_var(--color-child-cta-shadow)] transition active:translate-x-[2px] active:translate-y-[3px] active:shadow-[1px_2px_0_var(--color-child-cta-shadow)] disabled:pointer-events-none disabled:opacity-50"
+        class="mt-3.5 min-h-11 w-full rounded-full bg-[linear-gradient(180deg,var(--color-child-cta-from),var(--color-child-cta-to))] text-sm font-bold text-child-text shadow-[3px_4px_0_var(--color-child-cta-shadow)] transition active:translate-x-[2px] active:translate-y-[3px] active:shadow-[1px_2px_0_var(--color-child-cta-shadow)] disabled:pointer-events-none disabled:opacity-50"
       >
         {{ (busy() ? 'child.rewardCard.requesting' : 'child.rewardCard.request') | transloco }}
       </button>
