@@ -157,6 +157,11 @@
       "children": { "title": "Barn och konton", "subtitle": "Profiler och enheter" },
       "adults": { "title": "Hantera vuxna", "subtitle": "Bjud in och se vem som har tillgång" },
       "history": { "title": "Historik", "subtitle": "Familjens avslutade aktiviteter" },
+      "help": { "title": "Hjälp", "subtitle": "Vanliga frågor och guider" },
+      "feedback": {
+        "title": "Skicka feedback",
+        "subtitle": "Rapportera ett problem eller dela en idé"
+      },
       "logout": "Logga ut"
     },
     "home": {
@@ -713,6 +718,51 @@
       "loadError": "Din historik kunde inte hämtas. Försök igen.",
       "emptyText": "Inga godkända sysslor än — de dyker upp här när en vuxen har sagt bra jobbat!",
       "approvedBody": "Godkänt! {{points}} poäng är tillagda i ditt saldo."
+    }
+  },
+  "help": {
+    "backLink": "Tillbaka",
+    "pageTitle": "Hjälp",
+    "intro": "Här är svar på de vanligaste frågorna om hur Sysslo fungerar. Hittar du inte svaret du letar efter kan du mejla oss längst ner på sidan.",
+    "linkFromLogin": "Behöver du hjälp? Läs vår guide",
+    "stillStuck": "Hittade du inte svaret du sökte? Mejla oss på ",
+    "faq": {
+      "addAdult": {
+        "question": "Hur lägger jag till en till vuxen i familjen?",
+        "answer": "Gå till Inställningar → Hantera vuxna och tryck på \"+ Bjud in vuxen\" för att skapa en engångskod. Dela koden med personen (till exempel via sms), så kan de gå till \"Jag har en inbjudan\" och skriva in koden samt välja sin egen e-post och lösenord."
+      },
+      "addChild": {
+        "question": "Hur lägger jag till ett barn?",
+        "answer": "Gå till Inställningar → Barn och konton och tryck på Lägg till barn. Du väljer ett namn, ett barnvänligt användarnamn och ett lösenord åt barnet."
+      },
+      "pairDevice": {
+        "question": "Hur kopplar jag barnets surfplatta eller telefon?",
+        "answer": "Öppna barnets profil och skapa en engångskod. Barnets enhet kan antingen skanna QR-koden med kameran eller skriva in den åttasiffriga koden manuellt. Koden gäller bara en kort stund och kan bara användas en gång."
+      },
+      "createChore": {
+        "question": "Hur skapar jag en syssla?",
+        "answer": "Gå till Sysslor och tryck på Lägg till. Ge sysslan en titel, en valfri beskrivning och ett poängvärde."
+      },
+      "assignChore": {
+        "question": "Hur tilldelar jag en syssla till ett barn?",
+        "answer": "Välj en syssla i listan och tryck på Tilldela. Du kan tilldela den en gång eller göra den återkommande på valda dagar."
+      },
+      "reviewChore": {
+        "question": "Hur godkänner jag en syssla som ett barn har rapporterat?",
+        "answer": "Gå till Granska för att se sysslor som väntar på godkännande. Godkänn för att dela ut poängen, eller be barnet göra om den med en kommentar."
+      },
+      "createReward": {
+        "question": "Hur lägger jag till en belöning?",
+        "answer": "Gå till Belöningar och tryck på Lägg till. Ge belöningen ett namn, ett poängpris och gärna en bild."
+      },
+      "redeemReward": {
+        "question": "Hur löser ett barn in en belöning?",
+        "answer": "Barnet väljer en belöning i sin app och skickar en förfrågan. Du godkänner eller avslår förfrågan under Belöningar, och markerar den som utlämnad när barnet har fått den."
+      },
+      "points": {
+        "question": "Hur fungerar poäng?",
+        "answer": "Barnet tjänar poäng när en vuxen godkänner en rapporterad syssla. Poängen kan sedan användas för att begära belöningar ur familjens belöningslista."
+      }
     }
   }
 }

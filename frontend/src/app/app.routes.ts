@@ -19,6 +19,10 @@ export const routes: Routes = [
       import('./features/login/accept-invitation-page').then((c) => c.AcceptInvitationPage),
   },
   {
+    path: 'hjalp',
+    loadComponent: () => import('./features/help/help-page').then((c) => c.HelpPage),
+  },
+  {
     path: 'vuxen',
     canActivate: [adultGuard],
     loadComponent: () => import('./features/adult/adult-home-page').then((c) => c.AdultHomePage),
