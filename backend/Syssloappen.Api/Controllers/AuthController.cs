@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using System.Net;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -355,16 +356,19 @@ public sealed class AuthController(
     private async Task SendConfirmationEmailAsync(ApplicationUser user)
     {
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        // Frontend and backend share one origin in production (see Dockerfile), so
-        // Request.Scheme/Host is correct there. Local development runs them on separate ports
-        // (Angular dev server proxies /api to the backend, not the other way around), so
-        // PublicBaseUrl overrides it — see appsettings.Development.json.
-        var baseUrl = configuration["PublicBaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
+        // PublicBaseUrl must always be explicitly configured (appsettings.json for production,
+        // appsettings.Development.json for local dev where the Angular dev server runs on a
+        // separate port). Never fall back to Request.Host: AllowedHosts is "*", so a caller can
+        // set an arbitrary Host header, and this URL is emailed to someone else entirely via
+        // /api/auth/resend-confirmation — a spoofed Host would ship a real confirmation token to
+        // an attacker-controlled domain.
+        var baseUrl = configuration["PublicBaseUrl"]
+            ?? throw new InvalidOperationException("PublicBaseUrl is not configured.");
         var confirmUrl = $"{baseUrl}/bekrafta-epost"
             + $"?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
 
         var name = user.Nickname ?? user.FirstName;
-        var greeting = string.IsNullOrEmpty(name) ? "Hej!" : $"Hej {name}!";
+        var greeting = string.IsNullOrEmpty(name) ? "Hej!" : $"Hej {WebUtility.HtmlEncode(name)}!";
         var html = $"""
             <p>{greeting}</p>
             <p>Bekräfta din e-postadress för att kunna logga in på Sysslo:</p>
