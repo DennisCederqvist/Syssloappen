@@ -2,6 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AuthService } from '../../core/auth/auth.service';
+import { PushNotificationsService } from '../../core/push/push-notifications.service';
 import { ChildLanguageToggle } from './ui/language-toggle';
 import { ChildPageHeader } from './ui/page-header';
 import { ChildSideNav } from './ui/side-nav';
@@ -21,6 +22,10 @@ export class ChildSettingsPage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly childChoresService = inject(ChildChoresService);
   private readonly transloco = inject(TranslocoService);
+  protected readonly push = inject(PushNotificationsService);
+
+  readonly isTogglingPush = signal(false);
+  readonly pushError = signal('');
 
   readonly childName = computed(() => {
     this.transloco.activeLang();
@@ -53,5 +58,22 @@ export class ChildSettingsPage implements OnInit {
         },
         error: () => this.loadError.set(this.transloco.translate('child.settings.loadError')),
       });
+  }
+
+  async togglePush(): Promise<void> {
+    if (this.isTogglingPush()) return;
+    this.isTogglingPush.set(true);
+    this.pushError.set('');
+    try {
+      if (this.push.isSubscribed()) {
+        await this.push.disable();
+      } else {
+        await this.push.enable();
+      }
+    } catch {
+      this.pushError.set(this.transloco.translate('child.settings.notificationsError'));
+    } finally {
+      this.isTogglingPush.set(false);
+    }
   }
 }

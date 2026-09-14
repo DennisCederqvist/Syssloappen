@@ -29,6 +29,58 @@
       <app-adult-language-toggle />
     </div>
 
+    @if (push.isSupported) {
+      <div
+        class="mt-2 flex items-center gap-3 rounded-lg border border-adult-border bg-adult-surface p-3"
+      >
+        <span
+          class="grid size-10 shrink-0 place-items-center rounded-lg bg-adult-accent-soft text-adult-accent-dark"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="size-5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+        </span>
+        <span class="min-w-0 flex-1">
+          <span class="block text-[15px] font-semibold text-adult-text">{{
+            'adult.settings.notifications.label' | transloco
+          }}</span>
+          @if (pushError()) {
+            <span class="mt-0.5 block text-sm text-adult-danger-text">{{ pushError() }}</span>
+          }
+        </span>
+        <button
+          type="button"
+          role="switch"
+          [attr.aria-checked]="push.isSubscribed()"
+          [disabled]="isTogglingPush()"
+          (click)="togglePush()"
+          class="min-h-11 shrink-0 rounded-lg border border-adult-border bg-adult-bg px-4 text-sm font-medium text-adult-text transition disabled:opacity-60"
+          [class]="
+            push.isSubscribed()
+              ? 'border-adult-accent bg-adult-accent-soft text-adult-accent-dark'
+              : ''
+          "
+        >
+          {{
+            (push.isSubscribed()
+              ? 'adult.settings.notifications.on'
+              : 'adult.settings.notifications.off'
+            ) | transloco
+          }}
+        </button>
+      </div>
+    }
+
     <nav class="mt-2 grid gap-2" [attr.aria-label]="'adult.settings.navAriaLabel' | transloco">
       <a
         routerLink="/vuxen/installningar/barn"

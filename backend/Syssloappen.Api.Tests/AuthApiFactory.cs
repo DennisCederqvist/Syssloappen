@@ -18,6 +18,7 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
     public readonly FakeRewardImageStorage RewardImageStorage = new();
     public readonly FakeEmailSender EmailSender = new();
     public readonly FakeNotificationDispatcher NotificationDispatcher = new();
+    public readonly FakeWebPushClient WebPushClient = new();
 
     public AuthApiFactory()
     {
@@ -50,6 +51,9 @@ public sealed class AuthApiFactory : WebApplicationFactory<Program>
 
             services.RemoveAll<INotificationDispatcher>();
             services.AddSingleton<INotificationDispatcher>(NotificationDispatcher);
+
+            services.RemoveAll<IWebPushClient>();
+            services.AddSingleton<IWebPushClient>(WebPushClient);
 
             // The open in-memory connection keeps this temporary SQL database alive for one test.
             var options = new DbContextOptionsBuilder<AppDbContext>()

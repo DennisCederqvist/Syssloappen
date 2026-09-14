@@ -202,6 +202,12 @@
       "history": { "title": "History", "subtitle": "The family's finished activity" },
       "help": { "title": "Help", "subtitle": "Frequently asked questions and guides" },
       "feedback": { "title": "Send feedback", "subtitle": "Report a problem or share an idea" },
+      "notifications": {
+        "label": "Notifications",
+        "on": "On",
+        "off": "Off",
+        "error": "Notifications couldn't be changed. Please try again."
+      },
       "logout": "Log out"
     },
     "feedback": {
@@ -787,7 +793,11 @@
       "loadingText": "Fetching your history…",
       "loadError": "Your history couldn't be loaded. Try again.",
       "emptyText": "No approved chores yet — they'll show up here once an adult says great job!",
-      "approvedBody": "Approved! {{points}} points have been added to your balance."
+      "approvedBody": "Approved! {{points}} points have been added to your balance.",
+      "notificationsTitle": "Notifications",
+      "notificationsOn": "On",
+      "notificationsOff": "Off",
+      "notificationsError": "Notifications couldn't be changed. Please try again."
     }
   },
   "help": {
