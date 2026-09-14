@@ -13,7 +13,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { HouseholdInvitation } from '../../../core/auth/auth.models';
-import { focusAfterRender } from '../../../shared/focus';
+import { focusAfterRender, scrollIntoViewAfterRender } from '../../../shared/focus';
 import { AdultBottomNav } from '../ui/bottom-nav';
 import {
   AdultDangerOutlineButton,
@@ -285,6 +285,7 @@ export class AdultManageAdultsPage implements OnInit {
           this.profileSuccess.set(
             this.transloco.translate('adult.manageAdults.detail.profile.success'),
           );
+          scrollIntoViewAfterRender('profile-success');
         },
         error: () =>
           this.profileError.set(
@@ -312,6 +313,7 @@ export class AdultManageAdultsPage implements OnInit {
           this.passwordSuccess.set(
             this.transloco.translate('adult.manageAdults.detail.password.success'),
           );
+          scrollIntoViewAfterRender('password-success');
         },
         error: (error: HttpErrorResponse) =>
           this.passwordError.set(
