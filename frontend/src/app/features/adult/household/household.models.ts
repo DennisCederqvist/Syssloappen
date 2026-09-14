@@ -26,3 +26,11 @@ export interface RotatedFamilyCode {
   familyCode: string;
   updatedAt: string;
 }
+
+export interface AccountDeletionStatus {
+  deletionScheduledAt: string | null;
+}
+
+export interface ScheduleAccountDeletionRequest {
+  password: string;
+}

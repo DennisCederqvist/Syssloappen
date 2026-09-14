@@ -314,7 +314,25 @@
           "errorNotFound": "This adult is no longer in the family. Refresh the list and try again.",
           "errorConflict": "This person can't be disconnected right now.",
           "errorGeneric": "Couldn't disconnect. Please try again shortly."
+        },
+        "deleteAccount": {
+          "title": "Delete account",
+          "button": "Delete account",
+          "confirmQuestion": "The account and the entire family's data will be permanently deleted 30 days after you confirm. Until then everything keeps working as usual and you can cancel at any time.",
+          "passwordLabel": "Your password",
+          "confirmWordLabel": "Type \"{{word}}\" to confirm",
+          "confirmWordMismatch": "Type the word exactly as shown to delete.",
+          "confirmYes": "Delete account",
+          "deleting": "Scheduling…",
+          "errorWrongPassword": "Wrong password.",
+          "errorGeneric": "The deletion couldn't be scheduled. Please try again."
         }
+      },
+      "deletionBanner": {
+        "message": "The family and all its data will be permanently deleted on {{date}}.",
+        "cancelButton": "Cancel deletion",
+        "cancelling": "Cancelling…",
+        "cancelError": "Couldn't cancel the deletion. Please try again."
       }
     },
     "chores": {

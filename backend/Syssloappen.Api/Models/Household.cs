@@ -27,4 +27,10 @@ public sealed class Household
     public string? OwnerUserId { get; set; }
 
     public ApplicationUser? OwnerUser { get; set; }
+
+    // Set when the owner requests account deletion; null means no deletion is scheduled.
+    // A background sweep (HouseholdDeletionSweepHostedService) permanently purges the
+    // Household and everything under it once this timestamp has passed. The Household
+    // keeps working normally until then, so the owner can still change their mind.
+    public DateTime? DeletionScheduledAt { get; set; }
 }

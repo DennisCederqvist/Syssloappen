@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -5,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Syssloappen.Api.Authentication;
 using Syssloappen.Api.Data;
 using Syssloappen.Api.Dtos.Households;
+using Syssloappen.Api.Services;
 
 namespace Syssloappen.Api.Controllers;
 
@@ -14,8 +16,12 @@ namespace Syssloappen.Api.Controllers;
 public sealed class HouseholdAdultsController(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
-    TimeProvider timeProvider) : ControllerBase
+    TimeProvider timeProvider,
+    IEmailSender emailSender,
+    IConfiguration configuration) : ControllerBase
 {
+    private const int GracePeriodDays = 30;
+
     [HttpGet]
     [ProducesResponseType<List<HouseholdAdultResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -136,6 +142,124 @@ public sealed class HouseholdAdultsController(
         return NoContent();
     }
 
+    [HttpGet("~/api/household/deletion-status")]
+    [ProducesResponseType<AccountDeletionStatusResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<AccountDeletionStatusResponse>> DeletionStatus()
+    {
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        var household = await dbContext.Households
+            .AsNoTracking()
+            .SingleAsync(candidate => candidate.Id == currentUser.HouseholdId);
+
+        return Ok(new AccountDeletionStatusResponse(household.DeletionScheduledAt));
+    }
+
+    [HttpPost("~/api/household/delete-account")]
+    [ProducesResponseType<AccountDeletionStatusResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<AccountDeletionStatusResponse>> ScheduleAccountDeletion(
+        ScheduleAccountDeletionRequest request)
+    {
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        var household = await dbContext.Households
+            .SingleAsync(candidate => candidate.Id == currentUser.HouseholdId);
+
+        // Only the owner can trigger deletion of the whole Household — the same
+        // permanence the owner already has protection from in Disconnect above.
+        if (currentUser.Id != household.OwnerUserId)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Endast huvudägaren kan radera kontot.",
+                Status = StatusCodes.Status409Conflict
+            });
+        }
+
+        if (household.DeletionScheduledAt is not null)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Radering är redan schemalagd.",
+                Status = StatusCodes.Status409Conflict
+            });
+        }
+
+        var passwordCorrect = await userManager.CheckPasswordAsync(currentUser, request.Password);
+        if (!passwordCorrect)
+        {
+            return ValidationProblem(new ValidationProblemDetails(
+                new Dictionary<string, string[]> { ["Password"] = ["Fel lösenord."] })
+            {
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        var scheduledFor = timeProvider.GetUtcNow().UtcDateTime.AddDays(GracePeriodDays);
+        household.DeletionScheduledAt = scheduledFor;
+        await dbContext.SaveChangesAsync();
+
+        await SendDeletionScheduledEmailAsync(currentUser, scheduledFor);
+
+        return Ok(new AccountDeletionStatusResponse(scheduledFor));
+    }
+
+    [HttpPost("~/api/household/cancel-account-deletion")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CancelAccountDeletion()
+    {
+        var currentUser = await userManager.GetUserAsync(User);
+
+        if (currentUser is null)
+        {
+            return Unauthorized();
+        }
+
+        var household = await dbContext.Households
+            .SingleAsync(candidate => candidate.Id == currentUser.HouseholdId);
+
+        if (currentUser.Id != household.OwnerUserId)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Endast huvudägaren kan avbryta raderingen.",
+                Status = StatusCodes.Status409Conflict
+            });
+        }
+
+        if (household.DeletionScheduledAt is null)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "Ingen radering är schemalagd.",
+                Status = StatusCodes.Status409Conflict
+            });
+        }
+
+        household.DeletionScheduledAt = null;
+        await dbContext.SaveChangesAsync();
+
+        await SendDeletionCancelledEmailAsync(currentUser);
+
+        return NoContent();
+    }
+
     [HttpPut("me")]
     [ProducesResponseType<HouseholdAdultResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -204,5 +328,41 @@ public sealed class HouseholdAdultsController(
     {
         var trimmed = value?.Trim();
         return string.IsNullOrEmpty(trimmed) ? null : trimmed;
+    }
+
+    // See AuthController.PublicBaseUrl for why this must always be explicitly configured
+    // and never fall back to Request.Host.
+    private string PublicBaseUrl => configuration["PublicBaseUrl"]
+        ?? throw new InvalidOperationException("PublicBaseUrl is not configured.");
+
+    private async Task SendDeletionScheduledEmailAsync(ApplicationUser owner, DateTime scheduledFor)
+    {
+        var name = owner.Nickname ?? owner.FirstName;
+        var greeting = string.IsNullOrEmpty(name) ? "Hej!" : $"Hej {WebUtility.HtmlEncode(name)}!";
+        var settingsUrl = $"{PublicBaseUrl}/vuxen/installningar/vuxna";
+        var html = $"""
+            <p>{greeting}</p>
+            <p>Ditt Sysslo-konto och hela familjens data är nu schemalagda för permanent radering
+            den {scheduledFor:yyyy-MM-dd}. Fram till dess fungerar allt som vanligt.</p>
+            <p>Ångrar du dig kan du avbryta raderingen när som helst innan dess, under
+            Inställningar → Vuxna: <a href="{settingsUrl}">{settingsUrl}</a></p>
+            <p>Var det inte du som bad om detta bör du byta lösenord omgående.</p>
+            """;
+
+        await emailSender.SendAsync(owner.Email!, name, "Ditt Sysslo-konto raderas snart", html);
+    }
+
+    private async Task SendDeletionCancelledEmailAsync(ApplicationUser owner)
+    {
+        var name = owner.Nickname ?? owner.FirstName;
+        var greeting = string.IsNullOrEmpty(name) ? "Hej!" : $"Hej {WebUtility.HtmlEncode(name)}!";
+        var html = $"""
+            <p>{greeting}</p>
+            <p>Raderingen av ditt Sysslo-konto har avbrutits. Familjens data finns kvar och allt
+            fungerar som vanligt.</p>
+            <p>Var det inte du som bad om detta bör du byta lösenord omgående.</p>
+            """;
+
+        await emailSender.SendAsync(owner.Email!, name, "Radering av ditt Sysslo-konto avbruten", html);
     }
 }

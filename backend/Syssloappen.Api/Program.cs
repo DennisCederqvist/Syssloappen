@@ -34,6 +34,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 builder.Services.AddScoped<SessionCookieEvents>();
 builder.Services.AddScoped<ChoreRecurrenceGenerator>();
+builder.Services.AddScoped<IHouseholdPurgeService, HouseholdPurgeService>();
+builder.Services.AddHostedService<HouseholdDeletionSweepHostedService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddIdentityCore<ApplicationUser>(options =>
     {
