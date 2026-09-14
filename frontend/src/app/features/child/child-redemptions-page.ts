@@ -1,7 +1,9 @@
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { RealtimeService } from '../../core/realtime/realtime.service';
 import { ChildCardMotion } from './ui/card-motion';
 import { CHILD_CARD_PALETTES, ChildCardPalette } from './ui/palette';
 import { ChildPageHeader } from './ui/page-header';
@@ -23,6 +25,8 @@ export class ChildRedemptionsPage implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly service = inject(ChildChoresService);
   private readonly transloco = inject(TranslocoService);
+  private readonly realtime = inject(RealtimeService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly motion = new ChildCardMotion(() =>
     [...this.activeItems(), ...this.recentFinalItems()].map((item) => item.id),
   );
@@ -49,6 +53,11 @@ export class ChildRedemptionsPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.load();
     this.motion.start();
+    this.realtime.events$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evt) => {
+      if (evt.type === 'RewardApproved') {
+        this.load();
+      }
+    });
   }
 
   ngOnDestroy(): void {
