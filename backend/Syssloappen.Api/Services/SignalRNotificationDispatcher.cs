@@ -69,13 +69,24 @@ public sealed class SignalRNotificationDispatcher(
         }
 
         var (title, body) = PushMessageFormatter.Format(evt);
+        var url = PushMessageFormatter.DestinationPath(evt.Type);
         var payload = JsonSerializer.Serialize(new
         {
             notification = new
             {
                 title,
                 body,
-                data = evt.Data
+                data = new
+                {
+                    payload = evt.Data,
+                    // Angular's service worker reads this to decide what clicking the
+                    // notification does — focus an already-open tab if there is one,
+                    // otherwise open a new one at this path.
+                    onActionClick = new
+                    {
+                        @default = new { operation = "focusLastFocusedOrOpen", url }
+                    }
+                }
             }
         });
 
