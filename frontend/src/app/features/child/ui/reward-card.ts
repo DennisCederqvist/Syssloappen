@@ -13,7 +13,7 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
     <article
       [id]="cardId()"
       tabindex="-1"
-      class="flex flex-col rounded-[24px] p-4 outline-none sm:p-5 {{ paletteClasses() }}"
+      class="flex flex-col rounded-[22px] p-3.5 outline-none sm:p-4 {{ paletteClasses() }}"
       [style.rotate.deg]="tiltDeg()"
       [style.--tilt.deg]="tiltDeg()"
       [style.animation-name]="wobbling() ? 'child-card-wobble' : 'none'"
@@ -22,10 +22,10 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
       [style.animation-iteration-count]="1"
     >
       @if (imageUrl(); as url) {
-        <img [src]="url" alt="" class="aspect-[16/9] w-full rounded-[17px] object-cover" />
+        <img [src]="url" alt="" class="aspect-[16/8] w-full rounded-[15px] object-cover" />
       } @else {
         <div
-          class="flex aspect-[16/9] items-center justify-center rounded-[17px] border-2 border-dashed border-white/70 bg-white/40"
+          class="flex aspect-[16/8] items-center justify-center rounded-[15px] border-2 border-dashed border-white/70 bg-white/40"
           aria-hidden="true"
         >
           <svg
@@ -83,7 +83,7 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
         (click)="requested.emit()"
         [disabled]="disabled() || busy()"
         [attr.aria-label]="'child.rewardCard.requestAria' | transloco: { name: name() }"
-        class="mt-4 min-h-12 w-full rounded-full bg-[linear-gradient(180deg,var(--color-child-cta-from),var(--color-child-cta-to))] text-sm font-bold text-child-text shadow-[3px_4px_0_var(--color-child-cta-shadow)] transition active:translate-x-[2px] active:translate-y-[3px] active:shadow-[1px_2px_0_var(--color-child-cta-shadow)] disabled:pointer-events-none disabled:opacity-50"
+        class="mt-3.5 min-h-11 w-full rounded-full bg-[linear-gradient(180deg,var(--color-child-cta-from),var(--color-child-cta-to))] text-sm font-bold text-child-text shadow-[3px_4px_0_var(--color-child-cta-shadow)] transition active:translate-x-[2px] active:translate-y-[3px] active:shadow-[1px_2px_0_var(--color-child-cta-shadow)] disabled:pointer-events-none disabled:opacity-50"
       >
         {{ (busy() ? 'child.rewardCard.requesting' : 'child.rewardCard.request') | transloco }}
       </button>

@@ -30,7 +30,7 @@ const STATUS_BANNER_CLASSES: Record<ChildRedemptionCardStatus, string> = {
     <article
       [id]="cardId()"
       tabindex="-1"
-      class="flex flex-col rounded-[24px] p-4 outline-none sm:p-5 {{ paletteClasses() }}"
+      class="flex flex-col rounded-[22px] p-3.5 outline-none sm:p-4 {{ paletteClasses() }}"
       [style.rotate.deg]="tiltDeg()"
       [style.--tilt.deg]="tiltDeg()"
       [style.animation-name]="wobbling() ? 'child-card-wobble' : 'none'"
@@ -39,10 +39,10 @@ const STATUS_BANNER_CLASSES: Record<ChildRedemptionCardStatus, string> = {
       [style.animation-iteration-count]="1"
     >
       @if (imageUrl(); as url) {
-        <img [src]="url" alt="" class="aspect-[16/9] w-full rounded-[17px] object-cover" />
+        <img [src]="url" alt="" class="aspect-[16/8] w-full rounded-[15px] object-cover" />
       } @else {
         <div
-          class="flex aspect-[16/9] items-center justify-center rounded-[17px] border-2 border-dashed border-white/70 bg-white/40"
+          class="flex aspect-[16/8] items-center justify-center rounded-[15px] border-2 border-dashed border-white/70 bg-white/40"
           aria-hidden="true"
         >
           <svg
