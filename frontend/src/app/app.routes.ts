@@ -25,6 +25,18 @@ export const routes: Routes = [
       import('./features/login/confirm-email-page').then((c) => c.ConfirmEmailPage),
   },
   {
+    path: 'glomt-losenord',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/login/forgot-password-page').then((c) => c.ForgotPasswordPage),
+  },
+  {
+    path: 'aterstall-losenord',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/login/reset-password-page').then((c) => c.ResetPasswordPage),
+  },
+  {
     path: 'hjalp',
     loadComponent: () => import('./features/help/help-page').then((c) => c.HelpPage),
   },

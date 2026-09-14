@@ -7,12 +7,14 @@ import {
   ChildPairingRequest,
   ConfirmEmailRequest,
   CurrentUser,
+  ForgotPasswordRequest,
   HouseholdInvitation,
   RegisterAdultRequest,
   RegisterInvitedAdultRequest,
   RegisterInvitedAdultResponse,
   RegisterAdultResponse,
   ResendConfirmationRequest,
+  ResetPasswordRequest,
   UserRole,
 } from './auth.models';
 
@@ -83,6 +85,14 @@ export class AuthService {
 
   resendConfirmationEmail(request: ResendConfirmationRequest): Observable<void> {
     return this.http.post<void>('/api/auth/resend-confirmation', request);
+  }
+
+  forgotPassword(request: ForgotPasswordRequest): Observable<void> {
+    return this.http.post<void>('/api/auth/forgot-password', request);
+  }
+
+  resetPassword(request: ResetPasswordRequest): Observable<void> {
+    return this.http.post<void>('/api/auth/reset-password', request);
   }
 
   logout(): Observable<void> {

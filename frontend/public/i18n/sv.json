@@ -61,7 +61,8 @@
         "passwordError": "Skriv ditt lösenord.",
         "submit": "Logga in som vuxen",
         "submitting": "Loggar in…",
-        "haveInvitation": "Jag har en inbjudan"
+        "haveInvitation": "Jag har en inbjudan",
+        "forgotPassword": "Glömt lösenordet?"
       },
       "registration": {
         "householdName": "Familjens namn",
@@ -136,6 +137,35 @@
       "errorInvalid": "Länken är felaktig eller har gått ut. Be om ett nytt bekräftelsemejl på inloggningssidan.",
       "errorGeneric": "Något gick fel. Försök igen om en liten stund.",
       "errorMissingLink": "Länken saknar information. Öppna länken från mejlet igen."
+    },
+    "forgotPassword": {
+      "eyebrow": "Sysslo",
+      "title": "Glömt lösenordet?",
+      "description": "Skriv din e-postadress så skickar vi en länk för att välja ett nytt lösenord.",
+      "emailLabel": "E-post",
+      "emailError": "Skriv en giltig e-postadress.",
+      "submit": "Skicka återställningslänk",
+      "submitting": "Skickar…",
+      "successMessage": "Om ett konto finns med den e-postadressen har vi skickat ett mejl med instruktioner för att återställa lösenordet.",
+      "goToLogin": "Gå till login",
+      "backToLogin": "Tillbaka till login"
+    },
+    "resetPassword": {
+      "eyebrow": "Sysslo",
+      "title": "Välj nytt lösenord",
+      "passwordLabel": "Nytt lösenord",
+      "passwordHint": "Minst 8 tecken, med stor bokstav, liten bokstav och en siffra.",
+      "passwordError": "Lösenordet uppfyller inte kraven.",
+      "confirmPasswordLabel": "Upprepa lösenordet",
+      "confirmPasswordError": "Lösenorden är inte lika.",
+      "submit": "Spara nytt lösenord",
+      "submitting": "Sparar…",
+      "success": "Ditt lösenord är ändrat. Du kan nu logga in med det nya lösenordet.",
+      "goToLogin": "Gå till login",
+      "errorInvalid": "Länken är felaktig eller har gått ut, eller så uppfyller lösenordet inte kraven.",
+      "errorGeneric": "Något gick fel. Försök igen om en liten stund.",
+      "errorMissingLink": "Länken saknar information. Öppna länken från mejlet igen.",
+      "requestNewLink": "Begär en ny länk"
     },
     "acceptInvitation": {
       "eyebrow": "Sysslo",
