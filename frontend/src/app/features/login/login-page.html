@@ -263,7 +263,7 @@
               </label>
               <a
                 routerLink="/glomt-losenord"
-                class="-mt-2 block text-right text-sm font-medium text-adult-accent"
+                class="-mt-2 flex min-h-11 items-center justify-end text-sm font-medium text-adult-accent"
               >
                 {{ 'auth.login.form.forgotPassword' | transloco }}
               </a>
@@ -639,9 +639,11 @@
       }
 
       <p class="mt-6 text-center text-sm">
-        <a routerLink="/hjalp" class="font-medium text-adult-text-secondary underline">{{
-          'help.linkFromLogin' | transloco
-        }}</a>
+        <a
+          routerLink="/hjalp"
+          class="inline-flex min-h-11 items-center font-medium text-adult-text-secondary underline"
+          >{{ 'help.linkFromLogin' | transloco }}</a
+        >
       </p>
     </div>
   </section>

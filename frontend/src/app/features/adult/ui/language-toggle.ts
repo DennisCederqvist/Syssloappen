@@ -18,7 +18,7 @@ import { AppLanguage, LanguageService } from '../../../core/i18n/language.servic
           type="button"
           [attr.aria-pressed]="lang.currentLang() === option"
           (click)="select(option)"
-          class="inline-flex min-h-9 items-center gap-1 rounded-md px-2.5 text-sm font-medium transition"
+          class="inline-flex min-h-11 items-center gap-1 rounded-md px-2.5 text-sm font-medium transition"
           [class.bg-adult-accent]="lang.currentLang() === option"
           [class.text-white]="lang.currentLang() === option"
           [class.text-adult-text-secondary]="lang.currentLang() !== option"

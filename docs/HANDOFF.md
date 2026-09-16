@@ -656,7 +656,6 @@ US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-0
 
 - Branchen `feature/recurring-chores-and-polish` (återkommande sysslor, CI, buggfixar, gratis poängvärden, familjekod-UI, språkväxlare, barnfoto, grön header, login-omdesign) är inte mergad till `main` och till stor del inte pushad — se avsnittet under "Aktuell arbetsdel". Väntar på fortsatt användargranskning innan merge.
 - Namnbyte från "Syssloappen" till "Sysslo" i sidtitel och löptext är fortsatt medvetet uppskjutet av användaren — loggan (favicon, barnvyns sidopanel, Adult-header, login-sidan) är däremot redan integrerad enligt avsnittet ovan.
-- Standardendpointet `WeatherForecast` från projektmallen finns fortfarande kvar och kan tas bort i en separat liten städändring.
 - Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Adult-vyn för sysslor och tilldelningar, barnets riktiga startsida och Adult-granskningen är färdiga och användartestade.
 - US-070–US-072 (belöningskatalog, poängreservation, förfrågningar och bilduppladdning) är nu implementerade i sin helhet, inklusive bilduppladdning med server-side komprimering och Supabase Storage.
 - Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.

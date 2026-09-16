@@ -17,9 +17,14 @@ export default defineConfig({
     {
       command: 'dotnet run --launch-profile http --configuration Release --no-build',
       cwd: '../backend/Syssloappen.Api',
-      url: 'http://localhost:5047/weatherforecast',
+      url: 'http://localhost:5047/health',
       reuseExistingServer: !process.env['CI'],
       timeout: 120_000,
+      // Force the logging email sender even when a developer's local user-secrets
+      // set Email:Provider=Resend for manual testing — e2e reads confirmation and
+      // reset links from /dev/last-email (see DevEmailStore), which only the
+      // logging sender populates, and must never spend real Resend sends.
+      env: { Email__Provider: 'Logging' },
     },
     {
       command:

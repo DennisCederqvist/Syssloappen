@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize } from 'rxjs';
 import { focusAfterRender } from '../../../shared/focus';
+import { SuccessMessage } from '../../../shared/success-message';
 import { AdultBadge } from '../ui/badge';
 import { AdultBottomNav } from '../ui/bottom-nav';
 import { AdultDangerOutlineButton, AdultPrimaryButton } from '../ui/buttons';
@@ -32,14 +33,13 @@ export class AdultRewardsPage implements OnInit {
   private readonly rewardsService = inject(RewardsService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly transloco = inject(TranslocoService);
-  private successTimer: number | null = null;
-  private successClearTimer: number | null = null;
+  private readonly success = new SuccessMessage();
   readonly rewards = signal<Reward[]>([]);
   readonly isLoading = signal(true);
   readonly loadError = signal('');
   readonly formError = signal('');
-  readonly successMessage = signal('');
-  readonly successFading = signal(false);
+  readonly successMessage = this.success.message;
+  readonly successFading = this.success.fading;
   readonly editing = signal<Reward | null>(null);
   readonly showForm = signal(false);
   readonly confirmingId = signal<number | null>(null);
@@ -147,7 +147,7 @@ export class AdultRewardsPage implements OnInit {
         this.showForm.set(false);
         this.rewardForm.reset({ name: '', description: '', pointsCost: 1, stockQuantity: 1 });
         this.resetImageState(null);
-        this.showSuccess(
+        this.success.show(
           this.transloco.translate(
             existing ? 'adult.rewards.saveSuccessUpdated' : 'adult.rewards.saveSuccessCreated',
             { name: reward.name },
@@ -168,7 +168,7 @@ export class AdultRewardsPage implements OnInit {
   requestDeactivate(id: number): void {
     this.openRewardMenuId.set(null);
     this.confirmingId.set(id);
-    this.successMessage.set('');
+    this.success.clear();
     focusAfterRender(`cancel-deactivate-reward-${id}`);
   }
   toggleRewardMenu(id: number): void {
@@ -190,7 +190,7 @@ export class AdultRewardsPage implements OnInit {
           this.rewards.update((items) => items.filter((item) => item.id !== reward.id));
           if (this.editing()?.id === reward.id) this.closeForm();
           this.confirmingId.set(null);
-          this.showSuccess(
+          this.success.show(
             this.transloco.translate('adult.rewards.deactivateSuccess', { name: reward.name }),
           );
           focusAfterRender('rewards-success');
@@ -217,19 +217,5 @@ export class AdultRewardsPage implements OnInit {
         error: () =>
           this.imageError.set(this.transloco.translate('adult.rewards.formSheet.imageUploadError')),
       });
-  }
-
-  private showSuccess(message: string): void {
-    if (this.successTimer !== null) window.clearTimeout(this.successTimer);
-    if (this.successClearTimer !== null) window.clearTimeout(this.successClearTimer);
-    this.successFading.set(false);
-    this.successMessage.set(message);
-    this.successTimer = window.setTimeout(() => this.successFading.set(true), 3000);
-    this.successClearTimer = window.setTimeout(() => {
-      this.successMessage.set('');
-      this.successTimer = null;
-      this.successClearTimer = null;
-      this.successFading.set(false);
-    }, 5000);
   }
 }
