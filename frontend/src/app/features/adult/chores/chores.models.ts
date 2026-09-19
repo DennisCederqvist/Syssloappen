@@ -3,6 +3,7 @@ export interface Chore {
   title: string;
   description: string | null;
   points: number;
+  imageUrl: string | null;
   createdAt: string;
 }
 

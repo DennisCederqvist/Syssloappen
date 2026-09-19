@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { ChildImagePlaceholder } from './image-placeholder';
 
 export type ChildStatusCardKind = 'pending' | 'needsRedo';
 
@@ -9,13 +10,19 @@ export type ChildStatusCardKind = 'pending' | 'needsRedo';
  * variant of the same component. */
 @Component({
   selector: 'app-child-status-card',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, ChildImagePlaceholder],
   template: `
     <article
       [id]="cardId()"
       tabindex="-1"
       class="rounded-[30px] bg-white p-5 shadow-[4px_6px_0_rgba(0,0,0,0.04)] outline-none sm:p-6"
     >
+      @if (imageUrl(); as url) {
+        <img [src]="url" alt="" class="mb-3 aspect-[16/8] w-full rounded-[18px] object-cover" />
+      } @else {
+        <app-child-image-placeholder kind="chore" class="mb-3 block" />
+      }
+
       <div class="flex items-start justify-between gap-3">
         <h3 class="font-display text-[19px] leading-snug font-semibold text-child-text">
           {{ title() }}
@@ -59,6 +66,7 @@ export type ChildStatusCardKind = 'pending' | 'needsRedo';
 export class ChildStatusCard {
   readonly cardId = input.required<string>();
   readonly title = input.required<string>();
+  readonly imageUrl = input<string | null>(null);
   readonly points = input.required<number>();
   readonly kind = input.required<ChildStatusCardKind>();
   readonly message = input<string | null>(null);

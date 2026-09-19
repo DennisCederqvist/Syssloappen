@@ -12,6 +12,11 @@
       "network": "Kunde inte nå servern. Kontrollera din anslutning.",
       "unauthorized": "Du har inte behörighet att göra detta."
     },
+    "imagePicker": {
+      "choose": "Välj bild",
+      "take": "Ta bild",
+      "remove": "Ta bort bild"
+    },
     "loading": "Laddar…",
     "settings": {
       "language": {
@@ -397,6 +402,8 @@
         "descriptionOptional": "(valfri)",
         "descriptionPlaceholder": "En kort och tydlig instruktion",
         "descriptionError": "Beskrivningen får innehålla högst 500 tecken.",
+        "imageLabel": "Bild",
+        "imageUploadError": "Sysslan sparades, men bilden kunde inte laddas upp. Försök igen genom att redigera sysslan.",
         "submit": "Skapa syssla",
         "submitting": "Skapar…"
       },
@@ -637,9 +644,8 @@
         "pointsLabel": "Poängpris",
         "stockLabel": "Antal i lager",
         "imageLabel": "Bild",
-        "chooseImage": "Välj bild",
-        "takePhoto": "Ta bild",
         "imageUploadError": "Bilden kunde inte laddas upp. Försök igen.",
+        "imageRemoveError": "Bilden kunde inte tas bort. Försök igen.",
         "submitCreate": "Skapa belöning",
         "submitEdit": "Spara ändringar",
         "saving": "Sparar…"

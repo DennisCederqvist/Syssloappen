@@ -1,4 +1,5 @@
 import { Component, input } from '@angular/core';
+import { ChildImagePlaceholder } from './image-placeholder';
 import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
 
 /** Shared tilted/wobbling pastel-card shell (wrapper, photo/placeholder-gift-icon
@@ -8,6 +9,7 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
  * projected in by the caller via <ng-content>. */
 @Component({
   selector: 'app-child-reward-base-card',
+  imports: [ChildImagePlaceholder],
   template: `
     <article
       [id]="cardId()"
@@ -23,27 +25,7 @@ import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
       @if (imageUrl(); as url) {
         <img [src]="url" alt="" class="aspect-[16/8] w-full rounded-[15px] object-cover" />
       } @else {
-        <div
-          class="flex aspect-[16/8] items-center justify-center rounded-[15px] border-2 border-dashed border-white/70 bg-white/40"
-          aria-hidden="true"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            class="size-8 text-child-text-secondary/50"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="3" y="8" width="18" height="13" rx="1.5" />
-            <path d="M3 12h18" />
-            <path d="M12 8v13" />
-            <path
-              d="M12 8H8.5a2 2 0 1 1 0-4c1.5 0 2.7 1.2 3.5 4zM12 8h3.5a2 2 0 1 0 0-4c-1.5 0-2.7 1.2-3.5 4z"
-            />
-          </svg>
-        </div>
+        <app-child-image-placeholder kind="reward" />
       }
 
       <div class="mt-3 flex items-start justify-between gap-2">

@@ -35,6 +35,10 @@ public sealed class HouseholdPurgeService(
             .Where(reward => reward.HouseholdId == householdId && reward.ImageUrl != null)
             .Select(reward => reward.ImageUrl!)
             .ToListAsync(cancellationToken));
+        imageUrls.AddRange(await dbContext.Chores
+            .Where(chore => chore.HouseholdId == householdId && chore.ImageUrl != null)
+            .Select(chore => chore.ImageUrl!)
+            .ToListAsync(cancellationToken));
         imageUrls.AddRange(await dbContext.ChildProfiles
             .Where(child => child.HouseholdId == householdId && child.PhotoUrl != null)
             .Select(child => child.PhotoUrl!)

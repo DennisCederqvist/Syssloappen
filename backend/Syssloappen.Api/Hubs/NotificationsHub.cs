@@ -40,6 +40,9 @@ public sealed class NotificationsHub(
                 if (child is not null)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, NotificationGroups.Child(child.Id));
+                    await Groups.AddToGroupAsync(
+                        Context.ConnectionId,
+                        NotificationGroups.HouseholdChildren(currentUser.HouseholdId));
                 }
             }
         }

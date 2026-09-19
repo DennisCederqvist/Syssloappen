@@ -54,7 +54,7 @@ export class ChildRedemptionsPage implements OnInit, OnDestroy {
     this.load();
     this.motion.start();
     this.realtime.events$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((evt) => {
-      if (evt.type === 'RewardApproved') {
+      if (evt.type === 'RewardApproved' || evt.type === 'RewardsChanged') {
         this.load();
       }
     });

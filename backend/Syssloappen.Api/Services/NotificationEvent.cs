@@ -8,6 +8,9 @@ public enum NotificationEventType
     ChoreSubmittedForReview,
     RewardRequested,
     RewardApproved,
+    // Silent refresh hints: no push notification, no toast — a child's open pages just reload.
+    ChoresChanged,
+    RewardsChanged,
 }
 
 // Carries only IDs/names, never pre-built prose — the frontend renders the
@@ -26,3 +29,5 @@ public sealed record ChoreSubmittedForReviewData(int AssignmentId, string ChoreT
 public sealed record RewardRequestedData(int RedemptionId, string RewardName, string ChildName);
 
 public sealed record RewardApprovedData(int RedemptionId, string RewardName);
+
+public sealed record ContentChangedData();

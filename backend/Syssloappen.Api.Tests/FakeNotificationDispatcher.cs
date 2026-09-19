@@ -15,6 +15,14 @@ public sealed class FakeNotificationDispatcher : INotificationDispatcher
         return Task.CompletedTask;
     }
 
+    public List<(int HouseholdId, NotificationEvent Event)> HouseholdChildNotifications { get; } = [];
+
+    public Task NotifyHouseholdChildrenAsync(int householdId, NotificationEvent evt, CancellationToken cancellationToken = default)
+    {
+        HouseholdChildNotifications.Add((householdId, evt));
+        return Task.CompletedTask;
+    }
+
     public Task NotifyHouseholdAdultsAsync(int householdId, NotificationEvent evt, CancellationToken cancellationToken = default)
     {
         HouseholdAdultNotifications.Add((householdId, evt));

@@ -232,6 +232,37 @@ public sealed class RewardsEndpointsTests : IDisposable
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Adult_can_remove_a_rewards_image()
+    {
+        using var adult = CreateClient();
+        await RegisterAndLoginAdult(adult, "Familjen Sund", "rewards.removeimage@example.test");
+        var reward = await CreateRewardResponse(adult, "Godis", 20);
+        var uploaded = await adult.PostAsync($"/api/rewards/{reward.Id}/image", BuildImageFormContent(100, 100));
+        var url = (await uploaded.Content.ReadFromJsonAsync<RewardResponse>())!.ImageUrl!;
+
+        var response = await adult.DeleteAsync($"/api/rewards/{reward.Id}/image");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Null((await response.Content.ReadFromJsonAsync<RewardResponse>())!.ImageUrl);
+        Assert.Equal(url, Assert.Single(factory.RewardImageStorage.DeletedUrls));
+        Assert.Null((await adult.GetFromJsonAsync<List<RewardResponse>>("/api/rewards"))!.Single().ImageUrl);
+    }
+
+    [Fact]
+    public async Task Manipulated_id_cannot_remove_another_households_reward_image()
+    {
+        using var first = CreateClient();
+        using var second = CreateClient();
+        await RegisterAndLoginAdult(first, "Familjen Ask", "rewards.removefirst@example.test");
+        await RegisterAndLoginAdult(second, "Familjen Alm", "rewards.removesecond@example.test");
+        var reward = await CreateRewardResponse(second, "Filmkväll", 50);
+        await second.PostAsync($"/api/rewards/{reward.Id}/image", BuildImageFormContent(100, 100));
+
+        Assert.Equal(HttpStatusCode.NotFound, (await first.DeleteAsync($"/api/rewards/{reward.Id}/image")).StatusCode);
+        Assert.Empty(factory.RewardImageStorage.DeletedUrls);
+    }
+
     private static MultipartFormDataContent BuildImageFormContent(int width, int height)
     {
         using var bitmap = new SKBitmap(width, height);

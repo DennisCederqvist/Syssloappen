@@ -65,7 +65,8 @@ export class ChildHomePage implements OnInit, OnDestroy {
       if (
         evt.type === 'ChoreAssigned' ||
         evt.type === 'ChoreApproved' ||
-        evt.type === 'ChoreNeedsRedo'
+        evt.type === 'ChoreNeedsRedo' ||
+        evt.type === 'ChoresChanged'
       ) {
         this.loadPage();
       }

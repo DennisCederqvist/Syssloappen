@@ -20,6 +20,9 @@ public static class PushMessageFormatter
         _ => ("Sysslo", "You have a new update."),
     };
 
+    public static bool IsSilent(NotificationEventType type) =>
+        type is NotificationEventType.ChoresChanged or NotificationEventType.RewardsChanged;
+
     // Where clicking the notification should take the person — child-facing events open
     // the child app, adult-facing events open the adult home page.
     public static string DestinationPath(NotificationEventType type) => type switch

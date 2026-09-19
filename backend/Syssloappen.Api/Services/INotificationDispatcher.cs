@@ -10,5 +10,7 @@ public interface INotificationDispatcher
 {
     Task NotifyChildAsync(int childProfileId, NotificationEvent evt, CancellationToken cancellationToken = default);
 
+    Task NotifyHouseholdChildrenAsync(int householdId, NotificationEvent evt, CancellationToken cancellationToken = default);
+
     Task NotifyHouseholdAdultsAsync(int householdId, NotificationEvent evt, CancellationToken cancellationToken = default);
 }

@@ -33,6 +33,13 @@ public sealed class SignalRNotificationDispatcher(
         }
     }
 
+    public async Task NotifyHouseholdChildrenAsync(int householdId, NotificationEvent evt, CancellationToken cancellationToken = default)
+    {
+        await hubContext.Clients
+            .Group(NotificationGroups.HouseholdChildren(householdId))
+            .SendAsync(ClientMethodName, evt, cancellationToken);
+    }
+
     public async Task NotifyHouseholdAdultsAsync(int householdId, NotificationEvent evt, CancellationToken cancellationToken = default)
     {
         await hubContext.Clients
@@ -59,6 +66,8 @@ public sealed class SignalRNotificationDispatcher(
 
     private async Task PushToUserAsync(string userId, NotificationEvent evt, CancellationToken cancellationToken)
     {
+        if (PushMessageFormatter.IsSilent(evt.Type)) return;
+
         var subscriptions = await dbContext.PushSubscriptions
             .Where(subscription => subscription.UserId == userId)
             .ToListAsync(cancellationToken);

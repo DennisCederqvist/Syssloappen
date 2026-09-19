@@ -5,4 +5,5 @@ public sealed record ChoreResponse(
     string Title,
     string? Description,
     int Points,
+    string? ImageUrl,
     DateTime CreatedAt);

@@ -7,6 +7,7 @@ import { focusAfterRender } from '../../../shared/focus';
 import { SuccessMessage } from '../../../shared/success-message';
 import { AdultBadge } from '../ui/badge';
 import { AdultBottomNav } from '../ui/bottom-nav';
+import { AdultImagePicker } from '../ui/image-picker';
 import { AdultDangerOutlineButton, AdultPrimaryButton } from '../ui/buttons';
 import { AdultPageHeader } from '../ui/page-header';
 import { AdultSheet } from '../ui/sheet';
@@ -20,6 +21,7 @@ import { RewardsService } from './rewards.service';
     ReactiveFormsModule,
     AdultBadge,
     AdultBottomNav,
+    AdultImagePicker,
     AdultDangerOutlineButton,
     AdultPrimaryButton,
     AdultPageHeader,
@@ -98,14 +100,31 @@ export class AdultRewardsPage implements OnInit {
     this.rewardForm.reset({ name: '', description: '', pointsCost: 1, stockQuantity: 1 });
     this.resetImageState(null);
   }
-  selectImage(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
-    if (!file) return;
+  selectImage(file: File): void {
     this.imageError.set('');
     const previous = this.pendingImageFile();
     if (previous) URL.revokeObjectURL(this.imagePreviewUrl()!);
     this.pendingImageFile.set(file);
     this.imagePreviewUrl.set(URL.createObjectURL(file));
+  }
+  /** Drops a picked-but-unsent file, or deletes the reward's saved image when editing. */
+  removeImage(): void {
+    this.imageError.set('');
+    if (this.pendingImageFile()) {
+      this.resetImageState(this.editing()?.imageUrl ?? null);
+      return;
+    }
+    const reward = this.editing();
+    if (!reward) return;
+    this.rewardsService.deleteImage(reward.id).subscribe({
+      next: (updated) => {
+        this.applyRewardToList(updated);
+        this.editing.set(updated);
+        this.imagePreviewUrl.set(null);
+      },
+      error: () =>
+        this.imageError.set(this.transloco.translate('adult.rewards.formSheet.imageRemoveError')),
+    });
   }
   private resetImageState(existingImageUrl: string | null): void {
     if (this.pendingImageFile()) URL.revokeObjectURL(this.imagePreviewUrl()!);

@@ -6,5 +6,7 @@ public static class NotificationGroups
 {
     public static string HouseholdAdults(int householdId) => $"household-adults:{householdId}";
 
+    public static string HouseholdChildren(int householdId) => $"household-children:{householdId}";
+
     public static string Child(int childProfileId) => $"child:{childProfileId}";
 }
