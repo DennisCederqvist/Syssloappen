@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -7,8 +8,13 @@ using Syssloappen.Api.Models;
 namespace Syssloappen.Api.Data;
 
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<ApplicationUser, IdentityRole, string>(options)
+    : IdentityDbContext<ApplicationUser, IdentityRole, string>(options), IDataProtectionKeyContext
 {
+    // Keys that encrypt auth cookies and email/reset tokens. Stored in the database because
+    // the hosting container's disk is wiped on every sleep/redeploy, which would otherwise
+    // invalidate every login.
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+
     public DbSet<Household> Households => Set<Household>();
 
     public DbSet<ChildProfile> ChildProfiles => Set<ChildProfile>();

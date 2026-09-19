@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -17,6 +18,9 @@ var connectionString = builder.Configuration.GetConnectionString("SyssloappenDat
     ?? throw new InvalidOperationException("The PostgreSQL connection string is missing.");
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDataProtection()
+    .SetApplicationName("Syssloappen")
+    .PersistKeysToDbContext<AppDbContext>();
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
     .AddIdentityCookies();
 builder.Services.ConfigureApplicationCookie(options =>
