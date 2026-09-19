@@ -85,6 +85,21 @@ async function expectResponsiveAndAccessible(page: Page) {
   ).toEqual([]);
 }
 
+async function confirmEmailInDev(page: Page, email: string) {
+  const response = await page.request.get(
+    `http://localhost:5047/dev/last-email?email=${encodeURIComponent(email)}`,
+  );
+  expect(response.ok(), 'Bekräftelsemejlet hittades inte i DevEmailStore').toBeTruthy();
+  const { htmlBody } = (await response.json()) as { htmlBody: string };
+  const confirmUrl = htmlBody.match(/href="([^"]+)"/)?.[1];
+  expect(confirmUrl, 'Bekräftelselänken saknades i mejlet').toBeTruthy();
+  const confirmed = page.waitForResponse(
+    (candidate) => candidate.url().includes('/api/auth/confirm-email') && candidate.ok(),
+  );
+  await page.goto(confirmUrl!);
+  await confirmed;
+}
+
 async function registerAndSignInAdult(page: Page, runId: string) {
   const email = `e2e-${runId}@example.test`;
 
@@ -100,8 +115,10 @@ async function registerAndSignInAdult(page: Page, runId: string) {
   await page.getByLabel('Upprepa lösenordet').fill(password);
   await page.getByRole('button', { name: 'Skapa familj och konto' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Välkommen till Syssloappen!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Välkommen till Sysslo!' })).toBeVisible();
   await page.getByRole('button', { name: 'Jag har sparat koden – fortsätt' }).click();
+  await confirmEmailInDev(page, email);
+  await page.goto('/login');
   await page.getByLabel('E-post').fill(email);
   await page.getByLabel('Lösenord').fill(password);
   await page.getByRole('button', { name: 'Logga in som vuxen' }).click();
@@ -137,7 +154,7 @@ async function createAndAssignChore(page: Page, choreTitle: string, childName: s
   await page.getByRole('button', { name: '+ Ny syssla' }).click();
   await expect(page.locator('#new-chore-panel')).toBeFocused();
   await page.getByLabel('Titel').fill(choreTitle);
-  await page.getByLabel('Poäng').selectOption({ label: '10 poäng' });
+  await page.getByLabel('Poäng').fill('10');
   await page.getByLabel(/Beskrivning/).fill('E2E-test av hela syssleflödet.');
   await page.getByRole('button', { name: 'Skapa syssla' }).click();
 

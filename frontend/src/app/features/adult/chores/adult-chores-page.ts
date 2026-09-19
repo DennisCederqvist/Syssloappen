@@ -4,6 +4,7 @@ import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { finalize, forkJoin } from 'rxjs';
 import { focusAfterRender } from '../../../shared/focus';
+import { SuccessMessage } from '../../../shared/success-message';
 import { ChildSummary } from '../children/children.models';
 import { ChildrenService } from '../children/children.service';
 import { AdultBadge } from '../ui/badge';
@@ -47,8 +48,7 @@ const WEEKDAY_BITS = [1, 2, 4, 8, 16, 32, 64];
 export class AdultChoresPage implements OnInit {
   private readonly choresService = inject(ChoresService);
   private readonly transloco = inject(TranslocoService);
-  private successTimer: number | null = null;
-  private successClearTimer: number | null = null;
+  private readonly success = new SuccessMessage();
   private readonly childrenService = inject(ChildrenService);
   private readonly formBuilder = inject(FormBuilder);
 
@@ -77,8 +77,8 @@ export class AdultChoresPage implements OnInit {
   readonly editChoreError = signal('');
   readonly deactivationError = signal('');
   readonly assignmentError = signal('');
-  readonly successMessage = signal('');
-  readonly successFading = signal(false);
+  readonly successMessage = this.success.message;
+  readonly successFading = this.success.fading;
   private assignmentReturnFocusId = 'open-assignment-trigger';
   private editChoreReturnFocusId = '';
 
@@ -127,7 +127,7 @@ export class AdultChoresPage implements OnInit {
 
   openChoreForm(): void {
     this.choreError.set('');
-    this.successMessage.set('');
+    this.success.clear();
     this.showChoreForm.set(true);
     focusAfterRender('new-chore-panel');
   }
@@ -169,7 +169,7 @@ export class AdultChoresPage implements OnInit {
             [...chores, chore].sort((a, b) => a.title.localeCompare(b.title, 'sv')),
           );
           this.closeChoreForm();
-          this.showSuccess(
+          this.success.show(
             this.transloco.translate('adult.chores.createSuccess', { title: chore.title }),
           );
           this.openAssignmentForm(chore.id);
@@ -239,7 +239,7 @@ export class AdultChoresPage implements OnInit {
               .sort((a, b) => a.title.localeCompare(b.title, 'sv')),
           );
           this.closeEditChore();
-          this.showSuccess(
+          this.success.show(
             this.transloco.translate('adult.chores.updateSuccess', { title: updated.title }),
           );
           focusAfterRender('adult-chores-success');
@@ -260,7 +260,7 @@ export class AdultChoresPage implements OnInit {
   requestDeactivation(choreId: number): void {
     this.confirmingDeactivationId.set(choreId);
     this.deactivationError.set('');
-    this.successMessage.set('');
+    this.success.clear();
     focusAfterRender(`cancel-chore-deactivation-${choreId}`);
   }
 
@@ -286,7 +286,7 @@ export class AdultChoresPage implements OnInit {
           if (this.editingChore()?.id === chore.id) this.closeEditChore();
           if (this.assignmentForm.controls.choreId.value === chore.id) this.closeAssignmentForm();
           this.confirmingDeactivationId.set(null);
-          this.showSuccess(
+          this.success.show(
             this.transloco.translate('adult.chores.deactivateSuccess', { title: chore.title }),
           );
           focusAfterRender('adult-chores-success');
@@ -391,7 +391,7 @@ export class AdultChoresPage implements OnInit {
             ...assignments,
           ]);
           this.closeAssignmentForm();
-          this.showSuccess(
+          this.success.show(
             this.transloco.translate('adult.chores.assignSuccess', {
               choreTitle: chore.title,
               childName: child.name,
@@ -445,7 +445,7 @@ export class AdultChoresPage implements OnInit {
             .getAssignments()
             .subscribe((assignments) => this.assignments.set(assignments));
           this.closeAssignmentForm();
-          this.showSuccess(
+          this.success.show(
             this.transloco.translate('adult.chores.assignRecurringSuccess', {
               choreTitle: chore.title,
               childName: child.name,
@@ -508,20 +508,6 @@ export class AdultChoresPage implements OnInit {
             this.transloco.translate('adult.chores.recurrence.stopError'),
           ),
       });
-  }
-
-  private showSuccess(message: string): void {
-    if (this.successTimer !== null) window.clearTimeout(this.successTimer);
-    if (this.successClearTimer !== null) window.clearTimeout(this.successClearTimer);
-    this.successFading.set(false);
-    this.successMessage.set(message);
-    this.successTimer = window.setTimeout(() => this.successFading.set(true), 3000);
-    this.successClearTimer = window.setTimeout(() => {
-      this.successMessage.set('');
-      this.successTimer = null;
-      this.successClearTimer = null;
-      this.successFading.set(false);
-    }, 5000);
   }
 
   private todayInputValue(): string {

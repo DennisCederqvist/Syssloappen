@@ -131,6 +131,7 @@ else
 // "Resend" sends real email via Resend's HTTP API; anything else (local dev by default) logs the
 // message instead. See docs/HANDOFF.md for the Email:* configuration keys.
 builder.Services.Configure<ResendOptions>(builder.Configuration.GetSection(ResendOptions.SectionName));
+builder.Services.AddSingleton<DevEmailStore>();
 if (builder.Configuration["Email:Provider"] == "Resend")
 {
     builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>();
@@ -148,6 +149,11 @@ app.UseForwardedHeaders();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    // Lets e2e tests (no real inbox to check) fetch the confirmation/reset link
+    // LoggingEmailSender would otherwise only print to the console.
+    app.MapGet("/dev/last-email", (string email, DevEmailStore store) =>
+        store.TryGet(email, out var record) ? Results.Ok(record) : Results.NotFound());
 }
 
 // Angular's local development proxy connects to the HTTP launch profile on
@@ -166,6 +172,7 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/health", () => Results.Ok());
 app.MapControllers();
 app.MapHub<NotificationsHub>("/hubs/notifications");
 if (!app.Environment.IsDevelopment())
