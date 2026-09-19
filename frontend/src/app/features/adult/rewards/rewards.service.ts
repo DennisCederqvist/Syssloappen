@@ -24,4 +24,7 @@ export class RewardsService {
     formData.append('file', file);
     return this.http.post<Reward>(`/api/rewards/${id}/image`, formData);
   }
+  deleteImage(id: number): Observable<Reward> {
+    return this.http.delete<Reward>(`/api/rewards/${id}/image`);
+  }
 }

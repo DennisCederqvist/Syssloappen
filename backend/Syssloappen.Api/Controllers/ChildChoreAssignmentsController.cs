@@ -75,6 +75,7 @@ public sealed class ChildChoreAssignmentsController(
                 assignment.Chore.Title,
                 assignment.Chore.Description,
                 assignment.Points,
+                assignment.Chore.ImageUrl,
                 assignment.AssignedAt,
                 assignment.DueDate,
                 assignment.Status.ToString(),

@@ -207,6 +207,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(chore => chore.Description)
                 .HasMaxLength(500);
 
+            entity.Property(chore => chore.ImageUrl)
+                .HasMaxLength(2048);
+
             entity.Property(chore => chore.CreatedByUserId)
                 .IsRequired();
 

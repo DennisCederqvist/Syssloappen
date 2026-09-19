@@ -8,8 +8,10 @@ namespace Syssloappen.Api.Services;
 /// (no Supabase SDK needed for a single upload call). Requires the bucket to already exist and
 /// be configured public-read, so the returned URL works directly in an &lt;img&gt; tag.
 /// </summary>
-public sealed class SupabaseRewardImageStorage(HttpClient httpClient, IOptions<SupabaseStorageOptions> options)
-    : IRewardImageStorage
+public sealed class SupabaseRewardImageStorage(
+    HttpClient httpClient,
+    IOptions<SupabaseStorageOptions> options,
+    ILogger<SupabaseRewardImageStorage> logger) : IRewardImageStorage
 {
     public async Task<string> SaveAsync(byte[] webpContent, string fileName, CancellationToken cancellationToken = default)
     {
@@ -50,8 +52,23 @@ public sealed class SupabaseRewardImageStorage(HttpClient httpClient, IOptions<S
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.ServiceKey);
         request.Headers.Add("apikey", config.ServiceKey);
 
-        // Best-effort: the new image is already saved by the time this runs, so a failure to
-        // delete the old one just leaves an orphaned file rather than breaking the request.
-        using var response = await httpClient.SendAsync(request, cancellationToken);
+        // Best-effort: the database change is already committed by the time this runs, so a
+        // failed delete must not fail the request — but it does leave an orphaned file that
+        // counts against the storage quota, so it is logged rather than swallowed silently.
+        try
+        {
+            using var response = await httpClient.SendAsync(request, cancellationToken);
+            // 404 means the file is already gone, which is the outcome we wanted.
+            if (!response.IsSuccessStatusCode && response.StatusCode != System.Net.HttpStatusCode.NotFound)
+            {
+                logger.LogWarning(
+                    "Supabase Storage delete of {ObjectPath} failed with {StatusCode}; the file is orphaned.",
+                    objectPath, (int)response.StatusCode);
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            logger.LogWarning(ex, "Supabase Storage delete of {ObjectPath} failed; the file is orphaned.", objectPath);
+        }
     }
 }

@@ -67,7 +67,7 @@
           </p>
         </div>
       } @else {
-        <div class="grid gap-5 sm:grid-cols-2">
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           @for (
             assignment of actionableAssignments();
             track assignment.assignmentId;
@@ -77,6 +77,7 @@
               [cardId]="'child-assignment-' + assignment.assignmentId"
               [title]="assignment.title"
               [description]="assignment.description"
+              [imageUrl]="assignment.imageUrl"
               [reviewComment]="assignment.status === 'NeedsRedo' ? assignment.reviewComment : null"
               [points]="assignment.points"
               [palette]="paletteFor(i)"
@@ -91,6 +92,7 @@
             <app-child-status-card
               [cardId]="'child-assignment-' + assignment.assignmentId"
               [title]="assignment.title"
+              [imageUrl]="assignment.imageUrl"
               [points]="assignment.points"
               kind="pending"
             />

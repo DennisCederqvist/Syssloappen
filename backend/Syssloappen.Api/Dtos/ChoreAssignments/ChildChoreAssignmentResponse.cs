@@ -6,6 +6,7 @@ public sealed record ChildChoreAssignmentResponse(
     string Title,
     string? Description,
     int Points,
+    string? ImageUrl,
     DateTime AssignedAt,
     DateOnly DueDate,
     string Status,

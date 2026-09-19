@@ -4,7 +4,9 @@ export type NotificationEventType =
   | 'ChoreNeedsRedo'
   | 'ChoreSubmittedForReview'
   | 'RewardRequested'
-  | 'RewardApproved';
+  | 'RewardApproved'
+  | 'ChoresChanged'
+  | 'RewardsChanged';
 
 export interface ChoreAssignedData {
   assignmentId: number;

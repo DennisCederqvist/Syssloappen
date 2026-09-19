@@ -17,7 +17,9 @@ public sealed class RewardsController(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
     TimeProvider timeProvider,
-    IRewardImageStorage imageStorage) : ControllerBase
+    IRewardImageStorage imageStorage,
+    INotificationDispatcher notificationDispatcher,
+    ILogger<RewardsController> logger) : ControllerBase
 {
     // Bounds the raw upload before it ever reaches the image decoder, so a huge file can't
     // be used to exhaust memory during decoding.
@@ -54,6 +56,7 @@ public sealed class RewardsController(
         };
         dbContext.Rewards.Add(reward);
         await dbContext.SaveChangesAsync();
+        await NotifyChildrenAsync(currentUser.HouseholdId);
         return CreatedAtAction(nameof(GetAll), ToResponse(reward));
     }
 
@@ -101,6 +104,7 @@ public sealed class RewardsController(
         reward.PointsCost = request.PointsCost;
         reward.StockQuantity = request.StockQuantity;
         await dbContext.SaveChangesAsync();
+        await NotifyChildrenAsync(currentUser.HouseholdId);
         return Ok(ToResponse(reward));
     }
 
@@ -133,6 +137,7 @@ public sealed class RewardsController(
             await imageStorage.DeleteAsync(imageUrl, HttpContext.RequestAborted);
         }
 
+        await NotifyChildrenAsync(currentUser.HouseholdId);
         return NoContent();
     }
 
@@ -193,6 +198,36 @@ public sealed class RewardsController(
             await imageStorage.DeleteAsync(previousImageUrl, HttpContext.RequestAborted);
         }
 
+        await NotifyChildrenAsync(currentUser.HouseholdId);
+        return Ok(ToResponse(reward));
+    }
+
+    [HttpDelete("{rewardId:int}/image")]
+    public async Task<ActionResult<RewardResponse>> DeleteImage(int rewardId)
+    {
+        if (rewardId <= 0)
+        {
+            ModelState.AddModelError(nameof(rewardId), "Reward ID must be positive.");
+            return ValidationProblem(ModelState);
+        }
+
+        var currentUser = await userManager.GetUserAsync(User);
+        if (currentUser is null) return Unauthorized();
+
+        var reward = await dbContext.Rewards.SingleOrDefaultAsync(item =>
+            item.Id == rewardId && item.HouseholdId == currentUser.HouseholdId && item.IsActive);
+        if (reward is null) return NotFound();
+
+        var imageUrl = reward.ImageUrl;
+        reward.ImageUrl = null;
+        await dbContext.SaveChangesAsync();
+
+        if (imageUrl is not null)
+        {
+            await imageStorage.DeleteAsync(imageUrl, HttpContext.RequestAborted);
+        }
+
+        await NotifyChildrenAsync(currentUser.HouseholdId);
         return Ok(ToResponse(reward));
     }
 
@@ -201,4 +236,19 @@ public sealed class RewardsController(
 
     private static RewardResponse ToResponse(Reward reward) => new(
         reward.Id, reward.Name, reward.Description, reward.PointsCost, reward.StockQuantity, reward.ImageUrl, reward.CreatedAt);
+
+    // Best-effort: the change is already committed, so a failed refresh hint must not fail the request.
+    private async Task NotifyChildrenAsync(int householdId)
+    {
+        try
+        {
+            await notificationDispatcher.NotifyHouseholdChildrenAsync(
+                householdId,
+                new NotificationEvent(NotificationEventType.RewardsChanged, new ContentChangedData()));
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to dispatch a real-time notification.");
+        }
+    }
 }

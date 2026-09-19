@@ -171,6 +171,10 @@ public sealed class ChoreAssignmentsController(
             });
         }
 
+        await TryNotifyAsync(() => notificationDispatcher.NotifyChildAsync(
+            assignment.ChildId,
+            new NotificationEvent(NotificationEventType.ChoresChanged, new ContentChangedData())));
+
         return NoContent();
     }
 

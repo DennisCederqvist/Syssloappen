@@ -2,13 +2,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { finalize, forkJoin } from 'rxjs';
+import { catchError, finalize, forkJoin, Observable, of, switchMap } from 'rxjs';
 import { focusAfterRender } from '../../../shared/focus';
 import { SuccessMessage } from '../../../shared/success-message';
 import { ChildSummary } from '../children/children.models';
 import { ChildrenService } from '../children/children.service';
 import { AdultBadge } from '../ui/badge';
 import { AdultBottomNav } from '../ui/bottom-nav';
+import { AdultImagePicker } from '../ui/image-picker';
 import {
   AdultDangerOutlineButton,
   AdultPrimaryButton,
@@ -35,6 +36,7 @@ const WEEKDAY_BITS = [1, 2, 4, 8, 16, 32, 64];
     FormsModule,
     AdultBadge,
     AdultBottomNav,
+    AdultImagePicker,
     AdultDangerOutlineButton,
     AdultPrimaryButton,
     AdultSecondaryTintButton,
@@ -74,6 +76,9 @@ export class AdultChoresPage implements OnInit {
   readonly confirmingDeactivationId = signal<number | null>(null);
   readonly isAssigning = signal(false);
   readonly choreError = signal('');
+  readonly imageError = signal('');
+  readonly pendingImageFile = signal<File | null>(null);
+  readonly imagePreviewUrl = signal<string | null>(null);
   readonly editChoreError = signal('');
   readonly deactivationError = signal('');
   readonly assignmentError = signal('');
@@ -136,6 +141,7 @@ export class AdultChoresPage implements OnInit {
     this.showChoreForm.set(false);
     this.choreError.set('');
     this.choreForm.reset({ title: '', description: '', points: 5 });
+    this.resetImageState(null);
     focusAfterRender('new-chore-trigger');
   }
 
@@ -162,7 +168,10 @@ export class AdultChoresPage implements OnInit {
         description: value.description.trim() || null,
         points: value.points,
       })
-      .pipe(finalize(() => this.isCreatingChore.set(false)))
+      .pipe(
+        switchMap((chore) => this.uploadPendingImage(chore)),
+        finalize(() => this.isCreatingChore.set(false)),
+      )
       .subscribe({
         next: (chore) => {
           this.chores.update((chores) =>
@@ -193,6 +202,7 @@ export class AdultChoresPage implements OnInit {
       description: chore.description ?? '',
       points: chore.points,
     });
+    this.resetImageState(chore.imageUrl);
     this.editChoreError.set('');
     this.deactivationError.set('');
     this.confirmingDeactivationId.set(null);
@@ -202,6 +212,7 @@ export class AdultChoresPage implements OnInit {
   closeEditChore(): void {
     this.editingChore.set(null);
     this.editChoreForm.reset({ title: '', description: '', points: 5 });
+    this.resetImageState(null);
     this.editChoreError.set('');
     if (this.editChoreReturnFocusId) focusAfterRender(this.editChoreReturnFocusId);
   }
@@ -230,7 +241,10 @@ export class AdultChoresPage implements OnInit {
         description: value.description.trim() || null,
         points: value.points,
       })
-      .pipe(finalize(() => this.isUpdatingChore.set(false)))
+      .pipe(
+        switchMap((updated) => this.uploadPendingImage(updated)),
+        finalize(() => this.isUpdatingChore.set(false)),
+      )
       .subscribe({
         next: (updated) => {
           this.chores.update((chores) =>
@@ -255,6 +269,51 @@ export class AdultChoresPage implements OnInit {
             ),
           ),
       });
+  }
+
+  selectImage(file: File): void {
+    this.resetImageState(null);
+    this.pendingImageFile.set(file);
+    this.imagePreviewUrl.set(URL.createObjectURL(file));
+  }
+
+  /** Clears a picked-but-unsent file, or removes the chore's saved image when editing. */
+  removeImage(): void {
+    if (this.pendingImageFile()) {
+      this.resetImageState(this.editingChore()?.imageUrl ?? null);
+      return;
+    }
+    const chore = this.editingChore();
+    if (!chore) return;
+    this.choresService.deleteChoreImage(chore.id).subscribe({
+      next: (updated) => {
+        this.chores.update((chores) => chores.map((item) => (item.id === updated.id ? updated : item)));
+        this.editingChore.set(updated);
+        this.imagePreviewUrl.set(null);
+      },
+      error: () => this.editChoreError.set(this.transloco.translate('adult.chores.updateError.generic')),
+    });
+  }
+
+  private resetImageState(existingImageUrl: string | null): void {
+    const preview = this.imagePreviewUrl();
+    if (this.pendingImageFile() && preview) URL.revokeObjectURL(preview);
+    this.pendingImageFile.set(null);
+    this.imagePreviewUrl.set(existingImageUrl);
+  }
+
+  // A failed upload must not undo the chore that was just saved, so it is reported
+  // separately and the chore is returned as saved (without its image).
+  private uploadPendingImage(chore: Chore): Observable<Chore> {
+    const file = this.pendingImageFile();
+    this.imageError.set('');
+    if (!file) return of(chore);
+    return this.choresService.uploadChoreImage(chore.id, file).pipe(
+      catchError(() => {
+        this.imageError.set(this.transloco.translate('adult.chores.createSheet.imageUploadError'));
+        return of(chore);
+      }),
+    );
   }
 
   requestDeactivation(choreId: number): void {

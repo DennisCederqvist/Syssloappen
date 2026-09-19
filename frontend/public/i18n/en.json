@@ -12,6 +12,11 @@
       "network": "Couldn't reach the server. Check your connection.",
       "unauthorized": "You don't have permission to do that."
     },
+    "imagePicker": {
+      "choose": "Choose photo",
+      "take": "Take photo",
+      "remove": "Remove photo"
+    },
     "loading": "Loading…",
     "settings": {
       "language": {
@@ -394,6 +399,8 @@
         "descriptionOptional": "(optional)",
         "descriptionPlaceholder": "A short, clear instruction",
         "descriptionError": "The description may be at most 500 characters.",
+        "imageLabel": "Image",
+        "imageUploadError": "The chore was saved, but the image couldn't be uploaded. Try again by editing the chore.",
         "submit": "Create chore",
         "submitting": "Creating…"
       },
@@ -634,9 +641,8 @@
         "pointsLabel": "Point cost",
         "stockLabel": "Stock quantity",
         "imageLabel": "Image",
-        "chooseImage": "Choose photo",
-        "takePhoto": "Take photo",
         "imageUploadError": "The image couldn't be uploaded. Try again.",
+        "imageRemoveError": "The image couldn't be removed. Try again.",
         "submitCreate": "Create reward",
         "submitEdit": "Save changes",
         "saving": "Saving…"

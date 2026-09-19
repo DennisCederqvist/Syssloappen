@@ -1,5 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { ChildImagePlaceholder } from './image-placeholder';
 import { CHILD_CARD_PALETTE_CLASSES, ChildCardPalette } from './palette';
 
 export type ChildTaskCardPalette = ChildCardPalette;
@@ -15,7 +16,7 @@ export type ChildTaskCardPalette = ChildCardPalette;
  * ChildStatusCard instead. */
 @Component({
   selector: 'app-child-task-card',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, ChildImagePlaceholder],
   template: `
     <article
       [id]="cardId()"
@@ -28,6 +29,12 @@ export type ChildTaskCardPalette = ChildCardPalette;
       [style.animation-timing-function]="'ease-in-out'"
       [style.animation-iteration-count]="1"
     >
+      @if (imageUrl(); as url) {
+        <img [src]="url" alt="" class="mb-3 aspect-[16/8] w-full rounded-[18px] object-cover" />
+      } @else {
+        <app-child-image-placeholder kind="chore" class="mb-3 block" />
+      }
+
       <div class="flex items-start justify-between gap-3">
         <h3 class="font-display text-[19px] leading-snug font-semibold text-child-text">
           {{ title() }}
@@ -84,6 +91,7 @@ export class ChildTaskCard {
   readonly cardId = input.required<string>();
   readonly title = input.required<string>();
   readonly description = input<string | null>(null);
+  readonly imageUrl = input<string | null>(null);
   readonly reviewComment = input<string | null>(null);
   readonly points = input.required<number>();
   readonly palette = input<ChildTaskCardPalette>('blue');

@@ -97,49 +97,11 @@
             <span class="font-normal text-adult-text-secondary">{{
               'adult.rewards.formSheet.descriptionOptional' | transloco
             }}</span>
-            <div class="mt-1.5 flex flex-wrap items-center gap-3">
-              @if (imagePreviewUrl(); as previewUrl) {
-                <img
-                  [src]="previewUrl"
-                  alt=""
-                  class="size-16 shrink-0 rounded-lg border border-adult-border object-cover"
-                />
-              }
-              <div class="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  (click)="galleryInput.click()"
-                  class="min-h-11 rounded-lg bg-adult-accent-soft px-4 text-sm font-semibold text-adult-accent-dark"
-                >
-                  {{ 'adult.rewards.formSheet.chooseImage' | transloco }}
-                </button>
-                <button
-                  type="button"
-                  (click)="cameraInput.click()"
-                  class="min-h-11 rounded-lg border border-adult-border px-4 text-sm font-semibold text-adult-text"
-                >
-                  {{ 'adult.rewards.formSheet.takePhoto' | transloco }}
-                </button>
-              </div>
-              <!-- Two separate inputs, not one shared `capture` toggle: on mobile, `capture`
-                   forces the OS straight into the camera with no way to pick an existing photo,
-                   so each affordance gets its own hidden input instead. -->
-              <input
-                #galleryInput
-                type="file"
-                accept="image/*"
-                (change)="selectImage($event)"
-                class="hidden"
-              />
-              <input
-                #cameraInput
-                type="file"
-                accept="image/*"
-                capture="environment"
-                (change)="selectImage($event)"
-                class="hidden"
-              />
-            </div>
+            <app-adult-image-picker
+              [previewUrl]="imagePreviewUrl()"
+              (selected)="selectImage($event)"
+              (removed)="removeImage()"
+            />
           </div>
           <div class="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button

@@ -33,6 +33,16 @@ export class ChoresService {
     return this.http.delete<void>(`/api/chores/${choreId}`);
   }
 
+  uploadChoreImage(choreId: number, file: File): Observable<Chore> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<Chore>(`/api/chores/${choreId}/image`, formData);
+  }
+
+  deleteChoreImage(choreId: number): Observable<Chore> {
+    return this.http.delete<Chore>(`/api/chores/${choreId}/image`);
+  }
+
   getAssignments(includeCancelled = false): Observable<AdultAssignment[]> {
     return this.http.get<AdultAssignment[]>(
       `/api/chore-assignments${includeCancelled ? '?includeCancelled=true' : ''}`,

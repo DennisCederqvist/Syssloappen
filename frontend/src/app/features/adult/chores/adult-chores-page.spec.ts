@@ -14,14 +14,14 @@ class FakeChoresService {
   assignmentCalls: CreateAssignmentRequest[] = [];
   cancelAssignmentCalls: number[] = [];
   getChores() {
-    return of([{ id: 1, title: 'Mata katten', description: null, points: 10, createdAt: '' }]);
+    return of([{ id: 1, title: 'Mata katten', description: null, points: 10, imageUrl: null, createdAt: '' }]);
   }
   getAssignments() {
     return of([]);
   }
   createChore(request: CreateChoreRequest) {
     this.choreCalls.push(request);
-    return of({ id: 2, ...request, points: 5 as const, createdAt: '' });
+    return of({ id: 2, ...request, points: 5 as const, imageUrl: null, createdAt: '' });
   }
   createAssignment(request: CreateAssignmentRequest) {
     this.assignmentCalls.push(request);
@@ -33,6 +33,7 @@ class FakeChoresService {
       id: choreId,
       ...request,
       points: request.points,
+      imageUrl: null,
       createdAt: '',
     });
   }
