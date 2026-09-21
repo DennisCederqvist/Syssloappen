@@ -132,7 +132,7 @@ public sealed class ChildrenController(
     }
 
     [HttpGet]
-    [ProducesResponseType<IReadOnlyList<ChildResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<IReadOnlyList<ChildWithPointsResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<IReadOnlyList<ChildResponse>>> GetAll()
@@ -150,10 +150,14 @@ public sealed class ChildrenController(
             .Where(child =>
                 child.HouseholdId == currentUser.HouseholdId && child.IsActive)
             .OrderBy(child => child.Name)
-            .Select(child => new ChildResponse(child.Id, child.Name, child.PhotoUrl))
+            .Select(child => new { child.Id, child.Name, child.PhotoUrl })
             .ToListAsync();
 
-        return Ok(children);
+        var points = await ChildPointBalances.AvailableAsync(
+            dbContext, currentUser.HouseholdId, children.Select(child => child.Id).ToList());
+
+        return Ok(children.Select(child =>
+            new ChildWithPointsResponse(child.Id, child.Name, child.PhotoUrl, points[child.Id])));
     }
 
     [HttpPut("{id:int}")]

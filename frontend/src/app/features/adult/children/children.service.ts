@@ -5,6 +5,7 @@ import {
   ChildDeviceSession,
   ChildPairingCode,
   ChildSummary,
+  ChildWithPoints,
   CreateChildRequest,
   CreatedChild,
   UpdateChildRequest,
@@ -14,8 +15,8 @@ import {
 export class ChildrenService {
   private readonly http = inject(HttpClient);
 
-  getActiveChildren(): Observable<ChildSummary[]> {
-    return this.http.get<ChildSummary[]>('/api/children');
+  getActiveChildren(): Observable<ChildWithPoints[]> {
+    return this.http.get<ChildWithPoints[]>('/api/children');
   }
 
   createChild(request: CreateChildRequest): Observable<CreatedChild> {
