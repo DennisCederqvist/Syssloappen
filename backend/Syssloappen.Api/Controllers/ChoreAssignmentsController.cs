@@ -240,6 +240,10 @@ public sealed class ChoreAssignmentsController(
                 && assignment.Child.HouseholdId == householdId
                 && assignment.Child.IsActive
                 && assignment.DueDate < today
+                && (assignment.GeneratedFromRecurrenceId == null
+                    || !dbContext.ChoreAssignments.Any(newer =>
+                        newer.GeneratedFromRecurrenceId == assignment.GeneratedFromRecurrenceId
+                        && newer.DueDate > assignment.DueDate))
                 && (assignment.Status == ChoreAssignmentStatus.Assigned
                     || assignment.Status == ChoreAssignmentStatus.NeedsRedo))
             .ExecuteUpdateAsync(setters => setters
