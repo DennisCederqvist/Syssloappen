@@ -17,7 +17,9 @@ public sealed class ChoreRecurrencesController(
     AppDbContext dbContext,
     UserManager<ApplicationUser> userManager,
     TimeProvider timeProvider,
-    ChoreRecurrenceGenerator generator) : ControllerBase
+    ChoreRecurrenceGenerator generator,
+    INotificationDispatcher notificationDispatcher,
+    ILogger<ChoreRecurrencesController> logger) : ControllerBase
 {
     [HttpPost]
     public async Task<ActionResult<ChoreRecurrenceResponse>> Create(CreateChoreRecurrenceRequest request)
@@ -35,44 +37,12 @@ public sealed class ChoreRecurrencesController(
             child.Id == request.ChildId && child.HouseholdId == currentUser.HouseholdId && child.IsActive);
         if (child is null) return NotFound();
 
-        int? daysOfWeekMask;
-        int? dayOfMonth;
-        switch (request.Frequency)
+        if (!ChoreScheduleRules.TryNormalize(
+                request.Frequency, request.DaysOfWeekMask, request.DayOfMonth,
+                out var daysOfWeekMask, out var dayOfMonth, out var invalidField, out var invalidMessage))
         {
-            case ChoreRecurrenceFrequency.Weekly:
-                if (request.DaysOfWeekMask is null || !IsSingleBitSet(request.DaysOfWeekMask.Value))
-                {
-                    ModelState.AddModelError(
-                        nameof(request.DaysOfWeekMask), "Weekly recurrence requires exactly one weekday.");
-                    return ValidationProblem(ModelState);
-                }
-                daysOfWeekMask = request.DaysOfWeekMask;
-                dayOfMonth = null;
-                break;
-            case ChoreRecurrenceFrequency.Custom:
-                if (request.DaysOfWeekMask is null or 0 or > 127)
-                {
-                    ModelState.AddModelError(
-                        nameof(request.DaysOfWeekMask), "Custom recurrence requires at least one weekday.");
-                    return ValidationProblem(ModelState);
-                }
-                daysOfWeekMask = request.DaysOfWeekMask;
-                dayOfMonth = null;
-                break;
-            case ChoreRecurrenceFrequency.Monthly:
-                if (request.DayOfMonth is null or < 1 or > 31)
-                {
-                    ModelState.AddModelError(
-                        nameof(request.DayOfMonth), "Monthly recurrence requires a day of month between 1 and 31.");
-                    return ValidationProblem(ModelState);
-                }
-                daysOfWeekMask = null;
-                dayOfMonth = request.DayOfMonth;
-                break;
-            default:
-                daysOfWeekMask = null;
-                dayOfMonth = null;
-                break;
+            ModelState.AddModelError(invalidField, invalidMessage);
+            return ValidationProblem(ModelState);
         }
 
         var today = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
@@ -103,8 +73,55 @@ public sealed class ChoreRecurrencesController(
         // recurrence feels as instant as a one-off assignment rather than waiting for the next
         // lazy pass.
         await generator.GenerateDueAssignmentsAsync(currentUser.HouseholdId);
+        await NotifyChildOfGeneratedOccurrenceAsync(recurrence, chore, today);
 
         return CreatedAtAction(nameof(GetAll), ToResponse(recurrence, chore.Title, child.Name));
+    }
+
+    [HttpPut("{recurrenceId:int}")]
+    public async Task<ActionResult<ChoreRecurrenceResponse>> Update(
+        int recurrenceId, UpdateChoreRecurrenceRequest request)
+    {
+        if (recurrenceId <= 0)
+        {
+            ModelState.AddModelError(nameof(recurrenceId), "Recurrence ID must be positive.");
+            return ValidationProblem(ModelState);
+        }
+
+        var currentUser = await userManager.GetUserAsync(User);
+        if (currentUser is null) return Unauthorized();
+
+        var recurrence = await dbContext.ChoreRecurrences
+            .Include(item => item.Chore)
+            .Include(item => item.Child)
+            .SingleOrDefaultAsync(item =>
+                item.Id == recurrenceId && item.HouseholdId == currentUser.HouseholdId && item.IsActive);
+        if (recurrence is null) return NotFound();
+
+        if (!ChoreScheduleRules.TryNormalize(
+                request.Frequency, request.DaysOfWeekMask, request.DayOfMonth,
+                out var daysOfWeekMask, out var dayOfMonth, out var invalidField, out var invalidMessage))
+        {
+            ModelState.AddModelError(invalidField, invalidMessage);
+            return ValidationProblem(ModelState);
+        }
+
+        var today = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
+        var hadOccurrenceToday = await HasOccurrenceOnAsync(recurrence.Id, today);
+
+        recurrence.Frequency = request.Frequency;
+        recurrence.DaysOfWeekMask = daysOfWeekMask;
+        recurrence.DayOfMonth = dayOfMonth;
+        await dbContext.SaveChangesAsync();
+
+        // The new schedule may be due today while the old one was not.
+        await generator.GenerateDueAssignmentsAsync(currentUser.HouseholdId);
+        if (!hadOccurrenceToday)
+        {
+            await NotifyChildOfGeneratedOccurrenceAsync(recurrence, recurrence.Chore, today);
+        }
+
+        return Ok(ToResponse(recurrence, recurrence.Chore.Title, recurrence.Child.Name));
     }
 
     [HttpGet]
@@ -155,7 +172,35 @@ public sealed class ChoreRecurrencesController(
         return NoContent();
     }
 
-    private static bool IsSingleBitSet(int value) => value > 0 && (value & (value - 1)) == 0;
+    private Task<bool> HasOccurrenceOnAsync(int recurrenceId, DateOnly date) =>
+        dbContext.ChoreAssignments.AnyAsync(assignment =>
+            assignment.GeneratedFromRecurrenceId == recurrenceId && assignment.DueDate == date);
+
+    // Best-effort: the recurrence is already saved, so a failed live update must not fail the request.
+    private async Task NotifyChildOfGeneratedOccurrenceAsync(ChoreRecurrence recurrence, Chore chore, DateOnly today)
+    {
+        try
+        {
+            var occurrence = await dbContext.ChoreAssignments
+                .AsNoTracking()
+                .Where(assignment =>
+                    assignment.GeneratedFromRecurrenceId == recurrence.Id && assignment.DueDate == today)
+                .Select(assignment => new { assignment.Id, assignment.Points })
+                .SingleOrDefaultAsync();
+
+            if (occurrence is null) return;
+
+            await notificationDispatcher.NotifyChildAsync(
+                recurrence.ChildId,
+                new NotificationEvent(
+                    NotificationEventType.ChoreAssigned,
+                    new ChoreAssignedData(occurrence.Id, chore.Title, occurrence.Points)));
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to dispatch a real-time notification.");
+        }
+    }
 
     private static ChoreRecurrenceResponse ToResponse(ChoreRecurrence recurrence, string choreTitle, string childName) =>
         new(recurrence.Id, recurrence.ChoreId, choreTitle, recurrence.ChildId, childName,
