@@ -18,6 +18,12 @@
             [avatarImageUrl]="child.photoUrl"
             [routerLink]="['/vuxen/barn', child.id]"
           >
+            <span tileAction class="inline-flex shrink-0">
+              <app-adult-badge variant="points" [value]="child.availablePoints" aria-hidden="true" />
+              <span class="sr-only">{{
+                'adult.childProfile.pointsMeta' | transloco: { points: child.availablePoints }
+              }}</span>
+            </span>
             <span class="block h-1.5 w-full overflow-hidden rounded-full bg-adult-accent-soft">
               <span
                 class="block h-full rounded-full bg-adult-accent"

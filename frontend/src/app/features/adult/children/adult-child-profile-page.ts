@@ -20,7 +20,7 @@ import { ScheduleEditor, ScheduleValue } from '../chores/schedule-editor';
 import { AdultAssignment, Chore } from '../chores/chores.models';
 import { ChoresService } from '../chores/chores.service';
 import { AdultRewardRedemption, RewardRedemptionsService } from '../rewards/reward-redemptions.service';
-import { ChildSummary } from './children.models';
+import { ChildWithPoints } from './children.models';
 import { ChildrenService } from './children.service';
 
 /** Something the adult has handed out that is not due yet: a dated one-off, or a schedule's next turn. */
@@ -54,7 +54,7 @@ export class AdultChildProfilePage {
   private readonly rewardRedemptionsService = inject(RewardRedemptionsService);
   private readonly transloco = inject(TranslocoService);
   private readonly childId = Number(this.route.snapshot.paramMap.get('childId'));
-  readonly child = signal<ChildSummary | null>(null);
+  readonly child = signal<ChildWithPoints | null>(null);
   readonly assignments = signal<AdultAssignment[]>([]);
   readonly chores = signal<Chore[]>([]);
   readonly recurrences = signal<ChoreRecurrence[]>([]);
@@ -350,10 +350,13 @@ export class AdultChildProfilePage {
     if (this.busyRewardRedemptionId() !== null) return;
     this.busyRewardRedemptionId.set(item.id);
     this.rewardRedemptionsService.change(item.id, action, null).subscribe({
-      next: (updated) =>
+      next: (updated) => {
         this.rewardRedemptions.update((items) =>
           items.map((current) => (current.id === updated.id ? updated : current)),
-        ),
+        );
+        // Declining a request gives the reserved points back.
+        this.refreshChild();
+      },
       error: () => this.error.set(this.transloco.translate('adult.home.rewardChangeError')),
       complete: () => this.busyRewardRedemptionId.set(null),
     });
@@ -446,6 +449,12 @@ export class AdultChildProfilePage {
       });
   }
 
+  private refreshChild(): void {
+    this.childrenService.getActiveChildren().subscribe({
+      next: (children) => this.child.set(children.find((item) => item.id === this.childId) ?? null),
+    });
+  }
+
   private load(): void {
     forkJoin({
       children: this.childrenService.getActiveChildren(),
@@ -489,6 +498,9 @@ export class AdultChildProfilePage {
         if (decision === 'reject') {
           this.rejectingAssignmentId.set(null);
           this.rejectComments.update(({ [item.assignmentId]: _, ...rest }) => rest);
+        } else {
+          // An approved chore adds to the child's points.
+          this.refreshChild();
         }
       },
       error: () => this.error.set(this.transloco.translate('adult.home.reviewError')),

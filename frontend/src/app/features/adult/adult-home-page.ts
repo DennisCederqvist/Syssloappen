@@ -11,7 +11,7 @@ import { AdultPrimaryButton, AdultDangerOutlineButton } from './ui/buttons';
 import { AdultPageHeader } from './ui/page-header';
 import { AdultTile } from './ui/tile';
 import { ChildrenService } from './children/children.service';
-import { ChildSummary } from './children/children.models';
+import { ChildWithPoints } from './children/children.models';
 import { AdultAssignment } from './chores/chores.models';
 import { ChoresService } from './chores/chores.service';
 import {
@@ -19,7 +19,7 @@ import {
   RewardRedemptionsService,
 } from './rewards/reward-redemptions.service';
 
-interface ChildOverview extends ChildSummary {
+interface ChildOverview extends ChildWithPoints {
   completed: number;
   total: number;
 }
@@ -49,7 +49,7 @@ export class AdultHomePage implements OnInit {
   readonly displayName = computed(
     () => this.auth.user()?.displayName || this.auth.user()?.email?.split('@')[0] || 'familj',
   );
-  readonly children = signal<ChildSummary[]>([]);
+  readonly children = signal<ChildWithPoints[]>([]);
   readonly assignments = signal<AdultAssignment[]>([]);
   readonly rewardRedemptions = signal<AdultRewardRedemption[]>([]);
   readonly busyAssignmentId = signal<number | null>(null);
@@ -73,6 +73,12 @@ export class AdultHomePage implements OnInit {
       if (evt.type === 'ChoreSubmittedForReview' || evt.type === 'RewardRequested') {
         this.load();
       }
+    });
+  }
+
+  private refreshChildren(): void {
+    this.childrenService.getActiveChildren().subscribe({
+      next: (children) => this.children.set(children),
     });
   }
 
@@ -120,10 +126,13 @@ export class AdultHomePage implements OnInit {
     if (this.busyRewardRedemptionId() !== null) return;
     this.busyRewardRedemptionId.set(item.id);
     this.rewardRedemptionsService.change(item.id, action, null).subscribe({
-      next: (updated) =>
+      next: (updated) => {
         this.rewardRedemptions.update((items) =>
           items.map((current) => (current.id === updated.id ? updated : current)),
-        ),
+        );
+        // Declining a request gives the reserved points back.
+        this.refreshChildren();
+      },
       error: () => this.loadError.set(this.transloco.translate('adult.home.rewardChangeError')),
       complete: () => this.busyRewardRedemptionId.set(null),
     });
@@ -152,6 +161,9 @@ export class AdultHomePage implements OnInit {
         if (decision === 'reject') {
           this.rejectingAssignmentId.set(null);
           this.rejectComments.update(({ [item.assignmentId]: _, ...rest }) => rest);
+        } else {
+          // An approved chore adds to the child's points.
+          this.refreshChildren();
         }
       },
       error: () => this.loadError.set(this.transloco.translate('adult.home.reviewError')),
@@ -159,7 +171,7 @@ export class AdultHomePage implements OnInit {
     });
   }
 
-  private overview(child: ChildSummary): ChildOverview {
+  private overview(child: ChildWithPoints): ChildOverview {
     const today = new Date().toLocaleDateString('sv-SE');
     const relevant = this.assignments().filter(
       (item) => item.childId === child.id && item.dueDate === today && item.status !== 'Cancelled',

@@ -4,6 +4,11 @@ export interface ChildSummary {
   photoUrl: string | null;
 }
 
+/** A child in the household list, with the points the child can currently spend. */
+export interface ChildWithPoints extends ChildSummary {
+  availablePoints: number;
+}
+
 export interface CreateChildRequest {
   name: string;
   userName: string;
