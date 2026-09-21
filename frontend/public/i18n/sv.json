@@ -816,6 +816,10 @@
     "linkFromLogin": "Behöver du hjälp? Läs vår guide",
     "stillStuck": "Hittade du inte svaret du sökte? Mejla oss på ",
     "faq": {
+      "installApp": {
+        "question": "Hur installerar jag appen på min telefon eller surfplatta?",
+        "answer": "Sysslo fungerar direkt i webbläsaren, men du kan lägga till den på hemskärmen så att den öppnas som en vanlig app. På iPhone/iPad (Safari): tryck på Dela-ikonen (fyrkanten med pilen uppåt) och välj \"Lägg till på hemskärmen\". På Android (Chrome): tryck på menyn (tre punkter) och välj \"Installera app\" eller \"Lägg till på startskärmen\". Sysslo-ikonen dyker sedan upp bland dina andra appar."
+      },
       "addAdult": {
         "question": "Hur lägger jag till en till vuxen i familjen?",
         "answer": "Gå till Inställningar → Hantera vuxna och tryck på \"+ Bjud in vuxen\" för att skapa en engångskod. Dela koden med personen (till exempel via sms), så kan de gå till \"Jag har en inbjudan\" och skriva in koden samt välja sin egen e-post och lösenord."

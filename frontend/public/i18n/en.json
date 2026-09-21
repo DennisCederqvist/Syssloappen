@@ -813,6 +813,10 @@
     "linkFromLogin": "Need help? Read our guide",
     "stillStuck": "Couldn't find the answer you were looking for? Email us at ",
     "faq": {
+      "installApp": {
+        "question": "How do I install the app on my phone or tablet?",
+        "answer": "Sysslo works right in the browser, but you can add it to your home screen so it opens like a regular app. On iPhone/iPad (Safari): tap the Share icon (the square with an arrow pointing up) and choose \"Add to Home Screen\". On Android (Chrome): tap the menu (three dots) and choose \"Install app\" or \"Add to Home screen\". The Sysslo icon then appears among your other apps."
+      },
       "addAdult": {
         "question": "How do I add another adult to the family?",
         "answer": "Go to Settings → Manage adults and tap \"+ Invite adult\" to create a one-time code. Share the code with the person (for example by text message), and they can go to \"I have an invite\" to enter the code and choose their own email and password."
