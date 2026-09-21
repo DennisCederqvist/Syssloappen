@@ -1,0 +1,114 @@
+<form class="grid gap-4" (submit)="submit($event)" novalidate>
+  <label class="block text-sm font-semibold text-adult-text">
+    {{ 'adult.chores.assign.frequencyLabel' | transloco }}
+    <select
+      (change)="repeat.set($any($event.target).value)"
+      class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+    >
+      @if (allowOnce()) {
+        <option value="Once" [selected]="repeat() === 'Once'">
+          {{ 'adult.childProfile.detail.once' | transloco }}
+        </option>
+      }
+      <option value="Daily" [selected]="repeat() === 'Daily'">{{ 'adult.chores.assign.frequency.daily' | transloco }}</option>
+      <option value="Weekly" [selected]="repeat() === 'Weekly'">{{ 'adult.chores.assign.frequency.weekly' | transloco }}</option>
+      <option value="Monthly" [selected]="repeat() === 'Monthly'">{{ 'adult.chores.assign.frequency.monthly' | transloco }}</option>
+      <option value="Custom" [selected]="repeat() === 'Custom'">{{ 'adult.chores.assign.frequency.custom' | transloco }}</option>
+    </select>
+  </label>
+
+  @if (showDate()) {
+    <label class="block text-sm font-semibold text-adult-text">
+      {{ (repeat() === 'Once' ? 'adult.chores.assign.dateLabel' : 'adult.childProfile.editSheet.startDate') | transloco }}
+      <input
+        type="date"
+        [value]="date()"
+        [min]="minDate"
+        (input)="date.set($any($event.target).value)"
+        class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+      />
+    </label>
+  }
+
+  @if (repeat() === 'Weekly') {
+    <label class="block text-sm font-semibold text-adult-text">
+      {{ 'adult.chores.assign.weekdayLabel' | transloco }}
+      <select
+        (change)="weekday.set(+$any($event.target).value)"
+        class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+      >
+        @for (day of days; track day) {
+          <option [value]="day" [selected]="weekday() === day">
+            {{ 'adult.chores.recurrence.weekday.' + day | transloco }}
+          </option>
+        }
+      </select>
+    </label>
+  }
+
+  @if (repeat() === 'Custom') {
+    <div>
+      <span class="block text-sm font-semibold text-adult-text">
+        {{ 'adult.chores.assign.customDaysLabel' | transloco }}
+      </span>
+      <div class="mt-1.5 flex flex-wrap gap-2">
+        @for (day of days; track day) {
+          <button
+            type="button"
+            (click)="toggleDay(day)"
+            [attr.aria-pressed]="customDays().has(day)"
+            class="min-h-11 min-w-11 rounded-lg border px-3 text-sm font-medium"
+            [class.border-adult-accent]="customDays().has(day)"
+            [class.bg-adult-accent-soft]="customDays().has(day)"
+            [class.text-adult-accent-dark]="customDays().has(day)"
+            [class.border-adult-border]="!customDays().has(day)"
+            [class.text-adult-text-secondary]="!customDays().has(day)"
+          >
+            {{ 'adult.chores.recurrence.weekdayShort.' + day | transloco }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  @if (repeat() === 'Monthly') {
+    <label class="block text-sm font-semibold text-adult-text">
+      {{ 'adult.chores.assign.dayOfMonthLabel' | transloco }}
+      <select
+        (change)="dayOfMonth.set(+$any($event.target).value)"
+        class="mt-1.5 min-h-11 w-full rounded-lg border border-adult-border bg-adult-surface px-3 font-normal text-adult-text"
+      >
+        @for (day of daysOfMonth; track day) {
+          <option [value]="day" [selected]="dayOfMonth() === day">{{ day }}</option>
+        }
+      </select>
+    </label>
+  }
+
+  @if (validationError() === 'date') {
+    <p class="text-sm font-medium text-adult-danger-text" role="alert">
+      {{ 'adult.childProfile.editSheet.dateError' | transloco }}
+    </p>
+  } @else if (validationError() === 'days') {
+    <p class="text-sm font-medium text-adult-danger-text" role="alert">
+      {{ 'adult.chores.assign.customDaysRequired' | transloco }}
+    </p>
+  }
+  @if (error()) {
+    <p class="text-sm font-medium text-adult-danger-text" role="alert">{{ error() }}</p>
+  }
+
+  <div class="flex gap-2">
+    <button
+      type="button"
+      (click)="cancelled.emit()"
+      [disabled]="busy()"
+      class="min-h-11 flex-1 rounded-lg border border-adult-border bg-adult-surface px-3 text-sm font-medium text-adult-text-secondary disabled:opacity-60"
+    >
+      {{ 'common.actions.cancel' | transloco }}
+    </button>
+    <button type="submit" adultPrimaryButton class="flex-1" [disabled]="busy()">
+      {{ (busy() ? 'adult.childProfile.editSheet.saving' : 'common.actions.save') | transloco }}
+    </button>
+  </div>
+</form>

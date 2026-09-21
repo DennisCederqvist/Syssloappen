@@ -47,6 +47,7 @@ export interface AdultAssignment {
   cancelledByUserId: string | null;
   cancelledAt: string | null;
   adultArchivedAt: string | null;
+  generatedFromRecurrenceId: number | null;
 }
 
 export interface ReviewAssignmentRequest {

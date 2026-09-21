@@ -704,7 +704,27 @@
       },
       "activeTitle": "Current chores",
       "activeEmpty": "No current chores.",
+      "futureTitle": "Upcoming chores",
+      "futureEmpty": "No upcoming chores.",
       "pointsMeta": "{{points}} points",
+      "detail": {
+        "dueDate": "To be done",
+        "repeat": "Repeats",
+        "once": "One time only",
+        "edit": "Edit",
+        "nextDate": "Next time"
+      },
+      "editSheet": {
+        "startDate": "Start date",
+        "saving": "Saving…",
+        "dateError": "Pick a date that has not already passed.",
+        "error": {
+          "invalid": "That schedule is not valid. Check the choices and try again.",
+          "notFound": "The chore could not be found. It may already have been removed.",
+          "conflict": "The chore cannot be changed right now, for example because the child has already started it. Reload the page and try again.",
+          "generic": "The change could not be saved. Please try again."
+        }
+      },
       "removeSheet": {
         "button": "Remove from child",
         "question": "Remove this chore from {{name}}? This only removes the assignment, not the chore itself.",

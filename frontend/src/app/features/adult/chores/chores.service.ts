@@ -1,7 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ChoreRecurrence, CreateChoreRecurrenceRequest } from './chore-recurrence.models';
+import {
+  ChoreRecurrence,
+  CreateChoreRecurrenceRequest,
+  UpdateAssignmentScheduleRequest,
+  UpdateChoreRecurrenceRequest,
+} from './chore-recurrence.models';
 import {
   AdultAssignment,
   Chore,
@@ -91,6 +96,20 @@ export class ChoresService {
 
   createRecurrence(request: CreateChoreRecurrenceRequest): Observable<ChoreRecurrence> {
     return this.http.post<ChoreRecurrence>('/api/chore-recurrences', request);
+  }
+
+  updateRecurrence(
+    recurrenceId: number,
+    request: UpdateChoreRecurrenceRequest,
+  ): Observable<ChoreRecurrence> {
+    return this.http.put<ChoreRecurrence>(`/api/chore-recurrences/${recurrenceId}`, request);
+  }
+
+  updateAssignmentSchedule(
+    assignmentId: number,
+    request: UpdateAssignmentScheduleRequest,
+  ): Observable<void> {
+    return this.http.put<void>(`/api/chore-assignments/${assignmentId}/schedule`, request);
   }
 
   deleteRecurrence(recurrenceId: number): Observable<void> {
