@@ -191,7 +191,7 @@ Vuxenhanteringen byggs i tre små, gröna steg innan UI:t färdigställs. Ordnin
 2. **Backend, del 2 – säker bortkoppling.** Byggs först när del 1 är grön. Implementerar reglerna ovan under "Beslutad framtida vuxenhantering": normal bortkoppling med bevarad audit, återkallad åtkomst och frigjord e-post; skydd av huvudägaren mot bortkoppling; skydd mot att den sista Adult lämnar Householdet.
 3. **Frontend – "Hantera vuxna" och komplett "Bjud in vuxen".** Byggs först när del 1 och del 2 är gröna. Lägger till "Hantera vuxna" i Inställningar och kompletterar "Bjud in vuxen"-sidan med listan över Householdets vuxna samt tydlig information om vem som är huvudägare respektive inbjuden.
 
-Status: alla tre steg ovan är implementerade, testade och committade på `feature/household-owner-and-listing`, men branchen är ännu inte mergad till `main` (väntar på användarens granskning). Se `docs/HANDOFF.md` för fullständiga detaljer. Efter feedback byggdes "Hantera vuxna" och "Bjud in vuxen" ihop till en enda sida (den separata "Bjud in vuxen"-sidan togs bort helt), och tre valfria profilfält (förnamn, efternamn, användarnamn) samt eget lösenordsbyte lades till för varje Adult, utöver vad som ursprungligen planerades här.
+Status: alla tre steg ovan är implementerade, testade, användargodkända och mergade till `main` (PR #4). Permanent familjeradering finns också nu (se avsnitt 27). Se `docs/HANDOFF.md` för fullständiga detaljer. Efter feedback byggdes "Hantera vuxna" och "Bjud in vuxen" ihop till en enda sida (den separata "Bjud in vuxen"-sidan togs bort helt), och tre valfria profilfält (förnamn, efternamn, användarnamn) samt eget lösenordsbyte lades till för varje Adult, utöver vad som ursprungligen planerades här.
 
 Permanent familjeradering är ett eget, separat och uttryckligen destruktivt steg med explicit bekräftelse, och ligger utanför denna ordning.
 
@@ -1272,6 +1272,7 @@ Följande är byggt, mergat till `main` och i produktion utöver de user stories
 
 - [x] En syssla kan ha en bild som visas på barnets kort; bilden komprimeras på servern och raderas ur lagringen när den byts, tas bort eller sysslan avaktiveras. Belöningsbilder kan också tas bort.
 - [x] Poängen för en syssla är ett valfritt positivt heltal, och en tilldelning fryser värdet som gällde vid tilldelningen.
+- [x] En Adult ska se varje barns nuvarande (tillgängliga) poäng: på barnets profil direkt under namnet i headern, och på Hem längst till höger på barnets kort. Siffran är intjänade poäng minus poäng som är reserverade av öppna belöningsförfrågningar, alltså samma tal som barnet själv ser, och den uppdateras när en syssla godkänns eller en belöningsförfrågan avslås.
 
 ## Driftsäkerhet
 
@@ -1281,4 +1282,4 @@ Följande är byggt, mergat till `main` och i produktion utöver de user stories
 
 ## Tester, 2026-09-21
 
-- 252 backendtester och 58 frontendtester är gröna. Browsertesterna (`npm run e2e`) körs manuellt och har inte körts sedan 2026-09-16.
+- 256 backendtester och 58 frontendtester är gröna. Browsertesterna (`npm run e2e`) körs manuellt och har inte körts sedan 2026-09-16.
