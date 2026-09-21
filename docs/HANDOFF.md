@@ -1,8 +1,17 @@
 # Syssloappen - Project Handoff
 
-Senast uppdaterad: 2026-09-13
+Senast uppdaterad: 2026-09-21
 
 Läs alltid `REQUIREMENTS.md` först. Den här filen kompletterar kraven med projektets aktuella tekniska status och fattade beslut.
+
+## Läget 2026-09-21 (läs detta först)
+
+Allt som beskrivs i den här filen är mergat till `main` (senast PR #8, `144f480`); inga feature-branches är öppna. Appen körs i produktion som "Sysslo" (Render + Supabase, se "Produktionsdrift"). Avsnitten längre ned i filen är i huvudsak kronologiska: de äldsta beskriver MVP-kärnan och de nyaste ligger under "Aktuell arbetsdel". Siffror för tester, branches och "ej mergat" i de äldre avsnitten är historiska och stämmer inte längre — detta avsnitt och "Arbete efter 2026-09-13" är den aktuella sanningen.
+
+- **Tester:** 252 backendtester (`dotnet test`, SQLite in-memory) och 58 frontendtester (`ng test`, Vitest) är gröna. Tidigare kända, ofärgade frontendtestfel är borta (åtgärdade i `0a21bd7`). CI (`.github/workflows/ci.yml`) kör backend- och frontendjobb på varje push/PR. `npm run e2e` (Playwright) reparerades 2026-09-16 men har inte körts om sedan dess.
+- **Funktionsläge:** hela MVP:n plus belöningar, återkommande sysslor, vuxenhantering, e-postbekräftelse, lösenordsåterställning, GDPR-radering, PWA, realtidsuppdateringar, pushnotiser, QR-koppling, sysslobilder, hjälp/FAQ och feedbackformulär är byggt. Se nästa avsnitt.
+- **Lokal utveckling:** kör `dotnet ef database update` i `backend/Syssloappen.Api` efter varje pull som tillför migrationer. `dotnet run` laddar inte om kod — starta om backend efter varje backendändring (en gammal process ger 404 på nya endpoints och kraschar på saknade tabeller). Frontend startas med `npm start` (Angular-proxy mot `localhost:5047`, inklusive `/hubs` för SignalR).
+- **Inte verifierat skarpt:** pushnotiser går bara att prova mot en riktig HTTPS-domän med tjänstearbetare; de är testade med en fejkad `IWebPushClient` men inte i produktion.
 
 ## Aktuell status
 
@@ -447,9 +456,62 @@ Migrationen `AddChildProfileSoftDelete` är applicerad i `syssloappen_dev`; Post
 
 ## Aktuell arbetsdel
 
-### Återkommande sysslor, CI och en rad mindre funktioner/designuppdateringar — branch `feature/recurring-chores-and-polish`, ej mergad
+### Arbete efter 2026-09-13 — allt mergat till `main`
 
-En lång session med flera separata delleveranser, alla committade på samma branch. Branchen är **delvis pushad**: de fyra första commiten (återkommande sysslor, CI, de två buggfixarna, borttagning av tilldelning från barnprofil) pushades efter användarens uttryckliga godkännande; alla senare commit (branding, fria poäng, familjekod-UI, språkväxlare, barnfoto, header- och login-omdesign) finns ännu bara lokalt. Inget är mergat till `main`.
+Nedan i ungefär kronologisk ordning. Alla delar är mergade; de senaste (2026-09-19 till 2026-09-21) kom via PR #5–#8.
+
+**Konton, e-post och integritet**
+
+- **E-postbekräftelse vid registrering.** Gemensam `IEmailSender`, vald via konfiguration: Resend (HTTP-API) i produktion, en loggande no-op lokalt. Login blockeras med ett tydligt 403 tills kontot är bekräftat — kontrolleras manuellt i `AuthController.Login` i stället för Identitys globala `RequireConfirmedEmail`, som även hade låst ute barnens reservinloggning (barnkonton saknar e-post). Migrationen `ConfirmExistingAdultEmails` markerade alla redan registrerade vuxna som bekräftade. Sidor: `/bekrafta-epost`, plus "skicka igen".
+- **Säkerhetsfix, Host-header (`ca54dd6`).** Bekräftelselänkar byggdes från `Request.Host` när `PublicBaseUrl` saknades, vilket lät en anonym anropare få en riktig token skickad till en länk mot en angripardomän. `PublicBaseUrl` är nu obligatorisk i alla miljöer (produktion: `https://sysslo.dxcode.se`) och Host-fallbacken är borttagen. Regressionstest finns.
+- **Lösenordsåterställning via e-post.** `POST /api/auth/forgot-password` (rate-limitad, neutralt svar oavsett om adressen finns) och `POST /api/auth/reset-password` (Identitys token, engångs via säkerhetsstämpeln). Sidor: `/glomt-losenord`, `/aterstall-losenord`.
+- **GDPR-radering.** Huvudägaren schemalägger permanent radering från Inställningar → Vuxna (kräver lösenord och att man skriver "radera"). Alla vuxna ser en banner under de 30 dagarna; bara ägaren kan ångra. `HouseholdPurgeService` (bakgrundskörning) raderar därefter alla rader och lagrade bilder. Kolumn: `Household.DeletionScheduledAt`.
+- **Transaktionsmejl skickas på engelska.** Språkväxlaren finns bara i klienten och når aldrig backend, så mejlen kan inte följa den. Samma logik gäller pushtexterna.
+- **Hjälp och feedback.** `/hjalp` är en FAQ-sida (länkad från login och Inställningar); första frågan förklarar hur man installerar appen på telefon/surfplatta (iPhone: Dela → Lägg till på hemskärmen; Android: menyn → Installera app). `/vuxen/feedback` + `POST /api/support/contact` skickar ett meddelande till supportinkorgen med avsändaren utläst på serversidan.
+
+**PWA**
+
+- Web app manifest, tjänstearbetare (`@angular/service-worker`, registrerad bara i produktionsbygget) och en genererad ikonuppsättning inklusive maskable och iOS. `/api/**` är medvetet utanför tjänstearbetarens cache, så autentiserade svar cachas aldrig. Ikoner genereras av `scripts/generate-pwa-icons.mjs` (kräver engångsinstallation av `sharp`, inte ett projektberoende).
+
+**Realtid och pushnotiser**
+
+- **SignalR** (`/hubs/notifications`, cookieautentiserad). `NotificationsHub` lägger anslutningen i exakt de grupper rollen ger rätt till: `household-adults:{id}`, `household-children:{id}`, `child:{id}`; klienten väljer aldrig grupp. `INotificationDispatcher` (`SignalRNotificationDispatcher`) skickar händelser med bara ID:n/namn, aldrig färdig text.
+- **Händelser:** `ChoreAssigned`, `ChoreApproved`, `ChoreNeedsRedo`, `ChoreSubmittedForReview`, `RewardRequested`, `RewardApproved` (synliga, ger även push) samt de tysta `ChoresChanged`/`RewardsChanged` (bara "ladda om", ingen toast/push). Barnets och vuxnas sidor prenumererar via `RealtimeService.events$`.
+- **Pushnotiser** för stängd/bakgrundsläggd app: en `PushSubscription` per enhet, utskick via VAPID/Web Push från samma dispatcher; utgångna prenumerationer städas automatiskt; tryck på en notis öppnar/fokuserar rätt sida (`/barn` eller `/vuxen`) via `onActionClick`. Konfigurationsnycklar: `WebPush:Subject`, `WebPush:PublicKey`, `WebPush:PrivateKey`.
+- **Återanslutning (`c060d45`).** SignalR-klientens standardpolicy ger upp efter ~45 s, varpå en öppen sida tyst slutar få uppdateringar (en backendomstart eller en sovande mobil räcker). Klienten försöker nu återansluta för alltid (0, 2, 10, sedan var 30:e sekund) och skickar ett `ChoresChanged`/`RewardsChanged` internt när anslutningen är tillbaka, eftersom händelser under avbrottet aldrig spelas upp igen.
+
+**Bilder**
+
+- **Sysslobilder (`3fdfe8a`).** En syssla kan ha en bild (uppladdning/byte/borttagning) som visas på barnets kort; samma pipeline som belöningsfoton (SkiaSharp, 800 px, WebP, `IRewardImageStorage`). Bilden raderas ur lagringen vid byte, borttagning, avaktivering och vid GDPR-radering. Belöningar fick en endpoint för att ta bort bilden. Delad `AdultImagePicker`-komponent. Kort utan bild får en kvast (sysslor) eller present (belöningar). Migration: `AddChoreImage` (`Chores.ImageUrl`). Supabase-radering loggar nu fel i stället för att tyst lämna föräldralösa filer.
+- **QR-koppling av barnets enhet (`e7a1565`).** Den vuxna visar en QR-kod med engångskoden; barnets enhet skannar den med kameran (`qr-scanner`, `qrcode`). Samma kortlivade, hashade engångstoken som den manuella koden; manuell kod och reservinloggning finns kvar när kamera saknas.
+
+**Driftsäkerhet**
+
+- **Data Protection-nycklar i databasen (`f3c8b6e`).** Cookie- och tokenkrypteringsnycklar låg på containerns disk, som töms när Render sover eller driftsätts om — alla användare loggades ut. Nycklarna ligger nu i tabellen `DataProtectionKeys` (migration `AddDataProtectionKeys`, RLS på). Lokalt: utan att migrationen körts ger login `relation "DataProtectionKeys" does not exist`.
+- **RLS på senare tabeller (`bdbfb32`).** `ChoreRecurrences` och `PushSubscriptions` skapades efter den ursprungliga RLS-migrationen och var läs-/skrivbara via Supabases PostgREST. Fixat med `EnableRowLevelSecurityOnNewerTables`. **Regel framåt:** varje ny tabell behöver RLS aktiverat (deny-all) i sin migration.
+- **Dödkodsstädning (`94e4e02`).** Borttaget: oanvända `AdultCard`, kvarglömd `WeatherForecast`; delad `ChildRewardBaseCard` och en delad `SuccessMessage`-hjälpare. E2E-sviten var helt trasig och lagades; för att komma förbi e-postbekräftelse i test finns en `DevEmailStore` och `/dev/last-email`, spärrade till miljön Development.
+
+**Återkommande sysslor, fortsättning (2026-09-21)**
+
+- **Missade sysslor ersätts i stället för att hopa sig (`141a695`).** Buggen: `GET /api/chore-assignments` (och barnets motsvarighet) flyttade oavslutade uppgifter till idag även när generatorn redan skapat dagens förekomst, vilket bröt det unika indexet `(GeneratedFromRecurrenceId, DueDate)` och gav 500. Nu gäller: en genererad uppgift som aldrig påbörjats (`Assigned`) raderas så fort en nyare förekomst av samma upprepning finns (`ChoreRecurrenceGenerator.RemoveSupersededAssignmentsAsync`). En missad månads-/veckosyssla rullar alltså vidare till nästa schemalagda tillfälle och ersätts då; en daglig ersätts av dagens. Uppgifter som skickats tillbaka (`NeedsRedo`) behåller sin historik och lämnas kvar (de rullas inte vidare om det finns en nyare förekomst, för att undvika indexkollisionen). Hela raderingsregeln bygger på att generatorn körs före flytten vid varje läsning.
+- **Notis vid skapande.** `POST /api/chore-recurrences` skickar `ChoreAssigned` till barnet om dagens förekomst skapades i samma anrop (tidigare inget alls, så barnets sida uppdaterades inte live).
+- **Redigera hur en syssla upprepas (`afd570f`, `deda99a`).** `PUT /api/chore-recurrences/{id}` ändrar ett schema. `PUT /api/chore-assignments/{id}/schedule` flyttar en engångssyssla till ett nytt datum eller växlar mellan engång och återkommande i en transaktion (fyra övergångar: engång→engång, engång→återkommande [uppgiften blir första förekomsten, startdatum = dess datum], återkommande→engång [upprepningen stoppas, uppgiften behålls], återkommande→återkommande). Bara `Assigned` kan ändras, annars 409. Valideringen delas i `ChoreScheduleRules`. `AdultChoreAssignmentResponse` har fått `GeneratedFromRecurrenceId`.
+- **Barnprofilen (`/vuxen/barn/:childId`).** Detaljkortet visar nu datum ("Ska utföras") och hur sysslan upprepas ("Görs en gång", "Varje måndag", "Den 1:a varje månad", "Anpassad: Mån, Ons, Fre") och har en Redigera-knapp (`ScheduleEditor`, delad komponent). Nytt avsnitt **Framtida sysslor** listar datumsatta engångssysslor och nästa tillfälle för återkommande scheman som inte har en öppen uppgift idag; barnet ser dem inte förrän dagen (barnets lista filtrerar redan på `DueDate <= idag`). Nästa datum räknas ut i klienten (`nextOccurrenceDate`) med samma regler som backendens `MatchesSchedule`, så de två måste hållas i takt.
+- **Delad etikett** för återkomst (`recurrenceScheduleLabel`) används av både sysslosidan och barnprofilen.
+
+**Kända begränsningar och idéer**
+
+- En sida som står öppen över midnatt får ingen liveuppdatering när dagens nya förekomst genereras (den skapas lat vid nästa hämtning).
+- `NeedsRedo`-uppgifter för en återkommande syssla ersätts aldrig automatiskt och kan inte redigeras; de ligger kvar tills de gjorts om eller tagits bort.
+- Att stoppa en återkommande syssla skickar ingen notis (inget ändras synligt för barnet).
+- Intervall (varannan vecka), undantag för enskilda datum och kalenderimport är fortsatt uteslutet.
+- Tidszon: alla "idag"-jämförelser använder serverns lokala tid (`TimeProvider.GetLocalNow()`); det stämmer så länge servern och användarna delar tidszon.
+
+**Bakgrund: siffror och struktur före ovanstående (historiskt).** Avsnittet nedan beskriver hur branchen `feature/recurring-chores-and-polish` såg ut när den skrevs; den är sedan länge mergad.
+
+### Återkommande sysslor, CI och en rad mindre funktioner/designuppdateringar — mergad till `main`
+
+En lång session med flera separata delleveranser (återkommande sysslor, CI, två buggfixar, borttagning av tilldelning från barnprofil, branding, fria poäng, familjekod-UI, språkväxlare, barnfoto, header- och login-omdesign). Allt är mergat till `main`.
 
 **US-036, återkommande sysslor** (se `REQUIREMENTS.md`):
 
@@ -654,11 +716,13 @@ US-030:s återanvändbara mallflöde, US-033, US-034, Child-frontenden för US-0
 
 ## Kända kvarvarande saker
 
-- Branchen `feature/recurring-chores-and-polish` (återkommande sysslor, CI, buggfixar, gratis poängvärden, familjekod-UI, språkväxlare, barnfoto, grön header, login-omdesign) är inte mergad till `main` och till stor del inte pushad — se avsnittet under "Aktuell arbetsdel". Väntar på fortsatt användargranskning innan merge.
-- Namnbyte från "Syssloappen" till "Sysslo" i sidtitel och löptext är fortsatt medvetet uppskjutet av användaren — loggan (favicon, barnvyns sidopanel, Adult-header, login-sidan) är däremot redan integrerad enligt avsnittet ovan.
+- Inga branches är öppna; allt är mergat till `main` (se "Läget 2026-09-21" överst). Kända begränsningar för återkommande sysslor står sist i "Arbete efter 2026-09-13".
+- Namnbytet till "Sysslo" i användarsynlig text är genomfört (`44347f2`, 2026-09-13). Repot, projektmapparna och koden heter fortfarande `Syssloappen`.
+- Pushnotiser är inte verifierade i produktion (se "Läget 2026-09-21").
+- Backend- och frontendtester körs i CI, men `npm run e2e` körs bara manuellt och har inte körts sedan 2026-09-16.
 - Frontendens barnnavigation och hela barnkontohanteringen är inkopplade: skapa, lista, redigera, avaktivera, koppla enhet samt visa och återkalla sessioner. Adult-vyn för sysslor och tilldelningar, barnets riktiga startsida och Adult-granskningen är färdiga och användartestade.
 - US-070–US-072 (belöningskatalog, poängreservation, förfrågningar och bilduppladdning) är nu implementerade i sin helhet, inklusive bilduppladdning med server-side komprimering och Supabase Storage.
-- Ingen e-postbekräftelse eller lösenordsåterställning ingår i MVP-arbetet ännu.
+- E-postbekräftelse och lösenordsåterställning är implementerade (se "Arbete efter 2026-09-13").
 - ChildProfiles som skapades i utvecklingsdatabasen före enstegsflödet fick inte automatiskt användarnamn och lösenord när migrationen applicerades; de behöver hanteras eller återskapas innan de kan använda Child-login.
 - PostgreSQL-smoke-körningarna, inklusive transportfelsökningen inför den godkända Child-vy-körningen, skapade flera isolerade test-Households i `syssloappen_dev`. Alla namn och konton är smoke-märkta; testlösenorden genererades endast i minnet och är inte dokumenterade.
 - Household-isolering är automatiskt testad för barn, sysslor, Adult-tilldelning/listning/granskning, Child-listning/rapportering och Child-poäng. Hela frontendflödet från Adult-registrering till Child-poäng är nu också browsertestat mot det riktiga API:t och PostgreSQL.

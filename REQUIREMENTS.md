@@ -13,7 +13,7 @@ Varje familj ska fungera som en separat enhet, ett **Household**. Användare som
 - **Backend:** C# / ASP.NET Core Web API
 - **Databas:** PostgreSQL eller SQL Server
 - **Authentication:** ASP.NET Core Authentication
-- **Framtida möjlighet:** Progressive Web App (PWA)
+- **Progressive Web App (PWA):** implementerad, se avsnitt 17 och 27
 
 ### Statusmarkering
 
@@ -452,7 +452,9 @@ så att barnets lista visar rätt uppgifter för dagen utan att skapa stress kri
 - [x] Framtida sysslor ska inte visas för barnet.
 - [x] Äldre sysslor ska inte märkas som försenade.
 - [x] Sysslor i `PendingApproval` ska visas separat från barnets aktiva sysslor tills de har granskats.
-- [x] Återkommande sysslor är en senare arbetsdel, se US-036.
+- [x] Återkommande sysslor beskrivs i US-036.
+- [x] En Adult ska på barnets profil kunna se sysslor som är tilldelade för ett framtida datum, under "Framtida sysslor", så att det syns att de är utdelade även om barnet inte ser dem än.
+- [x] En Adult ska kunna öppna en tilldelning på barnets profil och se datumet då den ska utföras, samt ändra datumet till idag eller ett framtida datum (bara för en tilldelning barnet inte har påbörjat).
 
 ---
 
@@ -473,6 +475,12 @@ så att jag inte manuellt behöver tilldela samma syssla varje dag.
 - [x] En Adult ska kunna se och stoppa en aktiv upprepning. Att stoppa en upprepning ska bara förhindra framtida förekomster; redan skapade tilldelningar, deras historik och poäng ska bevaras oförändrade.
 - [x] Manipulering av Chore-ID, Child-ID eller Household-fält får inte skapa eller stoppa en upprepning i en annan familj.
 - [x] Avancerade regler som intervall (till exempel varannan vecka), undantag, tidszonshantering utöver befintlig lokal-tid-logik och kalenderimport ligger utanför denna arbetsdel.
+- [x] En missad återkommande syssla ska följa med tills nästa schemalagda tillfälle och då ersättas av den nya förekomsten, så att ogjorda återkommande sysslor aldrig hopar sig. En daglig syssla ersätts alltså av dagens. Detta gäller bara uppgifter barnet inte har påbörjat; en uppgift som skickats tillbaka för omgörning behåller sin historik och lämnas kvar.
+- [x] Att hämta tilldelningar får aldrig fallera på grund av att en flyttad uppgift och dagens förekomst av samma upprepning krockar.
+- [x] När en återkommande syssla skapas och dagens förekomst skapas direkt ska barnet få den live och som pushnotis, precis som vid en manuell tilldelning.
+- [x] Barnets profil (vuxenvyn) ska visa hur en tilldelning upprepas ("Görs en gång", varje dag, varje vecka med veckodag, varje månad med dag, eller anpassade veckodagar) och när den ska utföras.
+- [x] En Adult ska kunna redigera hur en tilldelning upprepas direkt från barnets profil, i båda riktningarna: engångssyssla till återkommande (valfri frekvens och dagar, med ett startdatum), återkommande till engångssyssla (upprepningen stoppas, dagens uppgift behålls på ett valt datum) samt ändra en befintlig upprepning. Ändringen sker i en transaktion, gäller bara en tilldelning som inte påbörjats, och nekas för en annan familjs tilldelning.
+- [x] Under "Framtida sysslor" ska en Adult även se nästa tillfälle för en återkommande syssla som inte har en aktuell uppgift idag, och kunna redigera eller ta bort den därifrån.
 
 ---
 
@@ -912,6 +920,8 @@ Första fungerande versionen ska vara liten.
 
 Följande funktioner kan vara intressanta senare men ska **inte byggas innan kärnfunktionerna fungerar**.
 
+> Status 2026-09-21: kärnfunktionerna fungerar, och några av punkterna nedan har sedan byggts: belöningsbutik och belöningsförfrågningar (US-070–US-072), pushnotiser, återkommande sysslor (US-036) och PWA. Se avsnitt 27. E-postutskick finns som transaktionsmejl (bekräftelse, återställning, radering), inte som notiser. Resten av listan är fortsatt ej byggd.
+
 - Belöningsbutik och belöningsförfrågningar enligt US-070–US-072
 - Veckopeng
 - Badges/achievements
@@ -938,8 +948,9 @@ Implementerad enligt US-036 (varje dag, varje vecka, varje månad, anpassade vec
 
 - Intervall utöver "varje" (till exempel varannan vecka).
 - Undantag för enskilda datum (till exempel hoppa över en dag pga resa).
-- En redigera-upprepning-endpoint — idag ändras ett schema genom att stoppa den gamla upprepningen och skapa en ny.
 - Kalenderimport.
+
+Redigering av ett befintligt schema är byggd (se US-036): `PUT /api/chore-recurrences/{id}` och `PUT /api/chore-assignments/{id}/schedule`.
 
 ---
 
@@ -959,11 +970,9 @@ Barnet ska senare kunna använda poängen för familjedefinierade belöningar ut
 
 ## PWA
 
-Angular-applikationen kan senare göras till en Progressive Web App.
+Implementerad (2026-09-14): manifest, tjänstearbetare i produktionsbygget, ikoner inklusive maskable/iOS. Barnet och den vuxna kan installera appen på surfplatta och telefon och få en ikon som en vanlig app; installationen förklaras som första fråga i hjälpsidan (`/hjalp`). API-svar cachas medvetet aldrig av tjänstearbetaren.
 
-Målet är att barnet ska kunna installera appen på sin surfplatta och få en ikon ungefär som en vanlig app.
-
-PWA-arbetet bör göras **efter att webbversionens kärnfunktionalitet fungerar**.
+Offline-läge ingår inte.
 
 ---
 
@@ -980,7 +989,9 @@ En publik marknadsföringssida (inte inloggad, inte del av `/vuxen` eller `/barn
 
 ## QR-kod för barnets enhetskoppling
 
-Den Adult-styrda enhetskopplingen med engångskod ingår i barnloginens kärnflöde. Som en framtida användarvänlig förbättring ska samma kopplingsflöde även kunna startas genom att barnets enhet skannar en QR-kod i stället för att den vuxna skriver in engångskoden manuellt.
+Implementerad (2026-09-13, `e7a1565`); kraven nedan gäller fortsatt och beskriver hur den fungerar.
+
+Den Adult-styrda enhetskopplingen med engångskod ingår i barnloginens kärnflöde. Samma kopplingsflöde kan även startas genom att barnets enhet skannar en QR-kod i stället för att den vuxna skriver in engångskoden manuellt.
 
 - QR-koden ska representera samma slumpmässiga, kortlivade engångstoken som den manuella kopplingskoden.
 - Token ska fortfarande verifieras i backend, bara kunna användas en gång och vara bunden till rätt Child och Household.
@@ -1129,6 +1140,8 @@ Backendens kärnflöde för autentisering, barn, sysslor, tilldelning, rapporter
 11. PWA
 ```
 
+Alla elva steg är genomförda (2026-09-21), och därefter har funktionerna i avsnitt 27 tillkommit. Fortsatt arbete styrs av användarens löpande önskemål snarare än av den här listan.
+
 ---
 
 # 21. Projektets kärnprincip
@@ -1220,7 +1233,7 @@ De fyra breda kriterierna i avsnitt 14 är markerade som färdiga efter den godk
 
 # 26. Adult-inbjudan redo för användartest
 
-US-011 är implementerad och automatiskt verifierad på branchen `feature/adult-household-invitation`, men ännu inte användargodkänd eller mergad.
+US-011 är implementerad, automatiskt verifierad, användargodkänd och mergad till `main` (`65b0eec`). Sifferuppgifterna nedan är historiska (se avsnitt 27 och `docs/HANDOFF.md` för aktuellt läge).
 
 - En autentiserad Adult skapar en 24 timmar giltig engångskod via `POST /api/household/invitations`.
 - Koden är kryptografiskt slumpmässig och endast SHA-256-hashen lagras i databasen.
@@ -1230,4 +1243,42 @@ US-011 är implementerad och automatiskt verifierad på branchen `feature/adult-
 - Angular har en Adult-sida på `/vuxen/bjud-in` och en publik registreringssida på `/acceptera-inbjudan`.
 - Fyra nya integrationstester och två frontendtester verifierar behörighet, Household-koppling, engångsanvändning, utgång och manipulerade klientfält.
 - Hela backendsviten omfattar 110 godkända tester och frontendsviten 57 godkända tester. Angular-produktionsbygget är godkänt.
-- De sex kriterierna markeras först efter manuell användartestning och uttryckligt godkännande.
+- De sex kriterierna är markerade efter manuell användartestning och uttryckligt godkännande.
+
+---
+
+# 27. Funktioner tillkomna efter de ursprungliga user stories
+
+Följande är byggt, mergat till `main` och i produktion utöver de user stories som beskrivs ovan. De saknar egna US-nummer eftersom de tillkom under drift och löpande användarfeedback. Tekniska detaljer och beslut finns i `docs/HANDOFF.md` under "Arbete efter 2026-09-13". Status gäller 2026-09-21.
+
+## Konton och integritet
+
+- [x] Nya vuxenkonton måste bekräfta sin e-postadress via en länk innan de kan logga in. Länkarna byggs bara från den konfigurerade `PublicBaseUrl` och aldrig från inkommande Host-header. Barnens inloggning berörs inte.
+- [x] En vuxen kan begära lösenordsåterställning via e-post. Svaret är detsamma oavsett om adressen finns, begäran är rate-limitad och länken fungerar bara en gång.
+- [x] Huvudägaren kan permanent radera familjen (GDPR): kräver lösenord och en skriven bekräftelse, har 30 dagars ångerfrist som alla vuxna ser en banner om, och raderar därefter alla data och bilder. Bara ägaren kan ångra.
+- [x] Alla vuxna kan skicka feedback till supporten från appen. Avsändaren läses ut på serversidan.
+- [x] Hjälpsidan `/hjalp` svarar på vanliga frågor, med installation av appen som första fråga (svenska och engelska).
+- [x] Transaktionsmejl skickas på engelska, eftersom språkvalet bara finns i klienten.
+
+## Realtid, notiser och installation
+
+- [x] Vuxnas och barns sidor uppdateras live när något ändras (tilldelad, godkänd eller omgörning av syssla, inlämning, belöningsförfrågan och godkännande, samt när sysslor, belöningar eller tilldelningar redigeras). En användare får bara händelser som rör den egna familjen och, för barn, det egna barnet.
+- [x] Live-anslutningen försöker återansluta för alltid och sidorna laddas om när den kommit tillbaka, så att en omstart av servern eller en sovande telefon inte tyst stoppar uppdateringarna.
+- [ ] Pushnotiser för stängd eller bakgrundsläggd app kan aktiveras från Inställningar (vuxna och barn). Implementerat och testat med en fejkad leverantör, men inte verifierat i produktion. Kryssas när det bekräftats på en riktig enhet.
+- [x] Appen kan installeras på telefon och surfplatta som en PWA.
+- [x] Barnets enhet kan kopplas genom att skanna en QR-kod, som alternativ till att skriva engångskoden.
+
+## Innehåll
+
+- [x] En syssla kan ha en bild som visas på barnets kort; bilden komprimeras på servern och raderas ur lagringen när den byts, tas bort eller sysslan avaktiveras. Belöningsbilder kan också tas bort.
+- [x] Poängen för en syssla är ett valfritt positivt heltal, och en tilldelning fryser värdet som gällde vid tilldelningen.
+
+## Driftsäkerhet
+
+- [x] Kryptografiska nycklar för cookies och e-posttokens lagras i databasen så att användare inte loggas ut när hosting-tjänsten startar om.
+- [x] Alla tabeller har radnivåsäkerhet (deny-all mot Supabases publika API). Varje ny tabell ska få det i sin migration.
+- [x] CI kör backend- och frontendtester på varje push och pull request.
+
+## Tester, 2026-09-21
+
+- 252 backendtester och 58 frontendtester är gröna. Browsertesterna (`npm run e2e`) körs manuellt och har inte körts sedan 2026-09-16.
