@@ -5,6 +5,11 @@ import { Subject, distinctUntilChanged } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { NotificationEvent } from './notification-event.model';
 
+// SignalR's default reconnect policy gives up after about 45 seconds. A backend deploy or
+// restart, a phone that slept, or a network switch can easily outlast that, after which the
+// page silently stops receiving live updates until it is manually reloaded. Keep retrying.
+const RECONNECT_DELAYS_MS = [0, 2000, 10000, 30000];
+
 /**
  * Keeps one persistent SignalR connection to /hubs/notifications for as long as the
  * user is signed in, and republishes every server-pushed event on {@link events$}.
@@ -36,10 +41,19 @@ export class RealtimeService {
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl('/hubs/notifications', { withCredentials: true })
-      .withAutomaticReconnect()
+      .withAutomaticReconnect({
+        nextRetryDelayInMilliseconds: (context) =>
+          RECONNECT_DELAYS_MS[Math.min(context.previousRetryCount, RECONNECT_DELAYS_MS.length - 1)],
+      })
       .build();
 
     connection.on('notification', (evt: NotificationEvent) => this.eventsSubject.next(evt));
+    // Events sent while the connection was down are never replayed, so ask open pages to
+    // reload once it is back.
+    connection.onreconnected(() => {
+      this.eventsSubject.next({ type: 'ChoresChanged', data: {} });
+      this.eventsSubject.next({ type: 'RewardsChanged', data: {} });
+    });
 
     this.connection = connection;
     // Best-effort — a page that can't connect (e.g. offline) simply falls back to

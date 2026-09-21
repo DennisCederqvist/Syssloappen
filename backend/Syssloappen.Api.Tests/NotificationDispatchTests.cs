@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Syssloappen.Api.Dtos.Auth;
 using Syssloappen.Api.Dtos.Children;
 using Syssloappen.Api.Dtos.ChoreAssignments;
+using Syssloappen.Api.Dtos.ChoreRecurrences;
 using Syssloappen.Api.Dtos.Chores;
 using Syssloappen.Api.Dtos.Rewards;
+using Syssloappen.Api.Models;
 using Syssloappen.Api.Services;
 using Xunit;
 
@@ -168,6 +170,57 @@ public sealed class NotificationDispatchTests : IDisposable
         var data = Assert.IsType<RewardApprovedData>(notification.Event.Data);
         Assert.Equal(redemption.Id, data.RedemptionId);
         Assert.Equal("Glass", data.RewardName);
+    }
+
+    [Fact]
+    public async Task Creating_a_recurrence_due_today_notifies_the_child_and_links_the_occurrence()
+    {
+        using var adultClient = CreateClient();
+        using var childClient = CreateClient();
+        await RegisterAndLoginAdult(adultClient, "Familjen Notify Recurring", "notify.recurring@example.test");
+        var child = await CreateChild(adultClient, "Ella");
+        var chore = await CreateChore(adultClient, "Vattna blommorna", 4);
+        await PairChild(adultClient, childClient, child.Id);
+
+        var response = await adultClient.PostAsJsonAsync("/api/chore-recurrences", new CreateChoreRecurrenceRequest
+        {
+            ChoreId = chore.Id, ChildId = child.Id, Frequency = ChoreRecurrenceFrequency.Daily
+        });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var recurrence = (await response.Content.ReadFromJsonAsync<ChoreRecurrenceResponse>())!;
+
+        var notification = Assert.Single(factory.NotificationDispatcher.ChildNotifications);
+        Assert.Equal(child.Id, notification.ChildProfileId);
+        Assert.Equal(NotificationEventType.ChoreAssigned, notification.Event.Type);
+        var data = Assert.IsType<ChoreAssignedData>(notification.Event.Data);
+        Assert.Equal("Vattna blommorna", data.ChoreTitle);
+        Assert.Equal(4, data.Points);
+
+        var assignments = await adultClient.GetFromJsonAsync<List<AdultChoreAssignmentResponse>>("/api/chore-assignments");
+        var occurrence = Assert.Single(assignments!, item => item.ChoreId == chore.Id);
+        Assert.Equal(data.AssignmentId, occurrence.AssignmentId);
+        Assert.Equal(recurrence.Id, occurrence.GeneratedFromRecurrenceId);
+    }
+
+    [Fact]
+    public async Task Creating_a_recurrence_not_due_today_does_not_notify_the_child()
+    {
+        using var adultClient = CreateClient();
+        using var childClient = CreateClient();
+        await RegisterAndLoginAdult(adultClient, "Familjen Notify Later", "notify.later@example.test");
+        var child = await CreateChild(adultClient, "Elias");
+        var chore = await CreateChore(adultClient, "Dammsuga", 6);
+        await PairChild(adultClient, childClient, child.Id);
+
+        var tomorrow = DateTime.Now.AddDays(1).DayOfWeek;
+        var response = await adultClient.PostAsJsonAsync("/api/chore-recurrences", new CreateChoreRecurrenceRequest
+        {
+            ChoreId = chore.Id, ChildId = child.Id, Frequency = ChoreRecurrenceFrequency.Weekly,
+            DaysOfWeekMask = 1 << (((int)tomorrow + 6) % 7) // Monday = bit 0
+        });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        Assert.Empty(factory.NotificationDispatcher.ChildNotifications);
     }
 
     public void Dispose() => factory.Dispose();

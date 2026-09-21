@@ -178,6 +178,136 @@ public sealed class ChoreAssignmentsController(
         return NoContent();
     }
 
+    [HttpPut("{assignmentId:int}/schedule")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> UpdateSchedule(int assignmentId, UpdateChoreAssignmentScheduleRequest request)
+    {
+        if (assignmentId <= 0)
+        {
+            ModelState.AddModelError(nameof(assignmentId), "Assignment ID must be positive.");
+            return ValidationProblem(ModelState);
+        }
+
+        var currentUser = await userManager.GetUserAsync(User);
+        if (currentUser is null) return Unauthorized();
+
+        var assignment = await dbContext.ChoreAssignments.SingleOrDefaultAsync(item =>
+            item.Id == assignmentId
+            && item.HouseholdId == currentUser.HouseholdId
+            && item.Child.HouseholdId == currentUser.HouseholdId
+            && item.Chore.HouseholdId == currentUser.HouseholdId);
+        if (assignment is null) return NotFound();
+
+        // Only a chore the child has not started can be rescheduled; anything submitted or
+        // reviewed is history.
+        if (assignment.Status != ChoreAssignmentStatus.Assigned)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Assignment cannot be rescheduled",
+                Detail = "Only a chore that has not been started can be rescheduled."
+            });
+        }
+
+        var today = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
+
+        var recurrence = assignment.GeneratedFromRecurrenceId is int recurrenceId
+            ? await dbContext.ChoreRecurrences.SingleOrDefaultAsync(item =>
+                item.Id == recurrenceId && item.HouseholdId == currentUser.HouseholdId && item.IsActive)
+            : null;
+
+        if (request.Frequency is null)
+        {
+            // One-off: a recurring chore that becomes one-off stops repeating, but keeps this occurrence.
+            var dueDate = request.DueDate ?? assignment.DueDate;
+            if (dueDate < today)
+            {
+                ModelState.AddModelError(nameof(request.DueDate), "Due date cannot be in the past.");
+                return ValidationProblem(ModelState);
+            }
+
+            if (recurrence is not null)
+            {
+                recurrence.IsActive = false;
+            }
+
+            assignment.GeneratedFromRecurrenceId = null;
+            assignment.DueDate = dueDate;
+        }
+        else
+        {
+            if (!ChoreScheduleRules.TryNormalize(
+                    request.Frequency.Value, request.DaysOfWeekMask, request.DayOfMonth,
+                    out var daysOfWeekMask, out var dayOfMonth, out var invalidField, out var invalidMessage))
+            {
+                ModelState.AddModelError(invalidField, invalidMessage);
+                return ValidationProblem(ModelState);
+            }
+
+            if (recurrence is not null)
+            {
+                recurrence.Frequency = request.Frequency.Value;
+                recurrence.DaysOfWeekMask = daysOfWeekMask;
+                recurrence.DayOfMonth = dayOfMonth;
+            }
+            else
+            {
+                // One-off that becomes recurring: this assignment is its first occurrence.
+                var startDate = request.DueDate ?? (assignment.DueDate < today ? today : assignment.DueDate);
+                if (startDate < today)
+                {
+                    ModelState.AddModelError(nameof(request.DueDate), "Start date cannot be in the past.");
+                    return ValidationProblem(ModelState);
+                }
+
+                var created = new ChoreRecurrence
+                {
+                    HouseholdId = currentUser.HouseholdId,
+                    ChoreId = assignment.ChoreId,
+                    ChildId = assignment.ChildId,
+                    CreatedByUserId = currentUser.Id,
+                    Frequency = request.Frequency.Value,
+                    DaysOfWeekMask = daysOfWeekMask,
+                    DayOfMonth = dayOfMonth,
+                    StartDate = startDate,
+                    IsActive = true,
+                    CreatedAt = timeProvider.GetUtcNow().UtcDateTime
+                };
+                dbContext.ChoreRecurrences.Add(created);
+                assignment.GeneratedFromRecurrence = created;
+                assignment.DueDate = startDate;
+            }
+        }
+
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Assignment cannot be rescheduled",
+                Detail = "The assignment was already changed by another request."
+            });
+        }
+
+        await recurrenceGenerator.GenerateDueAssignmentsAsync(currentUser.HouseholdId);
+
+        // A moved due date or a changed schedule changes what the child's list should show.
+        await TryNotifyAsync(() => notificationDispatcher.NotifyChildAsync(
+            assignment.ChildId,
+            new NotificationEvent(NotificationEventType.ChoresChanged, new ContentChangedData())));
+
+        return NoContent();
+    }
+
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<AdultChoreAssignmentResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -221,7 +351,8 @@ public sealed class ChoreAssignmentsController(
                 assignment.ReviewComment,
                 assignment.CancelledByUserId,
                 assignment.CancelledAt,
-                assignment.AdultArchivedAt))
+                assignment.AdultArchivedAt,
+                assignment.GeneratedFromRecurrenceId))
             .ToListAsync();
 
         return Ok(assignments);
@@ -240,6 +371,10 @@ public sealed class ChoreAssignmentsController(
                 && assignment.Child.HouseholdId == householdId
                 && assignment.Child.IsActive
                 && assignment.DueDate < today
+                && (assignment.GeneratedFromRecurrenceId == null
+                    || !dbContext.ChoreAssignments.Any(newer =>
+                        newer.GeneratedFromRecurrenceId == assignment.GeneratedFromRecurrenceId
+                        && newer.DueDate > assignment.DueDate))
                 && (assignment.Status == ChoreAssignmentStatus.Assigned
                     || assignment.Status == ChoreAssignmentStatus.NeedsRedo))
             .ExecuteUpdateAsync(setters => setters

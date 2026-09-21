@@ -4,6 +4,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { AdultPageHeader } from '../adult/ui/page-header';
 
 const FAQ_KEYS = [
+  'installApp',
   'addAdult',
   'addChild',
   'pairDevice',

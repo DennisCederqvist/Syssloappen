@@ -15,6 +15,28 @@ public sealed class ChoreRecurrenceGenerator(AppDbContext dbContext, TimeProvide
 {
     public async Task GenerateDueAssignmentsAsync(int householdId, CancellationToken cancellationToken = default)
     {
+        await GenerateAsync(householdId, cancellationToken);
+        await RemoveSupersededAssignmentsAsync(householdId, cancellationToken);
+    }
+
+    // A generated chore that was never started is replaced by the newer occurrence of the same
+    // recurrence instead of piling up as an undone leftover. Chores sent back for redo keep their
+    // submission history and are left alone.
+    private async Task RemoveSupersededAssignmentsAsync(int householdId, CancellationToken cancellationToken)
+    {
+        await dbContext.ChoreAssignments
+            .Where(assignment =>
+                assignment.HouseholdId == householdId
+                && assignment.GeneratedFromRecurrenceId != null
+                && assignment.Status == ChoreAssignmentStatus.Assigned
+                && dbContext.ChoreAssignments.Any(newer =>
+                    newer.GeneratedFromRecurrenceId == assignment.GeneratedFromRecurrenceId
+                    && newer.DueDate > assignment.DueDate))
+            .ExecuteDeleteAsync(cancellationToken);
+    }
+
+    private async Task GenerateAsync(int householdId, CancellationToken cancellationToken)
+    {
         // Local time, matching every other "today" comparison in the chore-scheduling code.
         var today = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
 

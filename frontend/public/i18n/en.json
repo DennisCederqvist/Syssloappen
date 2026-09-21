@@ -704,7 +704,27 @@
       },
       "activeTitle": "Current chores",
       "activeEmpty": "No current chores.",
+      "futureTitle": "Upcoming chores",
+      "futureEmpty": "No upcoming chores.",
       "pointsMeta": "{{points}} points",
+      "detail": {
+        "dueDate": "To be done",
+        "repeat": "Repeats",
+        "once": "One time only",
+        "edit": "Edit",
+        "nextDate": "Next time"
+      },
+      "editSheet": {
+        "startDate": "Start date",
+        "saving": "Saving…",
+        "dateError": "Pick a date that has not already passed.",
+        "error": {
+          "invalid": "That schedule is not valid. Check the choices and try again.",
+          "notFound": "The chore could not be found. It may already have been removed.",
+          "conflict": "The chore cannot be changed right now, for example because the child has already started it. Reload the page and try again.",
+          "generic": "The change could not be saved. Please try again."
+        }
+      },
       "removeSheet": {
         "button": "Remove from child",
         "question": "Remove this chore from {{name}}? This only removes the assignment, not the chore itself.",
@@ -813,6 +833,10 @@
     "linkFromLogin": "Need help? Read our guide",
     "stillStuck": "Couldn't find the answer you were looking for? Email us at ",
     "faq": {
+      "installApp": {
+        "question": "How do I install the app on my phone or tablet?",
+        "answer": "Sysslo works right in the browser, but you can add it to your home screen so it opens like a regular app. On iPhone/iPad (Safari): tap the Share icon (the square with an arrow pointing up) and choose \"Add to Home Screen\". On Android (Chrome): tap the menu (three dots) and choose \"Install app\" or \"Add to Home screen\". The Sysslo icon then appears among your other apps."
+      },
       "addAdult": {
         "question": "How do I add another adult to the family?",
         "answer": "Go to Settings → Manage adults and tap \"+ Invite adult\" to create a one-time code. Share the code with the person (for example by text message), and they can go to \"I have an invite\" to enter the code and choose their own email and password."

@@ -707,7 +707,27 @@
       },
       "activeTitle": "Aktuella sysslor",
       "activeEmpty": "Inga aktuella sysslor.",
+      "futureTitle": "Framtida sysslor",
+      "futureEmpty": "Inga framtida sysslor.",
       "pointsMeta": "{{points}} poäng",
+      "detail": {
+        "dueDate": "Ska utföras",
+        "repeat": "Återkommer",
+        "once": "Görs en gång",
+        "edit": "Redigera",
+        "nextDate": "Nästa gång"
+      },
+      "editSheet": {
+        "startDate": "Startdatum",
+        "saving": "Sparar…",
+        "dateError": "Välj ett datum som inte redan har varit.",
+        "error": {
+          "invalid": "Schemat är inte giltigt. Kontrollera valen och försök igen.",
+          "notFound": "Sysslan kunde inte hittas. Den kan redan vara borttagen.",
+          "conflict": "Sysslan kan inte ändras just nu, till exempel för att barnet redan har börjat. Ladda om sidan och försök igen.",
+          "generic": "Ändringen kunde inte sparas. Försök igen."
+        }
+      },
       "removeSheet": {
         "button": "Ta bort från barnet",
         "question": "Ta bort den här sysslan från {{name}}? Detta tar bara bort tilldelningen, inte sysslan i sig.",
@@ -816,6 +836,10 @@
     "linkFromLogin": "Behöver du hjälp? Läs vår guide",
     "stillStuck": "Hittade du inte svaret du sökte? Mejla oss på ",
     "faq": {
+      "installApp": {
+        "question": "Hur installerar jag appen på min telefon eller surfplatta?",
+        "answer": "Sysslo fungerar direkt i webbläsaren, men du kan lägga till den på hemskärmen så att den öppnas som en vanlig app. På iPhone/iPad (Safari): tryck på Dela-ikonen (fyrkanten med pilen uppåt) och välj \"Lägg till på hemskärmen\". På Android (Chrome): tryck på menyn (tre punkter) och välj \"Installera app\" eller \"Lägg till på startskärmen\". Sysslo-ikonen dyker sedan upp bland dina andra appar."
+      },
       "addAdult": {
         "question": "Hur lägger jag till en till vuxen i familjen?",
         "answer": "Gå till Inställningar → Hantera vuxna och tryck på \"+ Bjud in vuxen\" för att skapa en engångskod. Dela koden med personen (till exempel via sms), så kan de gå till \"Jag har en inbjudan\" och skriva in koden samt välja sin egen e-post och lösenord."

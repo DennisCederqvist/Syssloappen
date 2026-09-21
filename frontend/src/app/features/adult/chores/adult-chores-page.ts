@@ -23,11 +23,9 @@ import {
   ChoreRecurrenceFrequency,
   CreateChoreRecurrenceRequest,
 } from './chore-recurrence.models';
+import { WEEKDAY_BITS, recurrenceScheduleLabel } from './chore-recurrence-label';
 import { AdultAssignment, Chore } from './chores.models';
 import { ChoresService } from './chores.service';
-
-// Mon=0..Sun=6 in the UI, converted to the backend's Mon=1..Sun=64 bitmask on submit.
-const WEEKDAY_BITS = [1, 2, 4, 8, 16, 32, 64];
 
 @Component({
   selector: 'app-adult-chores-page',
@@ -446,6 +444,7 @@ export class AdultChoresPage implements OnInit {
               cancelledByUserId: null,
               cancelledAt: null,
               adultArchivedAt: null,
+              generatedFromRecurrenceId: null,
             },
             ...assignments,
           ]);
@@ -528,28 +527,7 @@ export class AdultChoresPage implements OnInit {
   }
 
   recurrenceScheduleLabel(recurrence: ChoreRecurrence): string {
-    switch (recurrence.frequency) {
-      case 'Daily':
-        return this.transloco.translate('adult.chores.recurrence.scheduleDaily');
-      case 'Weekly': {
-        const dayIndex = WEEKDAY_BITS.indexOf(recurrence.daysOfWeekMask ?? 0);
-        return this.transloco.translate('adult.chores.recurrence.scheduleWeekly', {
-          weekday: this.transloco.translate(`adult.chores.recurrence.weekday.${dayIndex}`),
-        });
-      }
-      case 'Monthly':
-        return this.transloco.translate('adult.chores.recurrence.scheduleMonthly', {
-          day: recurrence.dayOfMonth,
-        });
-      case 'Custom': {
-        const mask = recurrence.daysOfWeekMask ?? 0;
-        const days = WEEKDAY_BITS.map((bit, index) => (mask & bit ? index : null))
-          .filter((index): index is number => index !== null)
-          .map((index) => this.transloco.translate(`adult.chores.recurrence.weekdayShort.${index}`))
-          .join(', ');
-        return this.transloco.translate('adult.chores.recurrence.scheduleCustom', { days });
-      }
-    }
+    return recurrenceScheduleLabel(recurrence, this.transloco);
   }
 
   stopRecurrence(recurrence: ChoreRecurrence): void {
