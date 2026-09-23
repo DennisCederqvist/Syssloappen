@@ -1,5 +1,23 @@
 @import 'tailwindcss';
 
+/* Self-hosted child-view fonts (latin subset, variable weight; both SIL OFL, from Google Fonts).
+   Browsers only download an @font-face file once something renders in that family, so the
+   adult view never fetches these — unlike the render-blocking Google Fonts stylesheet they replace. */
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url('/fonts/fredoka-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+}
+
 @theme {
   --font-sans: 'Nunito', 'Avenir Next', 'Segoe UI', sans-serif;
   --color-ink: #18312f;
