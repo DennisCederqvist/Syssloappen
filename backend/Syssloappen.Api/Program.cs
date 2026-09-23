@@ -170,8 +170,9 @@ if (!app.Environment.IsDevelopment())
 
 // Outside Development, wwwroot also holds the built Angular app (see Dockerfile) — served as
 // static files, with unmatched non-API routes falling back to index.html for client-side routing.
+var staticFileOptions = new StaticFileOptions { OnPrepareResponse = StaticFileCaching.Apply };
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(staticFileOptions);
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -181,7 +182,7 @@ app.MapControllers();
 app.MapHub<NotificationsHub>("/hubs/notifications");
 if (!app.Environment.IsDevelopment())
 {
-    app.MapFallbackToFile("index.html");
+    app.MapFallbackToFile("index.html", staticFileOptions);
 }
 
 using (var scope = app.Services.CreateScope())

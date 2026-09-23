@@ -2,3 +2,5 @@ frontend/** text eol=lf
 frontend/public/logo/*.png binary
 frontend/public/marketing/*.png binary
 frontend/public/icons/*.png binary
+frontend/public/**/*.webp binary
+frontend/public/fonts/*.woff2 binary

@@ -9,6 +9,8 @@ import {
 import { provideRouter } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideTransloco } from '@jsverse/transloco';
+import { forkJoin } from 'rxjs';
+import { AuthService } from './core/auth/auth.service';
 import { credentialsInterceptor } from './core/auth/credentials.interceptor';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
 import { LanguageService } from './core/i18n/language.service';
@@ -33,7 +35,12 @@ export const appConfig: ApplicationConfig = {
     }),
     // Applies the persisted (or default) language and waits for its
     // translation file to load before the app renders, so there's no flash
-    // of the wrong language or untranslated keys.
-    provideAppInitializer(() => inject(LanguageService).initialize()),
+    // of the wrong language or untranslated keys. The session check runs
+    // alongside it rather than after it: the route guards would otherwise
+    // only start /api/auth/me once the translations had arrived, and they
+    // reuse this cached result instead.
+    provideAppInitializer(() =>
+      forkJoin([inject(LanguageService).initialize(), inject(AuthService).restoreSession()]),
+    ),
   ],
 };

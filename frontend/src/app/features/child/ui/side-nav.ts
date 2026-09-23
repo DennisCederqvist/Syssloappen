@@ -29,7 +29,7 @@ const NAV_ITEMS: ChildNavItem[] = [
       [attr.aria-label]="navAriaLabel()"
     >
       <div class="mx-auto hidden size-12 shrink-0 place-items-center md:grid" aria-hidden="true">
-        <img src="logo/mark.png" alt="" class="size-11 object-contain" />
+        <img src="logo/mark.webp" alt="" width="44" height="44" class="size-11 object-contain" />
       </div>
 
       <div
