@@ -37,8 +37,10 @@ import { Component, input } from '@angular/core';
         }
       </div>
       <img
-        src="logo/mark.png"
+        src="logo/mark.webp"
         alt=""
+        width="56"
+        height="56"
         class="size-12 shrink-0 object-contain sm:size-14"
         aria-hidden="true"
       />
